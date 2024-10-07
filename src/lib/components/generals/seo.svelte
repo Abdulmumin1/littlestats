@@ -17,8 +17,7 @@
 	let LittleStatsDetails = {
 		des: 'Littlestats - Cheap, Fun & Powerful Analytics for Websites',
 		url: 'https://littlestats.click',
-		imageUrl:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118056/green_k9uowc.png'
+		imageUrl: '/littlestats_banner.png'
 	};
 
 	$: title = title;

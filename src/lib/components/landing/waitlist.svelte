@@ -28,6 +28,9 @@
 			await update();
 		};
 	};
+
+	import { confetti } from '@neoconfetti/svelte';
+	let pop = true;
 </script>
 
 <div
@@ -62,6 +65,7 @@
 			</button>
 		</form>
 	{:else}
+		<div class="mx-auto" use:confetti />
 		<p>Thank you for joining 🩷! we will reach out soon</p>
 	{/if}
 </div>
