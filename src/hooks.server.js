@@ -28,9 +28,9 @@ export const authentication = async ({ event, resolve }) => {
 
 const unprotectedPrefix = ['/signin', '/embed', '/signup'];
 export const authorization = async ({ event, resolve }) => {
-	if (event.url.pathname !== '/') {
-		throw redirect(303, '/');
-	}
+	// if (event.url.pathname !== '/') {
+	// 	throw redirect(303, '/');
+	// }
 	// Protect any routes under /authenticated
 	if (
 		!unprotectedPrefix.some((path) => event.url.pathname.startsWith(path)) &&
