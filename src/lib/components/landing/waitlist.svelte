@@ -18,6 +18,7 @@
 		return async ({ update, result }) => {
 			if (result.status >= 400) {
 				loading = false;
+				//cool
 				// console.log(result.data);
 			} else {
 				// addDomain(result.data);
