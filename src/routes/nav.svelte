@@ -17,9 +17,9 @@
 		<!-- <a href="#" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Features</a> -->
 		<MixerComp />
 		<a href="#pricing" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Pricing</a>
-		<a href="/signin" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Signin</a>
+		<a href="#waitlist" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Signin</a>
 		<a
-			href="/signup"
+			href="#waitlist"
 			class="mt-12 hidden rounded-full md:mt-0 md:block bg-{$color}-500 px-3 py-2 text-gray-950 hover:bg-{$color}-900 hover:text-{$color}-300"
 			>Start free trial</a
 		>
