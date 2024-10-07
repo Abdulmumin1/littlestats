@@ -40,7 +40,7 @@
 	in:fly={{ y: 50, duration: 1000, delay: 300 }}
 >
 	<span class=" text-{$color}-500"><ArrowRight /></span>Not just cheap though,
-	<span class="bg-{$color}-500">Super fun to use</span>
+	<span class="bg-{$color}-500 text-{$color}-100 font-extrabold">Super fun to use</span>
 </p>
 <h2
 	class="mb-4 font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-5xl lg:text-7xl"

@@ -277,6 +277,9 @@
 				chart.data.datasets[0].data = chartData.map((d) => d.myY);
 				// chart.update();
 				chart.data.datasets[0].borderColor = colorList[c].primary;
+				if (chartType == 'bar') {
+					chart.data.datasets[0].backgroundColor = colorList[c].primary;
+				}
 				chart.update();
 			} catch {}
 		}
@@ -400,8 +403,8 @@
 	</div>
 
 	{#if showChart}
-		<div class="mt-6 flex max-h-[460px] max-w-[800px] items-center justify-center rounded-xl p-2">
-			<canvas bind:this={chartCanvas}></canvas>
+		<div class="mt-6 flex items-center justify-center rounded-xl">
+			<canvas bind:this={chartCanvas} class="max-h-[330px]"></canvas>
 		</div>
 	{/if}
 </div>

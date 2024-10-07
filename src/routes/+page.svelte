@@ -5,6 +5,8 @@
 	import { color } from '$lib/colors/mixer.js';
 	import ImageSection from '../lib/components/landing/imageSection.svelte';
 	import Seo from '../lib/components/generals/seo.svelte';
+	import PricingSection from '../lib/components/landing/pricingSection.svelte';
+	import FeatureSection from '../lib/components/landing/featureSection.svelte';
 
 	const plans = [
 		{
@@ -57,7 +59,7 @@
 				class="inline-block w-fit transform rounded-full bg-{$color}-500 px-6 py-2 text-base font-semibold text-black transition duration-300 hover:-translate-y-1 hover:bg-{$color}-400 sm:px-8 sm:py-3 sm:text-lg"
 				in:fly={{ y: 50, duration: 1000, delay: 600 }}
 			>
-				Grab it now
+				Get Started
 			</a>
 			<div class="pointer-events-none absolute bottom-0 right-0 -z-0 hidden md:block">
 				<Logo size={300} />
@@ -88,7 +90,7 @@
 		</div> -->
 		<ImageSection />
 
-		<div id="pricing" class="mt-16 sm:mt-20 lg:mt-24">
+		<!-- <div id="pricing" class="mt-16 sm:mt-20 lg:mt-24">
 			<h2 class=" text-center text-2xl font-bold sm:text-3xl">Choose Your Plan</h2>
 			<p
 				class="mx-auto mb-6 mt-2 max-w-xl text-center text-lg font-bold text-{$color}-800 sm:mb-8 sm:max-w-2xl sm:text-xl"
@@ -136,8 +138,9 @@
 					</div>
 				{/each}
 			</div>
-		</div>
-
+		</div> -->
+		<FeatureSection />
+		<PricingSection />
 		<div class="mt-16 text-center sm:mt-20 lg:mt-24">
 			<h2 class="mb-6 text-2xl font-bold sm:mb-8 sm:text-3xl">Ready to get started?</h2>
 			<a
