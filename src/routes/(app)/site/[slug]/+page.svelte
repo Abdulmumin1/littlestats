@@ -13,6 +13,7 @@
 	import ChartJsGraph from '../../../../lib/components/analytics/graphStuff/chartJsGraph.svelte';
 	import AnotherChart from '../../../../lib/components/analytics/graphStuff/anotherChart.svelte';
 	import Seo from '../../../../lib/components/generals/seo.svelte';
+	import ReferrerSection from '../../../../lib/components/analytics/referrerSection.svelte';
 
 	$: page_data = data.records;
 
@@ -222,7 +223,8 @@
 		<ChartJsGraph viewRecords={views} {sortInterval} />
 		<div class="mt-6 flex flex-wrap gap-6">
 			<PagesSection {views} />
-			<div class="flex-1">
+			<ReferrerSection {views} domain={current_domain[0]} />
+			<!-- <div class="flex-1">
 				<div class="mb-3 flex justify-between text-gray-950">
 					<p>Referrers</p>
 					<p>Views</p>
@@ -266,7 +268,7 @@
 					</div>
 					<button class="no-bg text-right">more &rarr;</button>
 				</div>
-			</div>
+			</div> -->
 		</div>
 	</div>
 </div>

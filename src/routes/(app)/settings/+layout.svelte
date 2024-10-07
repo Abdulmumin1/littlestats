@@ -7,8 +7,8 @@
 </script>
 
 <div class="min-h-screen p-2 text-black">
-	<div class="container mx-auto flex gap-4 pt-6">
-		<div class="flex w-[300px] flex-col gap-1 px-4">
+	<div class="container mx-auto flex flex-col gap-4 pt-2 md:flex-row md:pt-6">
+		<div class="flex w-[300px] flex-col gap-1 px-0 md:px-4">
 			<a
 				class="rounded-full {path === '/settings' || path === '/settings/'
 					? `border-${$color}-800 bg-${$color}-500 border-2`
