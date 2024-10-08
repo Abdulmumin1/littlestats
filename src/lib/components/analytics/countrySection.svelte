@@ -10,20 +10,16 @@
 		let os = 'Unknown';
 
 		// OS detection
-		if (userAgent.includes('Win')) {
+		if (userAgent.includes('iPhone') || userAgent.includes('iPad') || userAgent.includes('iPod')) {
+			os = 'iOS';
+		} else if (userAgent.includes('Android')) {
+			os = 'Android';
+		} else if (userAgent.includes('Win')) {
 			os = 'Windows';
 		} else if (userAgent.includes('Mac')) {
 			os = 'MacOS';
 		} else if (userAgent.includes('X11')) {
 			os = 'Linux';
-		} else if (userAgent.includes('Android')) {
-			os = 'Android';
-		} else if (
-			userAgent.includes('iPhone') ||
-			userAgent.includes('iPad') ||
-			userAgent.includes('iPod')
-		) {
-			os = 'iOS';
 		} else if (userAgent.includes('Linux')) {
 			os = 'Linux';
 		}
