@@ -14,6 +14,8 @@
 	import AnotherChart from '../../../../lib/components/analytics/graphStuff/anotherChart.svelte';
 	import Seo from '../../../../lib/components/generals/seo.svelte';
 	import ReferrerSection from '../../../../lib/components/analytics/referrerSection.svelte';
+	import BrowserSection from '../../../../lib/components/analytics/browserSection.svelte';
+	import CountrySection from '../../../../lib/components/analytics/countrySection.svelte';
 
 	$: page_data = data.records;
 
@@ -165,7 +167,7 @@
 					on:change={(e) => {
 						window.location.href = `/site/${e.target.value}`;
 					}}
-					class="rounded-md border border-gray-600 bg-{$color}-500 px-2 py-1"
+					class="rounded-md border text-{$color}-950 border-gray-600 bg-{$color}-500 px-2 py-1"
 				>
 					<!-- devcanvas.art -->
 					{#each managed_domains as domain}
@@ -184,7 +186,7 @@
 					name="domains"
 					id="filter"
 					on:change={handleDateChange}
-					class="rounded-md border border-gray-600 bg-{$color}-500 px-4 py-1"
+					class="rounded-md border text-{$color}-950 border-gray-600 bg-{$color}-500 px-4 py-1"
 				>
 					<!-- devcanvas.art -->
 					<option value="0">Last 24 hours</option>
@@ -197,9 +199,7 @@
 				</select>
 			</div>
 		</nav>
-		<header
-			class="grid grid-cols-2 gap-1 divide-gray-500 md:grid-cols-3 lg:grid-cols-5 lg:divide-x-2"
-		>
+		<header class="grid grid-cols-2 gap-1 divide-gray-500 md:grid-cols-3 lg:grid-cols-5">
 			<ViewCard name="Views" number={views.length} percentange="434%" />
 			<ViewCard name="Visitors" number={uniqueUserAgents.length} percentange="4%" />
 			<ViewCard name="Visit Duration" number={formatDr} percentange="94%" />
@@ -224,51 +224,10 @@
 		<div class="mt-6 flex flex-wrap gap-6">
 			<PagesSection {views} />
 			<ReferrerSection {views} domain={current_domain[0]} />
-			<!-- <div class="flex-1">
-				<div class="mb-3 flex justify-between text-gray-950">
-					<p>Referrers</p>
-					<p>Views</p>
-				</div>
-				<div class="flex flex-col gap-1 *:rounded-md *:px-[9px] *:py-[3px]">
-					<div class="flex justify-between bg-{$color}-200">
-						<p>news.ycombinator.com</p>
-						<p>3.4k</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>t.co</p>
-						<p>3.1k</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>dev.to</p>
-						<p>2.9k</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>reddit.com</p>
-						<p>2.5k</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>google.com</p>
-						<p>1.3k</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>aqe.me</p>
-						<p>1.1k</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>bing.com</p>
-						<p>1k</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>naresa.com</p>
-						<p>946</p>
-					</div>
-					<div class="flex justify-between bg-{$color}-200">
-						<p>karim.us</p>
-						<p>894</p>
-					</div>
-					<button class="no-bg text-right">more &rarr;</button>
-				</div>
-			</div> -->
+		</div>
+		<div class="mb-12 mt-12 flex flex-wrap gap-12">
+			<BrowserSection {views} domain={current_domain[0]} />
+			<CountrySection {views} domain={current_domain[0]} />
 		</div>
 	</div>
 </div>

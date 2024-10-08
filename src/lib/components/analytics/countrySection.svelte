@@ -3,30 +3,65 @@
 	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
 
-	export let views;
+	export let views, domain;
 	let max_page_item_count = 10;
+
+	function parseUserAgent(userAgent) {
+		let os = 'Unknown';
+
+		// OS detection
+		if (userAgent.includes('Win')) {
+			os = 'Windows';
+		} else if (userAgent.includes('Mac')) {
+			os = 'MacOS';
+		} else if (userAgent.includes('X11')) {
+			os = 'Linux';
+		} else if (userAgent.includes('Android')) {
+			os = 'Android';
+		} else if (
+			userAgent.includes('iPhone') ||
+			userAgent.includes('iPad') ||
+			userAgent.includes('iPod')
+		) {
+			os = 'iOS';
+		} else if (userAgent.includes('Linux')) {
+			os = 'Linux';
+		}
+
+		return os;
+	}
 
 	function fetchPages(events) {
 		let uniquePages = new Map();
 
 		events.forEach((event) => {
 			// console.log(event);
-			if (!uniquePages.has(event.url)) {
-				uniquePages.set(event.url, 1);
-			} else {
-				uniquePages.set(event.url, uniquePages.get(event.url) + 1);
+			let ref = event.user_agent;
+
+			if (ref) {
+				let os = parseUserAgent(event.user_agent);
+				if (os != domain.name) {
+					if (!uniquePages.has(os)) {
+						uniquePages.set(os, 1);
+					} else {
+						uniquePages.set(os, uniquePages.get(os) + 1);
+					}
+				}
 			}
 		});
 
 		return Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
 	}
+
 	$: pages = fetchPages(views);
 	$: trunaced_pages = pages.splice(0, max_page_item_count);
+
+	$: console.log(pages);
 </script>
 
-<div class="min-h-[290px] min-w-[230px] flex-1">
+<div class="min-h-[130px] min-w-[230px] flex-1">
 	<div class="mb-3 flex justify-between text-gray-950">
-		<p>Pages</p>
+		<p>Operating System</p>
 		<p>Views</p>
 	</div>
 	<!-- <div class="flex flex-col gap-1 *:rounded-md *:bg-{$color}-200 *:px-[9px] *:py-[3px]">
@@ -67,7 +102,7 @@
 				</div>
 				<div slot="content" class="relative flex flex-col gap-1 overflow-y-auto">
 					<div class="sticky top-0 mb-3 flex justify-between text-gray-950">
-						<p>Pages</p>
+						<p>Referrer</p>
 						<p>Views</p>
 					</div>
 					{#each fetchPages(views) as page}

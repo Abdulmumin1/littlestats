@@ -26,7 +26,7 @@
 					class="flex flex-shrink-0 items-center rounded-full border-2 border-{$color}-300 bg-{$color}-500 px-2 py-1"
 				>
 					<!-- <ChartBar size={18} class="text-{$color}-950" /> -->
-					<span class="px-2 text-lg font-bold">Littlestats</span>
+					<span class="px-2 text-lg font-bold text-{$color}-950">Littlestats</span>
 				</a>
 			</div>
 			<div class="flex gap-1">
@@ -34,7 +34,7 @@
 				<div
 					class="hidden rounded-full border-2 border-{$color}-300 bg-{$color}-500 px-2 py-1 md:block"
 				>
-					<div class="ml-4 flex items-center md:ml-0">
+					<div class="ml-4 flex items-center md:ml-0 text-{$color}-950">
 						<div class="flex items-baseline space-x-4">
 							<a href="/sites" class=" rounded-md px-3 text-sm font-medium">Sites</a>
 						</div>

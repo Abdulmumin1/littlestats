@@ -1,26 +1,54 @@
 <script>
+	import { CircleOff } from 'lucide-svelte';
 	import BottomDrawer from '../generals/bottomDrawer.svelte';
-	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
+	import { color } from '$lib/colors/mixer.js';
+	import EmptyValues from './emptyValues.svelte';
 
 	export let views, domain;
 	let max_page_item_count = 10;
+	function parseUserAgent(userAgent) {
+		let os = 'Unknown';
+		let browser = 'Unknown';
+
+		// OS detection
+		if (userAgent.includes('Win')) {
+			os = 'Windows';
+		} else if (userAgent.includes('Mac')) {
+			os = 'MacOS';
+		} else if (userAgent.includes('X11') || userAgent.includes('Linux')) {
+			os = 'Linux';
+		}
+
+		// Browser detection
+		if (userAgent.includes('Firefox/')) {
+			browser = 'Firefox';
+		} else if (userAgent.includes('Chrome/')) {
+			browser = 'Chrome';
+		} else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) {
+			browser = 'Safari';
+		} else if (userAgent.includes('Edge/') || userAgent.includes('Edg/')) {
+			browser = 'Edge';
+		} else if (userAgent.includes('Opera/') || userAgent.includes('OPR/')) {
+			browser = 'Opera';
+		}
+
+		return browser;
+	}
 
 	function fetchPages(events) {
 		let uniquePages = new Map();
 
 		events.forEach((event) => {
 			// console.log(event);
-			let ref = event.referrer;
+			let ref = event.user_agent;
 
 			if (ref) {
-				let hostname = new URL(ref).hostname;
-				if (hostname != domain.name) {
-					if (!uniquePages.has(hostname)) {
-						uniquePages.set(hostname, 1);
-					} else {
-						uniquePages.set(hostname, uniquePages.get(hostname) + 1);
-					}
+				let user_agent = parseUserAgent(event.user_agent);
+				if (!uniquePages.has(user_agent)) {
+					uniquePages.set(user_agent, 1);
+				} else {
+					uniquePages.set(user_agent, uniquePages.get(user_agent) + 1);
 				}
 			}
 		});
@@ -34,34 +62,11 @@
 	$: console.log(pages);
 </script>
 
-<div class="min-h-[290px] min-w-[230px] flex-1">
+<div class="min-h-[130px] min-w-[230px] flex-1">
 	<div class="mb-3 flex justify-between text-gray-950">
-		<p>Referrer</p>
+		<p>Browser</p>
 		<p>Views</p>
 	</div>
-	<!-- <div class="flex flex-col gap-1 *:rounded-md *:bg-{$color}-200 *:px-[9px] *:py-[3px]">
-        <div class="flex justify-between">
-            <p>/</p>
-            <p>3.4k</p>
-        </div>
-        <div class="flex justify-between">
-            <p>/play/fdww3</p>
-            <p>3.1k</p>
-        </div>
-        <div class="flex justify-between">
-            <p>/blog/why-is-this-viewed</p>
-            <p>2.9k</p>
-        </div>
-        <div class="flex justify-between">
-            <p>/explore</p>
-            <p>2.5k</p>
-        </div>
-        <div class="flex justify-between">
-            <p>/about</p>
-            <p>1.3k</p>
-        </div>
-        <button class="no-bg text-right">more &rarr;</button>
-    </div> -->
 
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page}

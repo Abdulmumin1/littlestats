@@ -404,7 +404,7 @@
 
 	{#if showChart}
 		<div class="mt-6 flex items-center justify-center rounded-xl">
-			<canvas bind:this={chartCanvas} class="max-h-[330px]"></canvas>
+			<canvas bind:this={chartCanvas} class="max-h-[300px]"></canvas>
 		</div>
 	{/if}
 </div>
