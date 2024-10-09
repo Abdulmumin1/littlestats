@@ -168,9 +168,9 @@
 				return; // Skip this record
 			}
 
-			if (recordDate < twentyFourHoursAgo) {
-				return; // Skip records older than 24 hours
-			}
+			// if (recordDate < twentyFourHoursAgo) {
+			// 	return; // Skip records older than 24 hours
+			// }
 
 			const hoursAgo = (now - recordDate) / (60 * 60 * 1000);
 
@@ -180,13 +180,16 @@
 				// counts.set('1hr ago', counts.get('1hr ago') + 1);
 				return;
 			}
-
+			// console.log(intervals.length < 0);
 			// Find the appropriate interval and increment its count
-			for (let i = intervals.length; i < 0; i--) {
-				if (hoursAgo <= intervals[i]) {
+			for (let i = 0; i < intervals.length; i++) {
+				let next = intervals[i + 1] ?? 0;
+				if (hoursAgo >= next && hoursAgo <= intervals[i]) {
+					// console.log(`Setting ${hoursAgo} to ${intervals[i]}hr ago basket`);
 					counts.set(`${intervals[i]}hr ago`, counts.get(`${intervals[i]}hr ago`) + 1);
 					break; // Stop after incrementing the count for the most appropriate interval
 				}
+				console.groupEnd();
 			}
 		});
 
@@ -257,7 +260,7 @@
 			intervals.map((day) => [`${day} days ago`, counts.get(`${day} days ago`)])
 		);
 
-		console.log(totalDays, intervals, result);
+		// console.log(totalDays, intervals, result);
 		return result;
 	}
 	function transformViewDataForGraph(viewData) {

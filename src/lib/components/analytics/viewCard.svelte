@@ -37,7 +37,7 @@
 	}
 
 	// Percentage increase = [ (Final value - Starting value) / |Starting value| ] * 100.
-
+	// $: console.log(backdateData == Nan)
 	$: percentange = ((number - backdateData) / number) * 100;
 	$: {
 		if (percentange < 0) {

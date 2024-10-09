@@ -1,23 +1,62 @@
 import { fail } from '@sveltejs/kit';
 
-// async function fetchCache(pb, date, domain_id) {
-
-// 	if (date >= 30) {
-// 		const record = await pb.collection('last30daysSpike').getFirstListItem(`domain_id="${domain_id}"`, {
-// 		});
-// 		if (record){
-
-// 		}
-// 	} else if (date >= 21) {
-// 		filterToUse = last21Days;
-// 	} else if (date >= 14) {
-// 		filterToUse = last14Days;
-// 	} else if (date >= 7) {
-// 		filterToUse = last7Days;
-// 	} else {
-// 		filterToUse = last24Hours;
-// 	}
-// }
+async function fetchCache(pb, date, domain_id) {
+	try {
+		const now = new Date();
+		if (date >= 30) {
+			const record = await pb
+				.collection('last30daysSpike')
+				.getFirstListItem(`domain_id="${domain_id}"`);
+			const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).getTime();
+			let updated_at = new Date(record.updated).getTime();
+			if (updated_at >= last30Days) {
+				return { record };
+			}
+		} else if (date >= 21) {
+			const record = await pb
+				.collection('last21daysSpike')
+				.getFirstListItem(`domain_id="${domain_id}"`);
+			const last21Days = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000).getTime();
+			let updated_at = new Date(record.updated).getTime();
+			if (updated_at >= last21Days) {
+				return { record };
+			}
+		} else if (date >= 14) {
+			const record = await pb
+				.collection('last14daysSpike')
+				.getFirstListItem(`domain_id="${domain_id}"`);
+			const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).getTime();
+			let updated_at = new Date(record.updated).getTime();
+			if (updated_at >= last14Days) {
+				return { record };
+			}
+		} else if (date >= 7) {
+			const record = await pb
+				.collection('last7daysSpike')
+				.getFirstListItem(`domain_id="${domain_id}"`);
+			const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).getTime();
+			let updated_at = new Date(record.updated).getTime();
+			if (updated_at >= last7Days) {
+				return { record };
+			}
+		} else {
+			const record = await pb
+				.collection('last24hourSpike')
+				.getFirstListItem(`domain_id="${domain_id}"`);
+			// console.log(record);
+			const last24hour = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).getTime();
+			let updated_at = new Date(record.updated).getTime();
+			// console.log(updated_at >= last24hour);
+			if (updated_at >= last24hour) {
+				return { record };
+			}
+		}
+		return false;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
+}
 /** @type {import('./$types').Actions} */
 export const actions = {
 	fetchDate: async ({ locals: { pb }, request }) => {
@@ -82,7 +121,14 @@ export const actions = {
 		}
 		defaultRange = parseInt(defaultRange);
 		const domain_id = data.get('domain_id');
+		const cacheData = await fetchCache(pb, defaultRange, domain_id);
 
+		console.log(cacheData);
+
+		if (cacheData != false) {
+			console.log('We have a catch here');
+			return { results: cacheData, cache: true };
+		}
 		try {
 			const now = new Date();
 			const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
@@ -134,6 +180,33 @@ export const actions = {
 		} catch (error) {
 			console.error(error);
 			return fail(400, { fail: true, message: error?.data?.message });
+		}
+	},
+	updateSpikes: async ({ locals: { pb }, request }) => {
+		const data = await request.formData();
+		// const domain_id = data.get('domain_id');
+
+		let defaultRange = parseInt(data.get('defaultRange'));
+		const domain_id = data.get('domain_id');
+
+		const recordData = JSON.parse(data.get('data'));
+		let tableName = `last${defaultRange}daysSpike`;
+		if (defaultRange <= 1) {
+			tableName = 'last24hourSpike';
+		}
+		try {
+			const existingData = await pb
+				.collection(tableName)
+				.getFirstListItem(`domain_id="${domain_id}"`);
+
+			const updated = await pb.collection(tableName).update(existingData.id, recordData);
+		} catch (e) {
+			try {
+				const create = await pb.collection(tableName).create(recordData);
+			} catch (error) {
+				console.error(error);
+			}
+			console.error(e);
 		}
 	}
 };

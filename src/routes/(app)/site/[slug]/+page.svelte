@@ -90,10 +90,10 @@
 	$: uniqueUserAgents = getUniqueUserAgents(page_data);
 
 	$: backdateRecords = [];
-	$: backdateViews = backdateRecords.filter((e) => e.event_type != 'pageExit');
-	$: backdateBounces = calculateBounceRate(backdateRecords);
-	$: backdateaverageVisitDuration = calculateAverageDuration(backdateRecords);
-	$: backdateuniqueUserAgents = getUniqueUserAgents(backdateRecords);
+	$: backdateViews = 0;
+	$: backdateBounces = 0;
+	$: backdateaverageVisitDuration = 0;
+	$: backdateuniqueUserAgents = [];
 
 	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
 	let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
@@ -117,11 +117,11 @@
 		}
 	}
 
-	async function updateSpikeCache(date, data) {
+	async function updateSpikeCache(date, dt) {
 		let form = new FormData();
 		form.append('defaultRange', date);
 		form.append('domain_id', data.domain_id);
-		form.append('data', data.toString());
+		form.append('data', JSON.stringify(dt));
 
 		let response = await fetch('?/updateSpikes', {
 			method: 'post',
@@ -145,16 +145,41 @@
 
 		if (response.ok) {
 			let local_result = deserialize(await response.text());
-			// console.log(local_result.data);
+			console.log(local_result.data);
 
-			if (!local_result.cache) {
+			if (!local_result.data.cache) {
 				let local_records = local_result.data.results ?? [];
 				backdateRecords = local_records;
+				backdateViews = backdateRecords.filter((e) => e.event_type != 'pageExit');
+				backdateBounces = calculateBounceRate(backdateRecords);
+				backdateaverageVisitDuration = calculateAverageDuration(backdateRecords);
+				backdateuniqueUserAgents = getUniqueUserAgents(backdateRecords);
+
+				// console.log(backdateBounces, backdateuniqueUserAgents);
 				// create spike values.
 				// update spikes tables.
 				// updateSpikeCache()
+				let d2 = {
+					views: backdateViews.length,
+					visitors: backdateuniqueUserAgents.length,
+					// bounce_rate:isNaN();
+					visit_duration: parseInt(
+						isNaN(backdateaverageVisitDuration) ? 0 : backdateaverageVisitDuration
+					),
+					bounce_rate: parseInt(isNaN(backdateBounces.bounceRate) ? 0 : backdateBounces.bounceRate),
+					domain_id: data.domain_id
+				};
+				console.log('Not using catch');
+
+				await updateSpikeCache(date, d2);
 			} else {
 				// update spike values.
+				console.log('Using using catch');
+				console.log(local_result.data);
+				backdateViews = local_result.data.results.record.views;
+				backdateBounces = { bounceRate: local_result.data.results.record.bounce_rate };
+				backdateaverageVisitDuration = local_result.data.results.record.visit_duration;
+				backdateuniqueUserAgents = local_result.data.results.record.visitors;
 			}
 		}
 	}
@@ -226,20 +251,27 @@
 		<header class="grid grid-cols-2 gap-1 divide-gray-500 md:grid-cols-3 lg:grid-cols-5">
 			<ViewCard
 				name="Views"
-				backdateData={backdateViews.length}
+				backdateData={backdateViews.length ?? backdateViews}
 				number={views.length}
 				percentange="434%"
 			/>
 			<ViewCard
 				name="Visitors"
-				backdateData={backdateuniqueUserAgents.length}
+				backdateData={backdateuniqueUserAgents.length ?? backdateuniqueUserAgents}
 				number={uniqueUserAgents.length}
 				percentange="4%"
 			/>
-			<ViewCard name="Visit Duration" number={averageVisitDuration} type="time" percentange="94%" />
+			<ViewCard
+				name="Visit Duration"
+				backdateData={isNaN(backdateaverageVisitDuration) ? 0 : backdateaverageVisitDuration}
+				number={averageVisitDuration}
+				type="time"
+				percentange="94%"
+			/>
 			<ViewCard
 				name="Bounce rate"
 				number={parseInt(bounces.bounceRate)}
+				backdateData={parseInt(isNaN(backdateBounces.bounceRate) ? 0 : backdateBounces.bounceRate)}
 				percentange="14%"
 				increase="down"
 				type="percent"
@@ -251,7 +283,8 @@
 				type="down"
 			/> -->
 		</header>
-
+		<!-- {backdateaverageVisitDuration}{JSON.stringify(backdateBounces)}{backdateBounces.bounceRate ==
+			NaN} -->
 		<!-- <GrapthView viewRecords={views} /> -->
 		<!-- <MdGraphStuff /> -->
 		<!-- <AnotherChart viewRecords={views} {sortInterval} /> -->
