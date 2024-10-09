@@ -15,15 +15,16 @@ import { json } from '@sveltejs/kit';
 /** @type {import('./$types').RequestHandler} */
 export async function GET({ url, request, params }) {
 	// console.log(params);
-	// const origin = url.origin;
-	// const isDev = origin.includes('localhost') || origin.includes('127.0.0.1');
+	const origin = url.origin;
+	const isDev = origin.includes('localhost') || origin.includes('127.0.0.1');
+	const analyticsEndpoint = isDev
+		? 'http://0.0.0.0:8000/collect/' + params.slug
+		: 'https://littlestats-backend.fly.dev/collect/' + params.slug;
 
 	const script = `
     (function() {
-      var IS_DEV_MODE = window.location.host.includes('localhost') ||  window.location.host.includes('127.0.0.1');
-    	var ANALYTICS_ENDPOINT = IS_DEV_MODE
-		? 'http://0.0.0.0:8000/collect/' + params.slug
-		: 'https://littlestats-backend.fly.dev/collect/' + params.slug;
+      var ANALYTICS_ENDPOINT = '${analyticsEndpoint}';
+      var IS_DEV_MODE = ${isDev};
       var lastUrl = location.href;
     
       function sendAnalytics(eventType, additionalData) {
@@ -37,7 +38,6 @@ export async function GET({ url, request, params }) {
           host: window.location.host,
           ...additionalData
         };
-        if (isD)
 
         if (eventType == 'pageExit'){
           const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });

@@ -159,6 +159,7 @@
 		const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
 		const intervals = [24, 20, 16, 12, 8, 4, 1];
 		const counts = new Map(intervals.map((hr) => [`${hr}hr ago`, 0]));
+		let awhile = 0;
 
 		viewRecords.forEach((record) => {
 			const recordDate = new Date(record.timestamp);
@@ -175,7 +176,8 @@
 
 			// Handle views less than an hour ago
 			if (hoursAgo < 1) {
-				counts.set('1hr ago', counts.get('1hr ago') + 1);
+				awhile += 1;
+				// counts.set('1hr ago', counts.get('1hr ago') + 1);
 				return;
 			}
 
@@ -193,7 +195,7 @@
 			intervals.map((hr) => [`${hr}hr ago`, counts.get(`${hr}hr ago`)])
 		);
 
-		console.log(result);
+		result['a while ago'] = awhile;
 		return result;
 	}
 	function sortViewsBy7Days(viewRecords) {
@@ -241,9 +243,9 @@
 
 			// Find the appropriate interval and increment its count
 			for (let i = intervals.length; i > 0; i--) {
-				console.log(daysAgo, intervals[i], intervals[i + 1]);
+				// console.log(daysAgo, intervals[i], intervals[i + 1]);
 				if (daysAgo <= intervals[i]) {
-					console.log(`Setting ${daysAgo} to ${intervals[i]} ago basket`);
+					// console.log(`Setting ${daysAgo} to ${intervals[i]} ago basket`);
 					counts.set(`${intervals[i]} days ago`, counts.get(`${intervals[i]} days ago`) + 1);
 					break; // Stop after incrementing the count for the most appropriate interval
 				}

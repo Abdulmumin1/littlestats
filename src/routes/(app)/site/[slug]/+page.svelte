@@ -47,33 +47,6 @@
 		return averageDuration;
 	}
 
-	function formatDuration(seconds) {
-		// Calculate hours, minutes, and remaining seconds
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor((seconds % 3600) / 60);
-		const secs = seconds % 60;
-
-		// Build the formatted string
-		let formattedDuration = '';
-
-		// Append hours if greater than 0
-		if (hours > 0) {
-			formattedDuration += `${hours}h `;
-		}
-
-		// If there are no hours, append minutes if greater than 0
-		if (formattedDuration === '' && minutes > 0) {
-			formattedDuration += `${minutes}m `;
-		}
-
-		// Append seconds if minutes are not present or if they are zero
-		if (formattedDuration === '' || minutes === 0) {
-			formattedDuration += `${secs}s`;
-		}
-
-		return formattedDuration.trim(); // Remove any trailing whitespace
-	}
-
 	// Function to calculate bounce rate
 	function calculateBounceRate(events) {
 		let totalVisits = events.length; // Total number of page views
@@ -112,9 +85,15 @@
 		};
 	}
 	$: bounces = calculateBounceRate(page_data);
-	$: formatDr = formatDuration(parseInt(averageVisitDuration));
 	$: averageVisitDuration = calculateAverageDuration(page_data);
+	// $: formatDr = formatDuration(parseInt(averageVisitDuration));
 	$: uniqueUserAgents = getUniqueUserAgents(page_data);
+
+	$: backdateRecords = [];
+	$: backdateViews = backdateRecords.filter((e) => e.event_type != 'pageExit');
+	$: backdateBounces = calculateBounceRate(backdateRecords);
+	$: backdateaverageVisitDuration = calculateAverageDuration(backdateRecords);
+	$: backdateuniqueUserAgents = getUniqueUserAgents(backdateRecords);
 
 	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
 	let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
@@ -138,16 +117,61 @@
 		}
 	}
 
+	async function updateSpikeCache(date, data) {
+		let form = new FormData();
+		form.append('defaultRange', date);
+		form.append('domain_id', data.domain_id);
+		form.append('data', data.toString());
+
+		let response = await fetch('?/updateSpikes', {
+			method: 'post',
+			body: form
+		});
+
+		if (response.ok) {
+			return true;
+		}
+		return false;
+	}
+	async function fetchSpikes(date) {
+		let form = new FormData();
+		form.append('defaultRange', date);
+		form.append('domain_id', data.domain_id);
+
+		let response = await fetch('?/fetchSpikes', {
+			method: 'post',
+			body: form
+		});
+
+		if (response.ok) {
+			let local_result = deserialize(await response.text());
+			// console.log(local_result.data);
+
+			if (!local_result.cache) {
+				let local_records = local_result.data.results ?? [];
+				backdateRecords = local_records;
+				// create spike values.
+				// update spikes tables.
+				// updateSpikeCache()
+			} else {
+				// update spike values.
+			}
+		}
+	}
+
 	$: sortInterval = 1;
 
 	async function handleDateChange(e) {
 		// console.log(parseInt(e.target.value));
 		await fetchFromDefaultDates(e.target.value);
+		await fetchSpikes(e.target.value);
+
 		sortInterval = parseInt(e.target.value);
 	}
 
-	onMount(() => {
+	onMount(async () => {
 		// console.log(result);
+		await fetchSpikes(0);
 	});
 </script>
 
@@ -200,14 +224,25 @@
 			</div>
 		</nav>
 		<header class="grid grid-cols-2 gap-1 divide-gray-500 md:grid-cols-3 lg:grid-cols-5">
-			<ViewCard name="Views" number={views.length} percentange="434%" />
-			<ViewCard name="Visitors" number={uniqueUserAgents.length} percentange="4%" />
-			<ViewCard name="Visit Duration" number={formatDr} percentange="94%" />
+			<ViewCard
+				name="Views"
+				backdateData={backdateViews.length}
+				number={views.length}
+				percentange="434%"
+			/>
+			<ViewCard
+				name="Visitors"
+				backdateData={backdateuniqueUserAgents.length}
+				number={uniqueUserAgents.length}
+				percentange="4%"
+			/>
+			<ViewCard name="Visit Duration" number={averageVisitDuration} type="time" percentange="94%" />
 			<ViewCard
 				name="Bounce rate"
-				number="{parseInt(bounces.bounceRate)}%"
+				number={parseInt(bounces.bounceRate)}
 				percentange="14%"
-				type="down"
+				increase="down"
+				type="percent"
 			/>
 			<!-- <ViewCard
 				name="Visitors"

@@ -1,6 +1,23 @@
-import { json } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 
+// async function fetchCache(pb, date, domain_id) {
+
+// 	if (date >= 30) {
+// 		const record = await pb.collection('last30daysSpike').getFirstListItem(`domain_id="${domain_id}"`, {
+// 		});
+// 		if (record){
+
+// 		}
+// 	} else if (date >= 21) {
+// 		filterToUse = last21Days;
+// 	} else if (date >= 14) {
+// 		filterToUse = last14Days;
+// 	} else if (date >= 7) {
+// 		filterToUse = last7Days;
+// 	} else {
+// 		filterToUse = last24Hours;
+// 	}
+// }
 /** @type {import('./$types').Actions} */
 export const actions = {
 	fetchDate: async ({ locals: { pb }, request }) => {
@@ -52,6 +69,68 @@ export const actions = {
 			});
 			// console.log(results);
 			return results;
+		} catch (error) {
+			console.error(error);
+			return fail(400, { fail: true, message: error?.data?.message });
+		}
+	},
+	fetchSpikes: async ({ locals: { pb }, request }) => {
+		const data = await request.formData();
+		let defaultRange = data.get('defaultRange');
+		if (!defaultRange) {
+			return fail(400, { fail: true, message: 'Range required' });
+		}
+		defaultRange = parseInt(defaultRange);
+		const domain_id = data.get('domain_id');
+
+		try {
+			const now = new Date();
+			const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+			const last48Hours = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
+			const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+			const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
+			const last21Days = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000).toISOString();
+			const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+			let endDate = last24Hours;
+			let startDate = last48Hours;
+
+			if (defaultRange >= 30) {
+				startDate = new Date(now.getTime() - 2 * 30 * 24 * 60 * 60 * 1000).toISOString();
+				endDate = last30Days;
+			} else if (defaultRange >= 21) {
+				startDate = last30Days;
+				endDate = last21Days;
+			} else if (defaultRange >= 14) {
+				startDate = last21Days;
+				endDate = last14Days;
+			} else if (defaultRange >= 7) {
+				startDate = last14Days;
+				endDate = last7Days;
+			} else {
+				endDate = last24Hours;
+				startDate = last48Hours;
+			}
+			// console.log(startDate, endDate);
+			// you can also fetch all records at once via getFullList
+			const records = await pb.collection('events').getFullList({
+				filter: `domain_id = '${domain_id}' && created >= '${startDate}' && created < '${endDate}'`
+			});
+			// console.log(records);
+			const results = records.map((record) => {
+				return {
+					id: record.id,
+					domain_id: record.domain_id,
+					event_type: record.event_type,
+					url: record.url,
+					referrer: record.referrer,
+					user_agent: record.user_agent,
+					timestamp: record.timestamp,
+					...{ duration: record.duration }
+				};
+			});
+			// console.log(results);
+			return { results, cache: false };
 		} catch (error) {
 			console.error(error);
 			return fail(400, { fail: true, message: error?.data?.message });
