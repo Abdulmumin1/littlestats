@@ -56,8 +56,8 @@
 	<p
 		title="{percentange}% compare to last x days"
 		class="m-0 flex w-fit items-center gap-1 rounded-md p-0 {increase == 'up'
-			? `bg-${$color}-300 text-${$color}-800`
-			: 'bg-ds-300 text-red-700'} px-1 font-bold"
+			? `bg-${$color}-100 text-green-700`
+			: `bg-${$color}-100 text-red-700`} px-1 font-bold"
 	>
 		{#if increase == 'up'}
 			<ArrowUp size={14} />

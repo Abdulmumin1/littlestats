@@ -24,7 +24,7 @@
 	$: trunaced_pages = pages.splice(0, max_page_item_count);
 </script>
 
-<div class="min-h-[290px] min-w-[230px] flex-1">
+<div class="min-h-24 min-w-[230px] flex-1 md:min-h-[290px]">
 	<div class="mb-3 flex justify-between text-gray-950">
 		<p>Pages</p>
 		<p>Views</p>

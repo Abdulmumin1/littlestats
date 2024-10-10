@@ -3,15 +3,23 @@
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
 	import MixerComp from '../../colors/mixerComp.svelte';
+	import { slide } from 'svelte/transition';
+	import { clickOutside } from '$lib/utils';
 
 	let isMenuOpen = false;
+	let closed = true;
 
 	function toggleMenu() {
+		if (closed) {
+			closed = false;
+			return;
+		}
 		isMenuOpen = !isMenuOpen;
 	}
 
 	function closeMenu() {
 		isMenuOpen = false;
+		closed = true;
 	}
 
 	$: path = $page.url.pathname;
@@ -80,7 +88,7 @@
 	</div>
 
 	{#if isMenuOpen}
-		<div class="md:hidden">
+		<div transition:slide use:clickOutside on:click_outside={closeMenu} class="md:hidden">
 			<!-- <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">
 				<a
 					href="/"
@@ -102,8 +110,8 @@
 				>
 			</div> -->
 			<div class="wavy-line bg-{$color}-500"></div>
-			<div class=" pb-3 pt-4">
-				<div class="flex items-center px-5">
+			<div class=" bg-gray-50 pb-3 pt-4">
+				<!-- <div class="flex items-center px-5">
 					<div class="flex-shrink-0">
 						<User size={40} class="rounded-full" />
 					</div>
@@ -111,16 +119,16 @@
 						<div class="text-base font-medium leading-none">John Doe</div>
 						<div class="text-sm font-medium leading-none text-gray-400">john@example.com</div>
 					</div>
-				</div>
-				<div class="mt-3 space-y-1 px-2">
+				</div> -->
+				<div class="mt-1 space-y-1 px-2">
 					<a
 						href="/settings"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-700"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500"
 						>Settings</a
 					>
 					<a
 						href="/logout"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-700"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500"
 						>Sign out</a
 					>
 				</div>

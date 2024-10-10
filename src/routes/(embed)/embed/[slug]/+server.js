@@ -58,8 +58,12 @@ export async function GET({ url, request, params }) {
         sendAnalytics('pageview');
       }
     
-      // Send pageview on initial load
-      trackPageView();
+       // Send pageview on initial load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', trackPageView);
+        } else {
+             trackPageView();
+        }
     
       // Track URL changes
       function urlChangeHandler() {

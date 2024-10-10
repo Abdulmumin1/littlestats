@@ -16,6 +16,7 @@
 	import ReferrerSection from '../../../../lib/components/analytics/referrerSection.svelte';
 	import BrowserSection from '../../../../lib/components/analytics/browserSection.svelte';
 	import CountrySection from '../../../../lib/components/analytics/countrySection.svelte';
+	import LoadingState from '../../../../lib/components/analytics/graphStuff/loadingState.svelte';
 
 	$: page_data = data.records;
 
@@ -98,8 +99,11 @@
 	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
 	let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
 	let managed_domains = [...current_domain, ...temp_domain];
+	let loading = false;
 
 	async function fetchFromDefaultDates(date) {
+		loading = true;
+
 		let form = new FormData();
 		form.append('defaultRange', date);
 		form.append('domain_id', data.domain_id);
@@ -182,6 +186,9 @@
 				backdateuniqueUserAgents = local_result.data.results.record.visitors;
 			}
 		}
+		setTimeout(() => {
+			loading = false;
+		}, 1000);
 	}
 
 	$: sortInterval = 1;
@@ -206,6 +213,9 @@
 
 <div class="min-h-screen p-2 text-black">
 	<!-- <div>devcanvas.art</div> -->
+	{#if loading}
+		<LoadingState />
+	{/if}
 
 	<div class="container mx-auto flex flex-col gap-4">
 		<nav class="flex flex-wrap justify-between gap-4 py-2">
@@ -226,7 +236,7 @@
 				</select>
 				<div class="flex items-center gap-2">
 					<div class="h-3 w-3 rounded-full bg-{$color}-400"></div>
-					123 current visitors
+					0 current visitors
 				</div>
 			</div>
 			<div class="flex items-center gap-2">
