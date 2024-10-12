@@ -42,7 +42,7 @@
 		<div class="flex items-center rounded-full bg-${$color}-300 p-1">
 			<button
 				class=" rounded-l-full px-2 py-1 font-medium {!isYearly
-					? `bg-${$color}-500`
+					? `bg-${$color}-500 text-white`
 					: `bg-${$color}-100`} "
 				class:text-{$color}-600={isYearly < 0.5}
 				on:click={() => toggleSubscription(false)}>Monthly</button
@@ -50,7 +50,7 @@
 
 			<button
 				class="rounded-r-full px-2 py-1 font-medium {isYearly
-					? `bg-${$color}-500`
+					? `bg-${$color}-500 text-white`
 					: `bg-${$color}-100`} "
 				on:click={() => toggleSubscription(true)}
 				class:text-{$color}-600={isYearly > 0.5}>Yearly</button
@@ -96,7 +96,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full bg-{$color}-500 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-500 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
 			>
 				Start free trial
 			</a>

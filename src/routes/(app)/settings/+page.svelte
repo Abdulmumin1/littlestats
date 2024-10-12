@@ -6,7 +6,7 @@
 	import DomainCard from './domainCard.svelte';
 	import UserSetting from './userSetting.svelte';
 	import { enhance } from '$app/forms';
-	import { fly } from 'svelte/transition';
+	import { fly, slide } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
 
 	let domains = [];
@@ -28,9 +28,28 @@
 
 	let loading = false;
 
+	function verifyURL(url) {
+		let c_url = url;
+		if (!url.startsWith('https://') || !url.startsWith('http://')) {
+			c_url = 'https://' + url;
+		}
+		try {
+			let x_url = new URL(c_url);
+			return x_url.host;
+		} catch {
+			return false;
+		}
+	}
+
 	const handleAdd = ({ cancel }) => {
 		if (!newDomainName) {
 			setError('Domain name required');
+			cancel();
+			return;
+		}
+		let domainc = verifyURL(newDomainName);
+		if (!domainc) {
+			setError('Invalid domain name');
 			cancel();
 			return;
 		}
@@ -67,7 +86,7 @@
 			class="mb-4 flex flex-wrap gap-2"
 		>
 			<input
-				type="text"
+				type="url"
 				bind:value={newDomainName}
 				placeholder="Enter new domain"
 				required
@@ -77,13 +96,16 @@
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black bg-{$color}-500 px-4 py-2 font-bold text-black hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-4 py-2 font-bold hover:bg-{$color}-700"
 			>
 				Add Domain {#if loading}
 					<Loader class="animate-spin" size={16} />
 				{/if}
 			</button>
 		</form>
+		{#if errMessage}
+			<p transition:slide>{errMessage}</p>
+		{/if}
 	</div>
 
 	<div class="b] rounded-md">

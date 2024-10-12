@@ -12,7 +12,7 @@
 	function generateScriptUrl(domain) {
 		// In a real application, you'd generate a unique script URL,
 		// possibly involving a backend call.
-		return `https://littlestats-backend.fly.dev/embed/${domain.id}`;
+		return `<script src="https://littlestats-backend.fly.dev/embed/${domain.id}">${'</'}script>`;
 	}
 
 	function copyToClipboard(text) {
@@ -79,18 +79,18 @@
 {#if !hide}
 	<div transition:slide>
 		<div class="mb-2 mt-3 rounded-md bg-black p-2">
-			<code class="text-sm text-gray-300">{generateScriptUrl(domain)}</code>
+			<code class="text-xs text-gray-300">{generateScriptUrl(domain)}</code>
 		</div>
 		<div class="flex items-center justify-end gap-2">
 			<button
 				on:click={() => copyToClipboard(generateScriptUrl(domain))}
-				class="flex items-center gap-1 self-end rounded-md bg-{$color}-500 px-2 py-1 text-xs font-bold text-black hover:bg-{$color}-600"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-black hover:bg-{$color}-600"
 			>
 				Copy Snippet <Code size={16} />
 			</button>
 			<a
 				href="site/{domain.id}"
-				class="flex items-center gap-1 self-end rounded-md bg-{$color}-500 px-2 py-1 text-xs font-bold text-black hover:bg-{$color}-600"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-black hover:bg-{$color}-600"
 			>
 				Go to Dashboard <ExternalLink size={16} />
 			</a>

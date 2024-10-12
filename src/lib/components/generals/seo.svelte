@@ -1,5 +1,5 @@
 <script>
-	export let title = 'Littlestats';
+	export let title = 'Littlestats - sweet web analytics for your website';
 	export let description;
 	export let imageUrl;
 	export let url;

@@ -41,7 +41,9 @@
 </script>
 
 <div class="relative">
-	<button on:click={togglePicker} class=" flex gap-1 bg-{$color}-200 items-center rounded-full p-2"
+	<button
+		on:click={togglePicker}
+		class="flex gap-1 border-2 border-{$color}-500 bg-{$color}-200 items-center rounded-full px-2 py-1"
 		>Change Theme <div class="h-5 w-5 bg-{$color}-500 rounded-full"></div>
 	</button>
 

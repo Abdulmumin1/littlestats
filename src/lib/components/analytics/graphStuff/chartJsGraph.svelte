@@ -395,13 +395,13 @@
 			<button
 				on:click={() => toggleChartType('line')}
 				class="{chartType == 'line'
-					? `bg-${$color}-500`
+					? `bg-${$color}-500 text-white`
 					: `bg-${$color}-200`}  rounded rounded-l-full px-2">Line</button
 			>
 			<button
 				on:click={() => toggleChartType('bar')}
 				class=" {chartType == 'bar'
-					? `bg-${$color}-500`
+					? `bg-${$color}-500 text-white`
 					: `bg-${$color}-200`}  rounded rounded-r-full px-2">Bar</button
 			>
 		</div>

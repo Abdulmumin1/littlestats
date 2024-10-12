@@ -55,7 +55,7 @@
 				id=""
 			/>
 			<button
-				class="rounded-full border-2 border-{$color}-300 px-12 py-2 bg-{$color}-500 flex items-center gap-1"
+				class="rounded-full border-2 text-white border-{$color}-300 px-12 py-2 bg-{$color}-500 flex items-center gap-1"
 				type="submit"
 			>
 				Join

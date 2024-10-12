@@ -188,7 +188,7 @@
 		}
 		setTimeout(() => {
 			loading = false;
-		}, 1000);
+		}, 200);
 	}
 
 	$: sortInterval = 1;
@@ -226,7 +226,7 @@
 					on:change={(e) => {
 						window.location.href = `/site/${e.target.value}`;
 					}}
-					class="rounded-md border text-{$color}-950 border-gray-600 bg-{$color}-500 px-2 py-1"
+					class="rounded-full border border-gray-600 font-bold text-white bg-{$color}-500 px-2 py-1"
 				>
 					<!-- devcanvas.art -->
 					{#each managed_domains as domain}
@@ -245,7 +245,7 @@
 					name="domains"
 					id="filter"
 					on:change={handleDateChange}
-					class="rounded-md border text-{$color}-950 border-gray-600 bg-{$color}-500 px-4 py-1"
+					class="rounded-full border border-gray-600 font-bold text-white bg-{$color}-500 px-4 py-1"
 				>
 					<!-- devcanvas.art -->
 					<option value="0">Last 24 hours</option>

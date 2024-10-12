@@ -31,30 +31,30 @@
 			<div class="flex items-center">
 				<a
 					href="/"
-					class="flex flex-shrink-0 items-center rounded-full border-2 border-{$color}-300 bg-{$color}-500 px-2 py-1"
+					class="flex flex-shrink-0 items-center rounded-full border-2 border-{$color}-600 bg-{$color}-500 px-2 py-1"
 				>
 					<!-- <ChartBar size={18} class="text-{$color}-950" /> -->
-					<span class="px-2 text-lg font-bold text-{$color}-950">Littlestats</span>
+					<span class="px-2 text-lg font-bold text-white">Littlestats</span>
 				</a>
 			</div>
-			<div class="flex gap-1">
+			<div class="flex items-center gap-1">
 				<MixerComp />
 				<div
-					class="hidden rounded-full border-2 border-{$color}-300 bg-{$color}-500 px-2 py-1 md:block"
+					class="hidden items-center rounded-full border-2 px-4 py-2 md:flex border-{$color}-600 bg-{$color}-500 px-2 py-1 md:block"
 				>
-					<div class="ml-4 flex items-center md:ml-0 text-{$color}-950">
-						<div class="flex items-baseline space-x-4">
-							<a href="/sites" class=" rounded-md px-3 text-sm font-medium">Sites</a>
+					<div class=" flex items-center justify-center gap-3 text-white md:ml-0">
+						<div class="flex">
+							<a href="/sites" class=" rounded-md text-sm font-bold">Dashboard</a>
 						</div>
 						<a
 							href="/settings"
-							class="rounded-full p-1 hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
+							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
 						>
 							<Settings size={20} />
 						</a>
 
 						<button
-							class="ml-3 rounded-full p-1 hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
+							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
 						>
 							<LogOut size={20} />
 						</button>

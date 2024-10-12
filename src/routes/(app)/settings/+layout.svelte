@@ -11,19 +11,19 @@
 		<div class="flex w-full flex-col gap-1 px-0 md:w-[300px] md:px-4">
 			<a
 				class="rounded-full {path === '/settings' || path === '/settings/'
-					? `border-${$color}-800 bg-${$color}-500 border-2`
+					? `border-${$color}-800 bg-${$color}-500 border-2 text-white`
 					: `bg-${$color}-100`} px-4 py-2"
 				href="/settings">Manage Domain</a
 			>
 			<a
 				class="rounded-full {path.endsWith('/settings/subscription')
-					? `border-${$color}-800 bg-${$color}-500 border-2`
+					? `border-${$color}-800 bg-${$color}-500 border-2 text-white`
 					: `bg-${$color}-100`} px-4 py-2"
 				href="/settings/subscription">Subscription</a
 			>
 			<a
 				class="rounded-full {path.endsWith('/settings/account')
-					? `border-${$color}-800 bg-${$color}-500 border-2`
+					? `border-${$color}-800 bg-${$color}-500 border-2 text-white`
 					: `bg-${$color}-100`} px-4 py-2"
 				href="/settings/account">Account</a
 			>

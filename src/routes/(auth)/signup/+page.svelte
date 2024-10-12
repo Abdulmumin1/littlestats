@@ -55,7 +55,9 @@
 <div class=" flex min-h-screen flex-col items-center justify-center px-2">
 	<a href="/" class="flex flex-col items-center">
 		<Logo />
-		<div class="pb-6 text-2xl font-bold text-{$color}-600 sm:mb-0 sm:text-3xl">Analytix.click</div>
+		<div class="pb-6 text-2xl font-bold text-{$color}-600 sm:mb-0 sm:text-3xl">
+			Littlestats.click
+		</div>
 	</a>
 	<form
 		use:enhance={handleSubmit}

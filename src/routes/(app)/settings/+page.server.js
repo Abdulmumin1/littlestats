@@ -36,11 +36,17 @@ export async function load({ locals: { pb, user }, request }) {
 export const actions = {
 	updateDomain: async ({ locals: { pb, user }, request }) => {
 		const data = await request.formData();
-		const domain = data.get('name');
+		let domain = data.get('name');
+		try {
+			domain = new URL(domain).hostname;
+		} catch {
+			domain = false;
+		}
 
 		if (!domain) {
 			return fail(400, 'Domain name required');
 		}
+
 		try {
 			// console.log(pb.collections);
 			const domain_data = {
