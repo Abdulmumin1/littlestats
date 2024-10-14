@@ -43,22 +43,17 @@
 		>
 			<h1
 				class=" mb-4 max-w-6xl text-balance text-4xl font-extrabold leading-tight text-black sm:mb-6 sm:text-5xl lg:text-7xl"
-				in:fly={{ y: -50, duration: 1000 }}
 			>
 				Just another analytics website <span class="block text-{$color}-400 sm:inline"
 					>But Cheap</span
 				>
 			</h1>
-			<p
-				class=" mb-6 max-w-xl text-lg text-gray-900 sm:mb-8 sm:max-w-2xl sm:text-xl"
-				in:fly={{ y: 50, duration: 1000, delay: 300 }}
-			>
+			<p class=" mb-6 max-w-xl text-lg text-gray-900 sm:mb-8 sm:max-w-2xl sm:text-xl">
 				Your analytics needs without the premium price tag
 			</p>
 			<a
 				href="#waitlist"
 				class="inline-block w-fit transform rounded-full text-white bg-{$color}-500 px-6 py-2 text-base font-semibold text-black transition duration-300 hover:-translate-y-1 hover:bg-{$color}-400 sm:px-8 sm:py-3 sm:text-lg"
-				in:fly={{ y: 50, duration: 1000, delay: 600 }}
 			>
 				Get Started
 			</a>

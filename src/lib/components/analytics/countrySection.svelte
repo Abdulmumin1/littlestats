@@ -86,7 +86,7 @@
 
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page}
-			<PageItem path={page[0]} views={page[1]} />
+			<PageItem on:filter type="os" path={page[0]} views={page[1]} />
 		{:else}
 			<EmptyValues />
 		{/each}
@@ -102,7 +102,7 @@
 						<p>Views</p>
 					</div>
 					{#each fetchPages(views) as page}
-						<PageItem path={page[0]} views={page[1]} />
+						<PageItem on:filter type="os" path={page[0]} views={page[1]} />
 					{:else}
 						<p>Nothing yet!</p>
 					{/each}

@@ -3,7 +3,7 @@
 	import { cubicOut } from 'svelte/easing';
 	import { color } from '$lib/colors/mixer.js';
 	import { clickOutside } from '$lib/utils';
-	export let height = 560;
+	export let height = 520;
 	export let isOpen = false;
 	export let closeThreshold = 0.2; // Percentage of height to trigger close
 

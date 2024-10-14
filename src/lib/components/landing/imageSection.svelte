@@ -35,16 +35,12 @@
 	};
 </script>
 
-<p
-	class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 sm:mb-8 sm:max-w-2xl sm:text-xl"
-	in:fly={{ y: 50, duration: 1000, delay: 300 }}
->
+<p class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 sm:mb-8 sm:max-w-2xl sm:text-xl">
 	<span class=" text-{$color}-500"><ArrowRight /></span>Not just cheap though,
 	<span class="bg-{$color}-500 text-{$color}-100 font-extrabold">Super fun to use</span>
 </p>
 <h2
 	class="mb-4 font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-5xl lg:text-7xl"
-	in:fly={{ y: -50, duration: 1000 }}
 >
 	Your <span class="text-{$color}-400 italic">View</span>, Your
 	<span class="text-{$color}-400 italic" style="font-family: inter;">Vibes</span>

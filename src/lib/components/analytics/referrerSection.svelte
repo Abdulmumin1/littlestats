@@ -14,14 +14,16 @@
 			let ref = event.referrer;
 
 			if (ref) {
-				let hostname = new URL(ref).hostname;
-				if (hostname != domain.name) {
-					if (!uniquePages.has(hostname)) {
-						uniquePages.set(hostname, 1);
-					} else {
-						uniquePages.set(hostname, uniquePages.get(hostname) + 1);
+				try {
+					let hostname = new URL(ref).hostname;
+					if (hostname != domain.name) {
+						if (!uniquePages.has(hostname)) {
+							uniquePages.set(hostname, 1);
+						} else {
+							uniquePages.set(hostname, uniquePages.get(hostname) + 1);
+						}
 					}
-				}
+				} catch (error) {}
 			}
 		});
 
@@ -34,7 +36,7 @@
 	$: console.log(pages);
 </script>
 
-<div class="min-h-24 min-w-[230px] flex-1 md:min-h-[290px]">
+<div class="min-h-24 min-w-[230px] flex-1 md:min-h-[240px]">
 	<div class="mb-3 flex justify-between text-gray-950">
 		<p>Referrer</p>
 		<p>Views</p>
@@ -65,7 +67,7 @@
 
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page}
-			<PageItem path={page[0]} views={page[1]} />
+			<PageItem on:filter type="ref" path={page[0]} views={page[1]} />
 		{:else}
 			<EmptyValues />
 		{/each}
@@ -81,7 +83,7 @@
 						<p>Views</p>
 					</div>
 					{#each fetchPages(views) as page}
-						<PageItem path={page[0]} views={page[1]} />
+						<PageItem on:filter type="ref" path={page[0]} views={page[1]} />
 					{:else}
 						<p>Nothing yet!</p>
 					{/each}

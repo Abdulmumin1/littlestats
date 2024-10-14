@@ -1,4 +1,5 @@
 <script>
+	import { flip } from 'svelte/animate';
 	import BottomDrawer from '../generals/bottomDrawer.svelte';
 	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
@@ -24,7 +25,7 @@
 	$: trunaced_pages = pages.splice(0, max_page_item_count);
 </script>
 
-<div class="min-h-24 min-w-[230px] flex-1 md:min-h-[290px]">
+<div class="min-h-24 min-w-[230px] flex-1 md:min-h-[240px]">
 	<div class="mb-3 flex justify-between text-gray-950">
 		<p>Pages</p>
 		<p>Views</p>
@@ -54,8 +55,8 @@
     </div> -->
 
 	<div class="flex h-full flex-col gap-1">
-		{#each trunaced_pages as page}
-			<PageItem path={page[0]} views={page[1]} />
+		{#each trunaced_pages as page (page)}
+			<PageItem type="page" on:filter path={page[0]} views={page[1]} />
 		{:else}
 			<EmptyValues />
 		{/each}
@@ -71,7 +72,7 @@
 						<p>Views</p>
 					</div>
 					{#each fetchPages(views) as page}
-						<PageItem path={page[0]} views={page[1]} />
+						<PageItem on:filter type="page" path={page[0]} views={page[1]} />
 					{:else}
 						<p>Nothing yet!</p>
 					{/each}

@@ -1,11 +1,25 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
 
-	export let path, views;
+	export let path, views, type;
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
+
+	function sendFilter() {
+		dispatch('filter', {
+			type,
+			query: path
+		});
+	}
 </script>
 
 <!-- [#3db33925] -->
-<div class="flex justify-between rounded-md bg-{$color}-200 px-[9px] py-[3px]">
+<button
+	title="Click to filter"
+	on:click={sendFilter}
+	class="flex justify-between rounded-md bg-{$color}-200 px-[9px] py-[3px]"
+>
 	<p>{path}</p>
 	<p>{views}</p>
-</div>
+</button>

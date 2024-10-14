@@ -5,18 +5,18 @@
 	import { color } from '$lib/colors/mixer.js';
 
 	export let data;
+
 	import { deserialize } from '$app/forms';
-	import BottomDrawer from '../../../../lib/components/generals/bottomDrawer.svelte';
 	import PagesSection from '../../../../lib/components/analytics/pagesSection.svelte';
-	import GrapthView from '../../../../lib/components/analytics/graphStuff/grapthView.svelte';
-	import MdGraphStuff from '../../../../lib/components/analytics/graphStuff/mdGraphStuff.svelte';
 	import ChartJsGraph from '../../../../lib/components/analytics/graphStuff/chartJsGraph.svelte';
-	import AnotherChart from '../../../../lib/components/analytics/graphStuff/anotherChart.svelte';
 	import Seo from '../../../../lib/components/generals/seo.svelte';
 	import ReferrerSection from '../../../../lib/components/analytics/referrerSection.svelte';
 	import BrowserSection from '../../../../lib/components/analytics/browserSection.svelte';
 	import CountrySection from '../../../../lib/components/analytics/countrySection.svelte';
 	import LoadingState from '../../../../lib/components/analytics/graphStuff/loadingState.svelte';
+	import { X } from 'lucide-svelte';
+	import { scale } from 'svelte/transition';
+	import { derived } from 'svelte/store';
 
 	$: page_data = data.records;
 
@@ -96,6 +96,109 @@
 	$: backdateaverageVisitDuration = 0;
 	$: backdateuniqueUserAgents = [];
 
+	let filters = [];
+
+	function handleAddfilter(filter) {
+		filter = filter.detail;
+		// let local_filters = [];
+
+		if (filters.length > 0) {
+			let seqmented = filters;
+			const found = filters.find((value, index) => {
+				return value.type == filter.type;
+			});
+			if (found) {
+				let ind = seqmented.findIndex((e) => e == found);
+				console.log(found, ind);
+				seqmented[ind] = filter;
+			} else {
+				seqmented = [...seqmented, filter];
+			}
+			filters = seqmented;
+		} else {
+			filters = [...filters, filter];
+		}
+
+		// filters = local_filters;
+		applyfilter(filters);
+	}
+
+	function removeFilter(filter) {
+		filters = filters.filter((e) => e != filter);
+		applyfilter(filters);
+	}
+
+	function applyfilter(ft) {
+		let mock_page = [...data.records];
+
+		ft.forEach((filter) => {
+			if (filter.type == 'page') {
+				mock_page = mock_page.filter((e) => e.url == filter.query);
+			} else if (filter.type == 'ref') {
+				mock_page = mock_page.filter((e) => e.referrer.includes(filter.query));
+			} else if (filter.type == 'browser') {
+				mock_page = mock_page.filter((e) => {
+					return isBrowserInUserAgent(e.user_agent, filter.query);
+				});
+			} else if (filter.type == 'os') {
+				mock_page = mock_page.filter((e) => {
+					return isOsInUserAgent(e.user_agent, filter.query);
+				});
+			}
+		});
+
+		function isOsInUserAgent(userAgent, osName) {
+			// Normalize the OS name for case-insensitivity
+			osName = osName.toLowerCase();
+
+			// Check for OS in the user agent string
+			switch (osName) {
+				case 'ios':
+					return (
+						userAgent.includes('iPhone') || userAgent.includes('iPad') || userAgent.includes('iPod')
+					);
+				case 'android':
+					return userAgent.includes('Android');
+				case 'windows':
+					return userAgent.includes('Win');
+				case 'macos':
+					return userAgent.includes('Mac');
+				case 'linux':
+					return userAgent.includes('X11') || userAgent.includes('Linux');
+				case 'unknown':
+					return true; // Return true if "unknown" is specified, for unrecognized OS
+				default:
+					return false; // Any unrecognized OS name
+			}
+		}
+
+		function isBrowserInUserAgent(userAgent, browserName) {
+			// Normalize the browser name for case-insensitivity
+			browserName = browserName.toLowerCase();
+
+			// Check for browser in the user agent string
+			switch (browserName) {
+				case 'firefox':
+					return userAgent.includes('Firefox/');
+				case 'chrome':
+					return userAgent.includes('Chrome/') && !userAgent.includes('Edg/');
+				case 'safari':
+					return userAgent.includes('Safari/') && !userAgent.includes('Chrome/');
+				case 'edge':
+					return userAgent.includes('Edge/') || userAgent.includes('Edg/');
+				case 'opera':
+					return userAgent.includes('Opera/') || userAgent.includes('OPR/');
+				default:
+					return false;
+			}
+		}
+
+		// console.log(mock_page.length, data.records.length);
+		page_data = [...mock_page];
+		// filterlegth = mock_page.length;
+		console.log(mock_page.length, data.records.length);
+	}
+
 	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
 	let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
 	let managed_domains = [...current_domain, ...temp_domain];
@@ -117,6 +220,7 @@
 			let local_result = deserialize(await response.text());
 			let local_records = local_result.data;
 			page_data = local_records;
+			data.records = page_data;
 			// console.log(local_records);
 		}
 	}
@@ -193,6 +297,7 @@
 
 	$: sortInterval = 1;
 
+	let filterlegth = 0;
 	async function handleDateChange(e) {
 		// console.log(parseInt(e.target.value));
 		await fetchFromDefaultDates(e.target.value);
@@ -258,6 +363,19 @@
 				</select>
 			</div>
 		</nav>
+		{#if filters.length > 0}
+			<div class="flex w-full flex-row flex-wrap gap-1">
+				{#each filters as filter}
+					<button
+						in:scale
+						on:click={() => removeFilter(filter)}
+						class="flex w-fit gap-1 rounded-full bg-{$color}-300 items-center p-1 px-2"
+						>{filter.type} <span class="bg-{$color}-100 rounded-full px-2">{filter.query}</span>
+						<span><X size={13} /></span></button
+					>
+				{/each}
+			</div>
+		{/if}
 		<header class="grid grid-cols-2 gap-1 divide-gray-500 md:grid-cols-3 lg:grid-cols-5">
 			<ViewCard
 				name="Views"
@@ -300,12 +418,12 @@
 		<!-- <AnotherChart viewRecords={views} {sortInterval} /> -->
 		<ChartJsGraph viewRecords={views} {sortInterval} />
 		<div class="mt-6 flex flex-wrap gap-6">
-			<PagesSection {views} />
-			<ReferrerSection {views} domain={current_domain[0]} />
+			<PagesSection {views} on:filter={handleAddfilter} />
+			<ReferrerSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
-			<BrowserSection {views} domain={current_domain[0]} />
-			<CountrySection {views} domain={current_domain[0]} />
+			<BrowserSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<CountrySection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 		</div>
 	</div>
 </div>

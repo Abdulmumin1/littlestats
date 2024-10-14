@@ -231,6 +231,7 @@ export async function load({ locals: { pb }, params }) {
 		// console.log(records);
 		return { records, domains, domain_id: params.slug };
 	} catch (error) {
-		console.error(error);
+		// console.error(error);
+		return fail(404, { message: "page you're looking for is not found" });
 	}
 }
