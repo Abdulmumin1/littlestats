@@ -51,7 +51,11 @@
 <div class="views bg-{$color}-200 px-6" class:red={increase == 'down'}>
 	<p class="text-gray-800">{name}</p>
 	<p class="text-2xl font-extrabold leading-10">
-		{type == 'time' ? formatDuration(parseInt(number)) : type == 'percent' ? `${number}%` : number}
+		{type == 'time'
+			? formatDuration(parseInt(isNaN(number) ? 0 : number))
+			: type == 'percent'
+				? `${isNaN(number) ? 0 : number}%`
+				: number}
 	</p>
 	<p
 		title="{percentange}% compare to last x days"
@@ -64,7 +68,9 @@
 		{:else}
 			<ArrowDown size={14} />
 		{/if}
-		{parseInt(percentange) < 0 ? `${parseInt(percentange) * -1}%` : `${parseInt(percentange)}%`}
+		{parseInt(percentange) < 0
+			? `${parseInt(isNaN(percentange) ? 0 : percentange) * -1}%`
+			: `${parseInt(isNaN(percentange) ? 0 : percentange)}%`}
 	</p>
 </div>
 

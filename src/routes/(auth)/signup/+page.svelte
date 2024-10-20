@@ -12,6 +12,7 @@
 	let email;
 	let Invalid;
 	let errMessage;
+	let successMessage = false;
 
 	function setError(message) {
 		errMessage = message;
@@ -39,14 +40,15 @@
 		loading = true;
 		return async ({ update, result }) => {
 			if (result.status == 400) {
-				loading = false;
 				errMessage = result?.data;
 				setTimeout(() => {
 					errMessage = '';
 				}, 3000);
 			} else {
 				completed = true;
+				successMessage = result.data.message;
 			}
+			loading = false;
 			await update();
 		};
 	};
@@ -62,7 +64,7 @@
 	<form
 		use:enhance={handleSubmit}
 		method="post"
-		action="?/signup"
+		action="?/register"
 		class="container m-2 flex max-w-[28rem] flex-col rounded-xl bg-{$color}-200 p-2 px-3 md:p-5"
 	>
 		<p class=" mb-3 text-3xl font-semibold text-gray-800">Sign Up</p>
@@ -93,7 +95,7 @@
 		<button
 			aria-busy={loading}
 			disabled={loading}
-			class="flex items-center justify-center gap-3 rounded-b-md bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
+			class="flex items-center justify-center gap-3 rounded-b-md text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
 			>Signup
 			{#if loading}
 				<Loader class="animate-spin" size={16} />
@@ -106,6 +108,11 @@
 	{#if errMessage}
 		<p transition:slide class="w-full max-w-[30rem] rounded bg-red-100 p-6 text-red-500">
 			{errMessage?.message ?? errMessage}
+		</p>
+	{/if}
+	{#if successMessage}
+		<p transition:slide class="w-full max-w-[30rem] rounded bg-green-100 p-6 text-green-500">
+			{successMessage}
 		</p>
 	{/if}
 </div>

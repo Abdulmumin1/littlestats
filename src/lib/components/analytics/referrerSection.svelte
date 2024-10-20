@@ -31,6 +31,7 @@
 	}
 
 	$: pages = fetchPages(views);
+
 	$: trunaced_pages = pages.splice(0, max_page_item_count);
 
 	$: console.log(pages);

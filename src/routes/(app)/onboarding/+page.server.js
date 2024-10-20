@@ -1,21 +1,34 @@
+// import { activateLicense } from '@lemonsqueezy/lemonsqueezy.js';
+
+import { redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
+
 /** @type {import('./$types').PageLoad} */
 export async function load({ locals: { pb } }) {
 	const user = pb.authStore.model;
+
+	if (!user) {
+		throw redirect(303, '/signup');
+	}
 	return { user };
 }
 
 /** @type {import('./$types').Actions} */
 export const actions = {
 	updateUser: async ({ locals: { pb }, request }) => {
-		const data = await request.formData();
-		const name = data.get('name');
+		const formdata = await request.formData();
+		const name = formdata.get('name');
+		const license = formdata.get('license');
 
-		if (!name) {
-			return fail(400, { namerequired: name == null, message: 'Entries incomplete' });
+		if (!name || license) {
+			return fail(400, {
+				namerequired: name == null,
+				license: license == null,
+				message: 'Entries incomplete'
+			});
 		}
 		const userId = pb.authStore.model?.id;
 		try {
-			// console.log(pb.collections);
 			let dt = {
 				name: name
 			};

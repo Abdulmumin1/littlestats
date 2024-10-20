@@ -43,12 +43,14 @@
 
 	onMount(() => {
 		// Simulating fetching subscriptions from an API
-		subscriptions = [{ name: 'Basic Plan', status: 'Active', renewalDate: '2024-11-01' }];
+		subscriptions = [
+			{ name: 'Basic Plan', status: 'Active', renewalDate: '2024-11-01', interval: 'month' }
+		];
 	});
 </script>
 
 <div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-4">
-	<div class="rounded-md">
+	<!-- <div class="rounded-md">
 		<h2 class="mb-4 text-xl font-semibold">Subscripiton</h2>
 		<form
 			use:enhance={handleAdd}
@@ -67,7 +69,7 @@
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black bg-{$color}-500 px-4 py-2 font-bold text-black hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-4 py-2 font-bold text-black hover:bg-{$color}-700"
 			>
 				Activate License
 				{#if loading}
@@ -75,7 +77,7 @@
 				{/if}
 			</button>
 		</form>
-	</div>
+	</div> -->
 
 	<div class="rounded-md">
 		<h2 class="mb-4 text-xl font-semibold">Managed Subscriptions</h2>
@@ -89,7 +91,11 @@
 						class="flex flex-col rounded-md bg-{$color}-200 p-3"
 					>
 						<div class="flex items-center justify-between">
-							<span class="font-semibold">{subscription.name}</span>
+							<div>
+								<span class="font-semibold">{subscription.name}</span><span
+									>/{subscription.interval}</span
+								>
+							</div>
 							<span class={subscription.status === 'Active' ? 'text-{$color}-600' : 'text-red-600'}>
 								{subscription.status}
 							</span>
@@ -103,10 +109,9 @@
 								Deactivate License
 							</button>
 							<button
-								on:click={() => removeSubscription(subscription.name)}
 								class="mt-2 self-end rounded bg-{$color}-50 p-2 text-sm text-{$color}-600 hover:text-{$color}-800"
 							>
-								Upgrade Plan
+								Change Plan
 							</button>
 						</div>
 					</div>

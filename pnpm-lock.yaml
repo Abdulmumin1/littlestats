@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@lemonsqueezy/lemonsqueezy.js':
+    specifier: ^3.3.1
+    version: 3.3.1
   '@neoconfetti/svelte':
     specifier: ^2.2.1
     version: 2.2.1
@@ -737,6 +740,11 @@ packages:
 
   /@kurkle/color@0.3.2:
     resolution: {integrity: sha512-fuscdXJ9G1qb7W8VdHi+IwRqij3lBkosAm4ydQtEmbY58OzHXqQhvlxqEkoz0yssNVn38bcpRWgA9PP+OGoisw==}
+    dev: false
+
+  /@lemonsqueezy/lemonsqueezy.js@3.3.1:
+    resolution: {integrity: sha512-gM/FdNsK3BlrD6JRrhmiyqBXQsCpzSUdKSoZwJMQfXqfqcK321og+uMssc6HYcygUMrGvPnNJyJ1RqZPFDrgtg==}
+    engines: {node: '>=20'}
     dev: false
 
   /@melt-ui/svelte@0.76.2(svelte@4.2.19):

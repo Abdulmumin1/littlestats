@@ -53,11 +53,11 @@
 							<Settings size={20} />
 						</a>
 
-						<button
+						<!-- <button
 							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
 						>
 							<LogOut size={20} />
-						</button>
+						</button> -->
 					</div>
 				</div>
 				<div class="-mr-2 flex md:hidden">

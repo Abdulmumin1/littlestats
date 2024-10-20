@@ -91,7 +91,7 @@
 />
 
 <div class="drawer-container">
-	<button on:click={toggleDrawer}><slot name="handle" /></button>
+	<button class="z-0" on:click={toggleDrawer}><slot name="handle" /></button>
 	<div
 		class="drawer bg-{$color}-100"
 		style="height: {height}px; bottom: {$position}px;"

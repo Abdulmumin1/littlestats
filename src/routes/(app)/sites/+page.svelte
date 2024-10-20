@@ -1,6 +1,7 @@
 <script>
 	import { Link } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
+	import CuteCloud from '../../../lib/components/generals/cuteCloud.svelte';
 
 	export let data;
 
@@ -14,6 +15,9 @@
 
 <div class="container mx-auto">
 	<h1 class=" mb-4 text-2xl font-bold">Sites</h1>
+	<div class="flex items-center justify-center opacity-80">
+		<CuteCloud />
+	</div>
 	<div class=" flex flex-col gap-2">
 		{#each domains as domain}
 			<a

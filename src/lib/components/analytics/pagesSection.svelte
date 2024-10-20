@@ -56,7 +56,9 @@
 
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page (page)}
-			<PageItem type="page" on:filter path={page[0]} views={page[1]} />
+			<div animate:flip class="min-w-full *:w-full">
+				<PageItem type="page" on:filter path={page[0]} views={page[1]} />
+			</div>
 		{:else}
 			<EmptyValues />
 		{/each}

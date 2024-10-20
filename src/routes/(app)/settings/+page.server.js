@@ -25,7 +25,7 @@ export async function load({ locals: { pb, user }, request }) {
 		const records = await pb.collection('domain').getFullList({
 			sort: '-created'
 		});
-		// console.log(records);
+		console.log(user);
 		return { records };
 	} catch (error) {
 		console.error(error);

@@ -74,7 +74,7 @@
 		<button
 			aria-busy={loading}
 			disabled={loading}
-			class="flex items-center justify-center gap-3 rounded-b-md bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
+			class="flex items-center justify-center gap-3 rounded-b-md text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
 			>Login
 			{#if loading}
 				<Loader class="animate-spin" size={16} />

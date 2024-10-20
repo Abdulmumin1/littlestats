@@ -1,8 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
-	import { fly } from 'svelte/transition';
-	import { Loader, User, Lock, Mail, CreditCard } from 'lucide-svelte';
+	import { fly, slide } from 'svelte/transition';
+	import { Loader, User, ChevronDown, ChevronUp, Lock, Mail, CreditCard } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 
 	let user = {
@@ -15,6 +15,7 @@
 
 	export let data;
 
+	let password_slide = false;
 	let loading = false;
 	let message = { text: '', type: '' };
 
@@ -31,6 +32,7 @@
 			if (result.type === 'error') {
 				setMessage(result.message, 'error');
 			} else {
+				data.user.name = user.name;
 				setMessage('Account updated successfully!', 'success');
 			}
 			loading = false;
@@ -53,7 +55,7 @@
 <div in:fly={{ y: 13, duration: 100 }} class=" flex flex-1 flex-col gap-6">
 	<h1 class="mb-4 text-2xl font-bold">Account Management</h1>
 
-	<form use:enhance={handleUpdate} method="POST" class="space-y-6">
+	<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
 		<div class="rounded-md bg-{$color}-200 p-4">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<User class="mr-2" /> Personal Information
@@ -83,46 +85,59 @@
 		</div>
 
 		<div class="rounded-md bg-{$color}-200 p-4">
-			<h2 class="mb-4 flex items-center text-xl font-semibold">
-				<Lock class="mr-2" /> Change Password
+			<h2 class=" flex items-center text-xl font-semibold">
+				<button
+					on:click={() => {
+						password_slide = !password_slide;
+					}}
+					class="flex w-full items-center justify-between"
+					><span class="flex gap-1"><Lock class="mr-2" /> Change Password</span>
+					{#if password_slide}
+						<ChevronUp />
+					{:else}
+						<ChevronDown />
+					{/if}</button
+				>
 			</h2>
-			<div class="space-y-4">
-				<div>
-					<label for="current-password" class="block text-sm font-medium text-gray-700"
-						>Current Password</label
-					>
-					<input
-						type="password"
-						id="current-password"
-						name="currentPassword"
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
-					/>
+			{#if password_slide}
+				<div transition:slide class="mt-4 space-y-4">
+					<div>
+						<label for="current-password" class="block text-sm font-medium text-gray-700"
+							>Current Password</label
+						>
+						<input
+							type="password"
+							id="current-password"
+							name="currentPassword"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+						/>
+					</div>
+					<div>
+						<label for="new-password" class="block text-sm font-medium text-gray-700"
+							>New Password</label
+						>
+						<input
+							type="password"
+							id="new-password"
+							name="newPassword"
+							bind:value={user.newPassword}
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+						/>
+					</div>
+					<div>
+						<label for="confirm-password" class="block text-sm font-medium text-gray-700"
+							>Confirm New Password</label
+						>
+						<input
+							type="password"
+							id="confirm-password"
+							name="confirmPassword"
+							bind:value={user.confirmPassword}
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+						/>
+					</div>
 				</div>
-				<div>
-					<label for="new-password" class="block text-sm font-medium text-gray-700"
-						>New Password</label
-					>
-					<input
-						type="password"
-						id="new-password"
-						name="newPassword"
-						bind:value={user.newPassword}
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
-					/>
-				</div>
-				<div>
-					<label for="confirm-password" class="block text-sm font-medium text-gray-700"
-						>Confirm New Password</label
-					>
-					<input
-						type="password"
-						id="confirm-password"
-						name="confirmPassword"
-						bind:value={user.confirmPassword}
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
-					/>
-				</div>
-			</div>
+			{/if}
 		</div>
 
 		<div class="rounded-md bg-{$color}-200 p-4">

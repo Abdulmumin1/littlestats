@@ -1,5 +1,10 @@
 import { fail, redirect } from '@sveltejs/kit';
 
+/** @type {import('./$types').PageLoad} */
+export async function load() {
+	throw redirect(303, '/');
+}
+
 /** @type {import('./$types').Actions} */
 export const actions = {
 	register: async ({ locals, request }) => {
@@ -11,13 +16,19 @@ export const actions = {
 			return fail(400, { emailrequired: email == null, passwordRequired: password == null });
 		}
 		try {
-			await locals.pb.collections('users').create(data);
-			await locals.pb.collections('users').authWithPassword(email, password.toString());
-			await locals.pb.collections('users').requestVerification(email);
+			console.log('dome');
+			// await locals.pb.collection('users').create(data);
+			// await locals.pb.collection('users').authWithPassword(email, password.toString());
+			// await locals.pb.collection('users').requestVerification(email);
 		} catch (error) {
+			// console.log(error);
 			return fail(400, { fail: true, message: error.data.message });
 		}
-
-		throw redirect(301, '/checkout');
+		return {
+			success: true,
+			redirectTo: '/checkout',
+			message: 'Check your inbox to complete signup'
+		};
+		// throw redirect(301, '/checkout');
 	}
 };
