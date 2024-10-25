@@ -26,14 +26,16 @@ export const authentication = async ({ event, resolve }) => {
 	return response;
 };
 
-const unprotectedPrefix = ['/signin', '/onboarding', '/embed', '/signup'];
+const unprotectedPrefix = [
+	'/signin',
+	'/onboarding',
+	'/embed',
+	'/signup',
+	'/terms',
+	'/privacy',
+	'/acceptable-use'
+];
 export const authorization = async ({ event, resolve }) => {
-	if (event.url.pathname == '/checkout') {
-		throw redirect(
-			303,
-			'https://abdulmuminyqn.lemonsqueezy.com/buy/e299bea9-5573-46ea-a97b-6609a22fe7d5'
-		);
-	}
 	const loggedIn = await event.locals.pb.authStore.model;
 
 	if (event.url.pathname == '/') {
@@ -48,9 +50,9 @@ export const authorization = async ({ event, resolve }) => {
 				'/signin?after=' + event.url.pathname.slice(1, event.url.pathname.length)
 			);
 		}
-		// if (!loggedIn.license) {
-		// 	throw redirect(303, '/onboarding');
-		// }
+		if (!loggedIn.setup_complete) {
+			throw redirect(303, '/onboarding');
+		}
 
 		event.locals.user = loggedIn;
 	}

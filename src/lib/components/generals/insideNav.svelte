@@ -1,5 +1,5 @@
 <script>
-	import { ChartBar, Settings, User, LogOut } from 'lucide-svelte';
+	import { ChartBar, Settings, X, LogOut } from 'lucide-svelte';
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
 	import MixerComp from '../../colors/mixerComp.svelte';
@@ -7,19 +7,21 @@
 	import { clickOutside } from '$lib/utils';
 
 	let isMenuOpen = false;
-	let closed = true;
 
 	function toggleMenu() {
-		if (closed) {
-			closed = false;
-			return;
+		// console.log(isMenuOpen);
+		if (isMenuOpen) {
+			closeMenu();
+		} else {
+			openMenu();
 		}
-		isMenuOpen = !isMenuOpen;
 	}
 
+	function openMenu() {
+		isMenuOpen = true;
+	}
 	function closeMenu() {
 		isMenuOpen = false;
-		closed = true;
 	}
 
 	$: path = $page.url.pathname;
@@ -64,23 +66,27 @@
 					<button
 						on:click={toggleMenu}
 						type="button"
-						class="inline-flex items-center justify-center rounded-md p-2 text-black ring-black hover:text-black focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
+						class="inline-flex items-center justify-center rounded-md p-2"
 					>
-						<svg
-							class="h-6 w-6"
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							aria-hidden="true"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M4 6h16M4 12h16M4 18h16"
-							/>
-						</svg>
+						{#if isMenuOpen}
+							<X />
+						{:else}
+							<svg
+								class="h-6 w-6"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								aria-hidden="true"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M4 6h16M4 12h16M4 18h16"
+								/>
+							</svg>
+						{/if}
 					</button>
 				</div>
 			</div>
@@ -122,14 +128,14 @@
 				</div> -->
 				<div class="mt-1 space-y-1 px-2">
 					<a
-						href="/settings"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500"
-						>Settings</a
+						href="/sites"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500 hover:text-white"
+						>Dashboard</a
 					>
 					<a
-						href="/logout"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500"
-						>Sign out</a
+						href="/settings"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500 hover:text-white"
+						>Settings</a
 					>
 				</div>
 			</div>

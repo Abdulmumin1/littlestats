@@ -29,7 +29,10 @@
 	];
 </script>
 
-<div class="mx-auto mt-12 max-w-5xl bg-{$color}-100 rounded-2xl border-4 p-4 border-{$color}-300">
+<div
+	id="features"
+	class="mx-auto mt-12 max-w-5xl bg-{$color}-100 rounded-2xl border-4 p-4 border-{$color}-300"
+>
 	<h3
 		class=" mb-3 px-2 text-xl font-bold bg-{$color}-500 text-{$color}-100 w-fit rounded-full px-3 py-[.15rem]"
 	>

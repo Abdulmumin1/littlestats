@@ -41,10 +41,15 @@
 		};
 	};
 
+	export let data;
 	onMount(() => {
 		// Simulating fetching subscriptions from an API
 		subscriptions = [
-			{ name: 'Basic Plan', status: 'Active', renewalDate: '2024-11-01', interval: 'month' }
+			{
+				name: data.user.variant_name,
+				status: data.user.sub_status,
+				renewalDate: '2024-11-01'
+			}
 		];
 	});
 </script>
@@ -92,21 +97,19 @@
 					>
 						<div class="flex items-center justify-between">
 							<div>
-								<span class="font-semibold">{subscription.name}</span><span
-									>/{subscription.interval}</span
-								>
+								<span class="font-semibold">{subscription.name}</span><span></span>
 							</div>
-							<span class={subscription.status === 'Active' ? 'text-{$color}-600' : 'text-red-600'}>
+							<span class="text-{$color}-600 font-extrabold">
 								{subscription.status}
 							</span>
 						</div>
-						<div class="text-sm text-gray-600">Renewal: {subscription.renewalDate}</div>
+						<!-- <div class="text-sm text-gray-600">Renewal: {subscription.renewalDate}</div> -->
 						<div class="flex gap-2">
 							<button
 								on:click={() => removeSubscription(subscription.name)}
-								class="mt-2 self-end rounded bg-red-50 p-2 text-sm text-red-600 hover:text-red-800"
+								class="mt-2 self-end rounded bg-{$color}-500 p-2 text-sm text-white hover:bg-{$color}-800"
 							>
-								Deactivate License
+								Manage Subscripiton
 							</button>
 							<button
 								class="mt-2 self-end rounded bg-{$color}-50 p-2 text-sm text-{$color}-600 hover:text-{$color}-800"

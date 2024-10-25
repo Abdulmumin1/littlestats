@@ -7,6 +7,9 @@ import { fail } from '@sveltejs/kit';
 export async function load({ locals: { pb } }) {
 	const user = pb.authStore.model;
 
+	// if (user.setup_complete) {
+	// 	throw redirect(303, '/sites');
+	// }
 	if (!user) {
 		throw redirect(303, '/signup');
 	}
@@ -30,7 +33,8 @@ export const actions = {
 		const userId = pb.authStore.model?.id;
 		try {
 			let dt = {
-				name: name
+				name: name,
+				setup_complete: true
 			};
 			await pb.collection('users').update(userId, dt);
 		} catch (error) {

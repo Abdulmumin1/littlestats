@@ -7,8 +7,10 @@
 
 <div class="flex h-full flex-col items-center justify-center rounded-2xl">
 	<!-- <CircleOff size={50} class="text-{$color}-300" /> -->
-	<div class="flex items-center justify-center opacity-30">
-		<CuteCloud />
+	<div class="flex h-28 items-center justify-center opacity-30">
+		<div class="scale-50">
+			<CuteCloud />
+		</div>
 	</div>
-	<p class="text-{$color}-400 mt-3">Nothing yet!</p>
+	<p class="text-{$color}-500 mt-3 font-extrabold">Nothing yet, keep grinding!</p>
 </div>

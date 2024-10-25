@@ -2,6 +2,7 @@
 	import { fly } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
 	import { show_toast } from '$lib/toast.js';
+	import { color } from '$lib/colors/mixer.js';
 
 	let message = $show_toast?.message;
 	let type = $show_toast.type ?? 'info'; // 'info', 'success', 'warning', 'error'
@@ -12,7 +13,7 @@
 
 	$: typeClasses = {
 		info: 'bg-blue-500',
-		success: 'bg-green-500',
+		success: `bg-${$color}-500`,
 		warning: 'bg-yellow-500',
 		error: 'bg-red-500'
 	};

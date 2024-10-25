@@ -135,7 +135,13 @@
 			if (filter.type == 'page') {
 				mock_page = mock_page.filter((e) => e.url == filter.query);
 			} else if (filter.type == 'ref') {
-				mock_page = mock_page.filter((e) => e.referrer.includes(filter.query));
+				mock_page = mock_page.filter((e) => {
+					if (filter.query == 'Direct') {
+						return !e.referrer;
+					} else {
+						return e.referrer.includes(filter.query);
+					}
+				});
 			} else if (filter.type == 'browser') {
 				mock_page = mock_page.filter((e) => {
 					return isBrowserInUserAgent(e.user_agent, filter.query);

@@ -1,5 +1,8 @@
 import { fail } from '@sveltejs/kit';
 
+/** @type {import('./$types').PageLoad} */
+export async function load() {}
+
 /** @type {import('./$types').Actions} */
 export const actions = {
 	waitlist: async ({ locals: { pb }, request }) => {

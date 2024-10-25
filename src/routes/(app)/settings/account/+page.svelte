@@ -4,6 +4,7 @@
 	import { fly, slide } from 'svelte/transition';
 	import { Loader, User, ChevronDown, ChevronUp, Lock, Mail, CreditCard } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
+	import { show_toast } from '$lib/toast.js';
 
 	let user = {
 		name: '',
@@ -33,7 +34,9 @@
 				setMessage(result.message, 'error');
 			} else {
 				data.user.name = user.name;
-				setMessage('Account updated successfully!', 'success');
+				show_toast.set({ message: 'Account updated successfully! ', type: 'success' });
+
+				// setMessage('', 'success');
 			}
 			loading = false;
 		};
@@ -41,7 +44,7 @@
 
 	onMount(() => {
 		// Simulating fetching user data from an API
-		console.log(data.user);
+		// console.log(data.user);
 		user = {
 			name: data.user.name,
 			email: data.user.email,
@@ -76,7 +79,7 @@
 					<input
 						type="email"
 						id="email"
-						name="email"
+						disabled
 						bind:value={user.email}
 						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
 					/>
@@ -87,6 +90,7 @@
 		<div class="rounded-md bg-{$color}-200 p-4">
 			<h2 class=" flex items-center text-xl font-semibold">
 				<button
+					type="button"
 					on:click={() => {
 						password_slide = !password_slide;
 					}}
@@ -160,7 +164,9 @@
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<CreditCard class="mr-2" /> Billing Information
 			</h2>
-			<p class="mb-2 text-sm text-gray-600">Your current plan: <strong>Pro Plan</strong></p>
+			<p class="mb-2 text-sm text-black">
+				Your current plan: <strong>{data.user.variant_name}</strong>
+			</p>
 			<button type="button" class="text-sm font-medium text-{$color}-600 hover:text-{$color}-800">
 				Update billing details
 			</button>
@@ -180,14 +186,14 @@
 		</div>
 	</form>
 
-	{#if message.text}
+	<!-- {#if message.text}
 		<div
 			class={`rounded-md p-4 ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-{$color}-100 text-{$color}-700'}`}
 			role="alert"
 		>
 			<p class="font-medium">{message.text}</p>
 		</div>
-	{/if}
+	{/if} -->
 </div>
 
 <style>

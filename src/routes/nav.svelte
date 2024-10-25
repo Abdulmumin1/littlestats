@@ -11,7 +11,7 @@
 		class="mb-4 flex flex-col items-center text-2xl font-bold text-{$color}-600 sm:mb-0 sm:text-3xl"
 	>
 		<!-- <Logo size={180} />  -->
-		Littlestats.click
+		<a href="/">Littlestats.click</a>
 	</div>
 	<div class="flex flex-wrap items-center justify-center space-x-2 sm:justify-end sm:space-x-4">
 		<!-- <a href="#" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Features</a> -->

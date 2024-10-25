@@ -15,8 +15,10 @@
 
 <div class="container mx-auto">
 	<h1 class=" mb-4 text-2xl font-bold">Sites</h1>
-	<div class="flex items-center justify-center opacity-80">
-		<CuteCloud />
+	<div class="flex h-28 items-center justify-center">
+		<div class="scale-50 opacity-20">
+			<CuteCloud />
+		</div>
 	</div>
 	<div class=" flex flex-col gap-2">
 		{#each domains as domain}
@@ -30,7 +32,7 @@
 
 				{#if domain?.expand}
 					<div
-						class="flex items-center gap-2 rounded-full border-2 border-black bg-{$color}-400 px-3 py-1"
+						class="flex items-center gap-2 rounded-full border-2 md:border-black bg-{$color}-400 px-1 py-1 md:px-2"
 					>
 						<p class="font-bold text-{$color}-900">Lifetime Views:</p>
 						<p class="text-{$color}-900">

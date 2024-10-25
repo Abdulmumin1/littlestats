@@ -8,6 +8,7 @@
 
 	function fetchPages(events) {
 		let uniquePages = new Map();
+		let direct = 'Direct';
 
 		events.forEach((event) => {
 			// console.log(event);
@@ -24,6 +25,12 @@
 						}
 					}
 				} catch (error) {}
+			} else {
+				if (!uniquePages.has(direct)) {
+					uniquePages.set(direct, 1);
+				} else {
+					uniquePages.set(direct, uniquePages.get(direct) + 1);
+				}
 			}
 		});
 
