@@ -54,7 +54,7 @@
 			} else {
 				data.user.name = user.name;
 				setMessage('Account updated successfully!', 'success');
-				window.location.href = window.location.host + '/sites';
+				window.location.href = '/sites';
 			}
 			loading = false;
 		};
