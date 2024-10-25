@@ -133,7 +133,7 @@
 						/>
 					</div>
 
-					{#if data.user.sub_id}
+					{#if !data.user.sub_id}
 						<div>
 							<button
 								disabled={!user.name}
