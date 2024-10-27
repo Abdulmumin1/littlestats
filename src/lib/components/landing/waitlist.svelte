@@ -35,7 +35,7 @@
 
 <div
 	id="waitlist"
-	class="bg-{$color}-100 flex flex-col gap-4 rounded-2xl border-4 p-4 py-6 border-{$color}-300 w-full"
+	class="bg-{$color}-100 mt-12 flex flex-col gap-4 rounded-2xl border-4 p-4 py-6 border-{$color}-300 w-full"
 >
 	<h3 class="text-2xl font-bold">Get Early Access</h3>
 	<h3 class="text-{$color}-900">

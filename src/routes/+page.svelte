@@ -65,6 +65,7 @@
 		<ImageSection />
 		<FeatureSection />
 		<PricingSection />
+		<Waitlist />
 	</div>
 </main>
 <Footer />
