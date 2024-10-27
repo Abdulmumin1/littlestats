@@ -1361,10 +1361,11 @@
 		teal: tealColors
 	};
 	$: usedColor = colorList[$color] ?? greenColors;
+	let loaded = false;
 	onMount(() => {
 		const c = localStorage.getItem('little_stat_color');
 		color.set(c ?? 'lime');
-		console.log(colorVar);
+		loaded = true;
 	});
 </script>
 
@@ -1372,9 +1373,11 @@
 	<meta name="theme-color" content={usedColor.primary} />
 </svelte:head>
 
-<div class="bg-{$color}-100 min-h-screen">
-	<slot></slot>
-</div>
+{#if loaded}
+	<div class="bg-{$color}-100 min-h-screen">
+		<slot></slot>
+	</div>
+{/if}
 
 {#if $show_toast}
 	<Toast />
