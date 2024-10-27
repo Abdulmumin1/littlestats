@@ -21,5 +21,5 @@
 	class="flex justify-between rounded-md text-left bg-{$color}-200 px-[9px] py-[3px]"
 >
 	<p class="max-w-[420px] truncate">{path}</p>
-	<p>{views}</p>
+	<p class="text-sm">{views}</p>
 </button>

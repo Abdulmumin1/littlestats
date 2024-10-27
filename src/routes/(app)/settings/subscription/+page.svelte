@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { show_toast } from '$lib/toast.js';
-	import { Loader } from 'lucide-svelte';
+	import { CreditCard, Settings } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
@@ -95,24 +95,28 @@
 						animate:flip={{ duration: 300 }}
 						class="flex flex-col rounded-md bg-{$color}-200 p-3"
 					>
-						<div class="flex items-center justify-between">
+						<h2 class="mb-4 flex items-center text-xl font-semibold">
+							<CreditCard class="mr-2" /> Subscripiton Information
+						</h2>
+						<div class="mb-2 flex flex-col gap-2">
 							<div>
-								<span class="font-semibold">{subscription.name}</span><span></span>
+								Currently on: <span class="font-semibold">{subscription.name}</span><span></span>
 							</div>
-							<span class="text-{$color}-600 font-extrabold">
-								{subscription.status}
-							</span>
+							<div class="text-{$color}-600 font-semibold">
+								Subscription Status: <span class="font-extrabold"> {subscription.status}</span>
+							</div>
 						</div>
 						<!-- <div class="text-sm text-gray-600">Renewal: {subscription.renewalDate}</div> -->
 						<div class="flex gap-2">
-							<button
-								on:click={() => removeSubscription(subscription.name)}
-								class="mt-2 self-end rounded bg-{$color}-500 p-2 text-sm text-white hover:bg-{$color}-800"
+							<a
+								href=""
+								class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-500 p-2 text-sm text-white hover:bg-{$color}-800"
 							>
+								<Settings size={20} />
 								Manage Subscripiton
-							</button>
+							</a>
 							<button
-								class="mt-2 self-end rounded bg-{$color}-50 p-2 text-sm text-{$color}-600 hover:text-{$color}-800"
+								class="mt-2 self-end rounded-full bg-{$color}-50 p-2 text-sm text-{$color}-600 hover:text-{$color}-800"
 							>
 								Change Plan
 							</button>

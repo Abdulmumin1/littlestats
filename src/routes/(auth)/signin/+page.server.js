@@ -34,6 +34,6 @@ export const actions = {
 			return fail(400, { fail: true, message: error?.data?.message });
 		}
 
-		throw redirect(301, redirectTo ?? '/settings');
+		throw redirect(301, redirectTo ?? '/sites');
 	}
 };

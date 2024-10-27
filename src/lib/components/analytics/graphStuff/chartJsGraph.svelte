@@ -291,6 +291,8 @@
 	});
 	let chartType = 'line'; // NEW state for chart type
 
+	$: c = chartData.map((d) => d.myX);
+	$: console.log(c);
 	const MountChart = () => {
 		const ctx = chartCanvas.getContext('2d');
 		chart = new Chart(ctx, {
@@ -314,6 +316,11 @@
 			options: {
 				responsive: true,
 				scales: {
+					x: {
+						ticks: {
+							display: false
+						}
+					},
 					y: {
 						beginAtZero: true,
 						ticks: {
@@ -408,8 +415,16 @@
 	</div>
 
 	{#if showChart}
-		<div class="mt-6 flex items-center justify-center rounded-xl">
+		<div class="mt-6 flex flex-col items-center justify-center rounded-xl">
 			<canvas bind:this={chartCanvas} class="max-h-[300px]"></canvas>
+			<div class="flex w-full justify-between text-xs">
+				<span>
+					{c[0]}
+				</span>
+				<span>
+					{c[c.length - 1]}
+				</span>
+			</div>
 		</div>
 	{/if}
 </div>
