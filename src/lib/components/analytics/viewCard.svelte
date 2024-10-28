@@ -2,6 +2,9 @@
 	import { color } from '$lib/colors/mixer.js';
 	import { ArrowDown, ArrowUp } from 'lucide-svelte';
 	import { formatNumber } from '$lib/slug/helpers.js';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
 
 	export let name = 'view';
 	export let number = '4.5k';
@@ -9,6 +12,13 @@
 	export let percentange = '504%';
 	let increase = 'up';
 	export let type = 'normal';
+
+	function sendFilter() {
+		dispatch('chart_filter', {
+			type,
+			query: name
+		});
+	}
 
 	function formatDuration(seconds) {
 		// Calculate hours, minutes, and remaining seconds
@@ -49,7 +59,11 @@
 	}
 </script>
 
-<div class="views bg-{$color}-200 px-6" class:red={increase == 'down'}>
+<div
+	on:click={sendFilter}
+	class="views cursor-pointer bg-{$color}-200 px-6"
+	class:red={increase == 'down'}
+>
 	<p class="text-gray-800">{name}</p>
 	<p class="text-2xl font-extrabold leading-10">
 		{type == 'time'

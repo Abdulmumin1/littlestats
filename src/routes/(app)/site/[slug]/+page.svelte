@@ -259,8 +259,23 @@
 	}
 
 	$: sortInterval = 1;
+	$: chartD = { data: views, label: 'Views' };
 
 	let filterlegth = 0;
+
+	function handleChartFilter(event) {
+		let fl = event.detail.query;
+		console.log(fl);
+		if (fl == 'Visitors') {
+			chartD = { data: uniqueUserAgents, label: 'Visitors' };
+		} else if (fl == 'Views') {
+			chartD = { data: views, label: 'Views' };
+		} else if (fl == 'Visit Duration') {
+			chartD = { data: [averageVisitDuration], label: 'Visit Duration' };
+		} else if (fl == 'Bounce Rate') {
+			chartD = { data: [averageVisitDuration], label: 'Bounce Rate' };
+		}
+	}
 	async function handleDateChange(e) {
 		// console.log(parseInt(e.target.value));
 		await fetchFromDefaultDates(e.target.value);
@@ -345,12 +360,14 @@
 				backdateData={backdateViews.length ?? backdateViews}
 				number={views.length}
 				percentange="434%"
+				on:chart_filter={handleChartFilter}
 			/>
 			<ViewCard
 				name="Visitors"
 				backdateData={backdateuniqueUserAgents.length ?? backdateuniqueUserAgents}
 				number={uniqueUserAgents.length}
 				percentange="4%"
+				on:chart_filter={handleChartFilter}
 			/>
 			<ViewCard
 				name="Visit Duration"
@@ -360,7 +377,7 @@
 				percentange="94%"
 			/>
 			<ViewCard
-				name="Bounce rate"
+				name="Bounce Rate"
 				number={parseInt(bounces.bounceRate)}
 				backdateData={parseInt(isNaN(backdateBounces.bounceRate) ? 0 : backdateBounces.bounceRate)}
 				percentange="14%"
@@ -379,7 +396,7 @@
 		<!-- <GrapthView viewRecords={views} /> -->
 		<!-- <MdGraphStuff /> -->
 		<!-- <AnotherChart viewRecords={views} {sortInterval} /> -->
-		<ChartJsGraph viewRecords={views} {sortInterval} />
+		<ChartJsGraph {chartD} {sortInterval} />
 		<div class="mt-6 flex flex-wrap gap-6">
 			<PagesSection {views} on:filter={handleAddfilter} />
 			<ReferrerSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />

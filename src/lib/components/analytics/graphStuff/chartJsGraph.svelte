@@ -148,7 +148,8 @@
 	};
 	$: usedColor = colorList[$color] ?? greenColors;
 
-	export let viewRecords = [];
+	export let chartD = { data: [], label: 'Views' };
+	$: viewRecords = chartD.data;
 	export let sortInterval = 1;
 
 	let chartCanvas;
@@ -301,7 +302,7 @@
 				labels: chartData.map((d) => d.myX),
 				datasets: [
 					{
-						label: 'Views',
+						label: chartD.label,
 						data: chartData.map((d) => d.myY),
 						borderColor: usedColor.primary,
 						tension: 0.3,
@@ -358,6 +359,7 @@
 	$: if (chart && chartData) {
 		chart.data.labels = chartData.map((d) => d.myX);
 		chart.data.datasets[0].data = chartData.map((d) => d.myY);
+		chart.data.datasets[0].label = chartD.label;
 		chart.update();
 	}
 
