@@ -35,6 +35,11 @@ export async function load({ locals: { pb, user }, request }) {
 /** @type {import('./$types').Actions} */
 export const actions = {
 	updateDomain: async ({ locals: { pb, user }, request }) => {
+		const domain_recs = await pb.collection('domain').getFullList();
+
+		if (domain_recs.length >= 5) {
+			return fail(400, { message: 'Domain Limit reached!' });
+		}
 		const data = await request.formData();
 		let domain = data.get('name');
 		try {
@@ -44,7 +49,7 @@ export const actions = {
 		}
 
 		if (!domain) {
-			return fail(400, 'Domain name required');
+			return fail(400, { message: 'Domain name required' });
 		}
 
 		try {

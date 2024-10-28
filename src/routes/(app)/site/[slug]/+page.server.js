@@ -123,10 +123,10 @@ export const actions = {
 		const domain_id = data.get('domain_id');
 		const cacheData = await fetchCache(pb, defaultRange, domain_id);
 
-		console.log(cacheData);
+		// console.log(cacheData);
 
 		if (cacheData != false) {
-			console.log('We have a catch here');
+			// console.log('We have a catch here');
 			return { results: cacheData, cache: true };
 		}
 		try {

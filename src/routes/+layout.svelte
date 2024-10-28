@@ -4,6 +4,7 @@
 	import Toast from '$lib/components/generals/toast.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { onMount } from 'svelte';
+	import LoadProgress from '../lib/components/generals/loadProgress.svelte';
 
 	let colorVar = [
 		'hover:bg-stone-100',
@@ -1373,6 +1374,7 @@
 	<meta name="theme-color" content={usedColor.primary} />
 </svelte:head>
 
+<LoadProgress />
 {#if loaded}
 	<div class="bg-{$color}-100 min-h-screen">
 		<slot></slot>

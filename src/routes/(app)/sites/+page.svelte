@@ -2,6 +2,7 @@
 	import { Link, Activity, Clock, Eye, ArrowUpRight } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import CuteCloud from '../../../lib/components/generals/cuteCloud.svelte';
+	import { formatNumber } from '$lib/slug/helpers.js';
 
 	export let data;
 	let domains = data.domains;
@@ -34,15 +35,17 @@
 		const now = Date.now(); // Current timestamp in milliseconds
 		const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
 
-		return validEvents.filter((event) => {
-			const eventTime = new Date(event.timestamp).getTime();
-			return eventTime >= twentyFourHoursAgo && eventTime <= now;
-		}).length;
+		return formatNumber(
+			validEvents.filter((event) => {
+				const eventTime = new Date(event.timestamp).getTime();
+				return eventTime >= twentyFourHoursAgo && eventTime <= now;
+			}).length
+		);
 	}
 
 	function filterView(events) {
 		if (!events || !Array.isArray(events)) return 0;
-		return events.filter((e) => e.event_type !== 'pageExit').length;
+		return formatNumber(events.filter((e) => e.event_type !== 'pageExit').length);
 	}
 
 	function getActivityRate(events) {
@@ -75,12 +78,15 @@
 </script>
 
 <div class="container mx-auto p-6">
-	<h1 class="mb-6 text-2xl font-bold text-slate-900">Sites</h1>
+	<div class="flex items-center justify-between">
+		<h1 class="mb-6 text-2xl font-bold text-slate-900">Sites</h1>
+		<a href="/settings"> + Add Domain </a>
+	</div>
 
-	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+	<div class="flex flex-col gap-4">
 		{#each domains as domain}
 			<div
-				class=" rounded-lg border border-{$color}-400 bg-{$color}-200 shadow-sm transition-shadow hover:shadow-md"
+				class="w-full rounded-lg border border-{$color}-400 bg-{$color}-200 shadow-sm transition-shadow hover:shadow-md"
 			>
 				<!-- Card Header -->
 				<div class="border-b border-{$color}-500 p-4">
@@ -89,9 +95,11 @@
 							<Link class="h-4 w-4 text-{$color}-500" />
 							<h3 class="text-lg font-semibold text-slate-900">{domain.name}</h3>
 						</div>
-						<span class="rounded-full px-2 py-1 text-[9px] bg-{$color}-50 text-{$color}-700 w-full">
+						<div
+							class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-50 text-{$color}-700"
+						>
 							ID: {domain.id}
-						</span>
+						</div>
 					</div>
 				</div>
 
