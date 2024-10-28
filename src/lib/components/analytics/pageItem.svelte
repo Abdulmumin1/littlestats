@@ -1,5 +1,6 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
+	import { formatNumber } from '$lib/slug/helpers.js';
 
 	export let path, views, type;
 	import { createEventDispatcher } from 'svelte';
@@ -21,5 +22,5 @@
 	class="flex justify-between rounded-md text-left bg-{$color}-200 px-[9px] py-[3px]"
 >
 	<p class="max-w-[420px] truncate">{path}</p>
-	<p class="text-sm">{views}</p>
+	<p class="text-sm">{formatNumber(views)}</p>
 </button>

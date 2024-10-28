@@ -6,23 +6,71 @@
 	export let data;
 	let domains = data.domains;
 
-	function last24hours(ob) {
-		let views = ob.filter((e) => e.event_type != 'pageExit');
-		const now = new Date();
-		return views.filter((element) => {
-			const recordDate = new Date(element.timestamp).getTime();
-			const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).getTime();
-			return recordDate >= last24Hours;
+	// function last24hours(ob) {
+	// 	let views = ob.filter((e) => e.event_type != 'pageExit');
+	// 	const now = new Date();
+	// 	return views.filter((element) => {
+	// 		const recordDate = new Date(element.created_at).getTime();
+	// 		const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).getTime();
+	// 		return recordDate <= last24Hours;
+	// 	}).length;
+	// }
+
+	// function filterView(ob) {
+	// 	let views = ob.filter((e) => e.event_type != 'pageExit');
+	// 	return views.length;
+	// }
+
+	// function getActivityRate(events) {
+	// 	return Math.round(last24hours(events) / 24);
+	// }
+
+	function last24hours(events) {
+		if (!events || !Array.isArray(events)) return 0;
+
+		// Filter out pageExit events first
+		const validEvents = events.filter((e) => e.event_type !== 'pageExit');
+
+		const now = Date.now(); // Current timestamp in milliseconds
+		const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
+
+		return validEvents.filter((event) => {
+			const eventTime = new Date(event.timestamp).getTime();
+			return eventTime >= twentyFourHoursAgo && eventTime <= now;
 		}).length;
 	}
 
-	function filterView(ob) {
-		let views = ob.filter((e) => e.event_type != 'pageExit');
-		return views.length;
+	function filterView(events) {
+		if (!events || !Array.isArray(events)) return 0;
+		return events.filter((e) => e.event_type !== 'pageExit').length;
 	}
 
 	function getActivityRate(events) {
-		return Math.round(last24hours(events) / 24);
+		if (!events || !Array.isArray(events)) return 0;
+
+		const now = Date.now();
+		const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
+
+		// Filter events in the last 24 hours
+		const recentEvents = events.filter((event) => {
+			if (event.event_type === 'pageExit') return false;
+			const eventTime = new Date(event.timestamp).getTime();
+			return eventTime >= twentyFourHoursAgo && eventTime <= now;
+		});
+
+		// If no events, return 0
+		if (recentEvents.length === 0) return 0;
+
+		// Find the time range of the events
+		const eventTimes = recentEvents.map((e) => new Date(e.timestamp).getTime());
+		const oldestEventTime = Math.min(...eventTimes);
+		const newestEventTime = Math.max(...eventTimes);
+
+		// Calculate the actual time span in hours (minimum 1 hour to avoid division by zero)
+		const timeSpanHours = Math.max(1, (newestEventTime - oldestEventTime) / (1000 * 60 * 60));
+
+		// Calculate rate
+		return Math.round(recentEvents.length / timeSpanHours);
 	}
 </script>
 
@@ -52,9 +100,9 @@
 					<div class="p-4">
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div class="flex items-center gap-2">
-								<Eye class="h-4 w-4 text-{$color}-500" />
+								<Eye class="h-4 w-4 text-{$color}-800" />
 								<div>
-									<p class="text-sm text-slate-500">Lifetime Views</p>
+									<p class="text-sm text-gray-900">Lifetime Views</p>
 									<p class="font-semibold text-slate-900">
 										{filterView(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
@@ -62,9 +110,9 @@
 							</div>
 
 							<div class="flex items-center gap-2">
-								<Clock class="h-4 w-4 text-{$color}-500" />
+								<Clock class="h-4 w-4 text-{$color}-800" />
 								<div>
-									<p class="text-sm text-slate-500">Last 24 Hours</p>
+									<p class="text-sm text-gray-900">Last 24 Hours</p>
 									<p class="font-semibold text-slate-900">
 										{last24hours(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
@@ -72,9 +120,9 @@
 							</div>
 
 							<div class="flex items-center gap-2">
-								<Activity class="h-4 w-4 text-{$color}-500" />
+								<Activity class="h-4 w-4 text-{$color}-800" />
 								<div>
-									<p class="text-sm text-slate-500">Activity Rate</p>
+									<p class="text-sm text-gray-900">Activity Rate</p>
 									<p class="font-semibold text-slate-900">
 										{getActivityRate(domain.expand.events_via_domain_id)} /hr
 									</p>
@@ -88,7 +136,7 @@
 				<div class="{domain.expand ? `border-${$color}-500 border-t` : ''} p-4">
 					<a
 						href="/site/{domain.id}"
-						class="flex items-center gap-1 text-sm text-{$color}-500 hover:text-{$color}-700"
+						class="flex items-center gap-1 text-sm text-{$color}-800 hover:text-{$color}-900"
 					>
 						View Details
 						<ArrowUpRight class="h-3 w-3" />

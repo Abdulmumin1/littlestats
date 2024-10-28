@@ -1,6 +1,7 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
 	import { ArrowDown, ArrowUp } from 'lucide-svelte';
+	import { formatNumber } from '$lib/slug/helpers.js';
 
 	export let name = 'view';
 	export let number = '4.5k';
@@ -55,7 +56,7 @@
 			? formatDuration(parseInt(isNaN(number) ? 0 : number))
 			: type == 'percent'
 				? `${isNaN(number) ? 0 : number}%`
-				: number}
+				: formatNumber(number)}
 	</p>
 	<p
 		title="{percentange}% compare to last x days"
