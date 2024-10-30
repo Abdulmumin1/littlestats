@@ -54,7 +54,7 @@
 		method="post"
 		use:enhance={handleSubmit}
 		action="?/login"
-		class="container flex max-w-[28rem] flex-col rounded-xl bg-{$color}-200 p-2 px-3 md:p-5"
+		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 p-2 px-3 md:p-5"
 	>
 		<p class=" mb-3 mt-2 text-3xl font-semibold text-gray-800">Welcome Back</p>
 		<input
@@ -62,19 +62,19 @@
 			placeholder="email@example.com"
 			name="email"
 			bind:value={email}
-			class="rounded-t-md bg-gray-100 px-2 py-3 text-black"
+			class="rounded-xl border-2 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
 		/>
 		<input
 			type="password"
 			placeholder="password"
 			name="password"
 			bind:value={password}
-			class="border-t-2 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
+			class="rounded-xl border-2 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
 		/>
 		<button
 			aria-busy={loading}
 			disabled={loading}
-			class="flex items-center justify-center gap-3 rounded-b-md text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
+			class="flex items-center justify-center gap-3 rounded-xl text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
 			>Login
 			{#if loading}
 				<Loader class="animate-spin" size={16} />

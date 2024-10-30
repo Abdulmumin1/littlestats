@@ -27,9 +27,13 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 						<Twitter size={20} />
 					</a>
 
-					<button title="abdulmuminyqn@gmail.com" class="text-{$color}-800 hover:text-{$color}-800">
+					<a
+						href="mailto:abdulmuminyqn@gmail.com"
+						title="abdulmuminyqn@gmail.com"
+						class="text-{$color}-800 hover:text-{$color}-800"
+					>
 						<Mail size={20} />
-					</button>
+					</a>
 				</div>
 			</div>
 

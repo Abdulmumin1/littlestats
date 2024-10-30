@@ -4,7 +4,7 @@ import { redirect } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ locals: { pb } }) {
+export async function load({ locals: { pb }, url }) {
 	const user = pb.authStore.model;
 
 	if (user.setup_complete) {

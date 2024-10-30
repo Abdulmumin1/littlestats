@@ -109,7 +109,7 @@
 						<!-- <div class="text-sm text-gray-600">Renewal: {subscription.renewalDate}</div> -->
 						<div class="flex gap-2">
 							<a
-								href=""
+								href="https://abdulmuminyqn.lemonsqueezy.com/billing"
 								class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-500 p-2 text-sm text-white hover:bg-{$color}-800"
 							>
 								<Settings size={20} />

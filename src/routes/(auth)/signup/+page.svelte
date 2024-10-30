@@ -65,7 +65,7 @@
 		use:enhance={handleSubmit}
 		method="post"
 		action="?/register"
-		class="container m-2 flex max-w-[28rem] flex-col rounded-xl bg-{$color}-200 p-2 px-3 md:p-5"
+		class="container m-2 flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 p-2 px-3 md:p-5"
 	>
 		<p class=" mb-3 text-3xl font-semibold text-gray-800">Sign Up</p>
 		<input
@@ -74,7 +74,8 @@
 			placeholder="email@example.com"
 			id="email"
 			name="email"
-			class="rounded-t-md bg-gray-100 px-2 py-3"
+			required
+			class="border-2 border-{$color}-500 rounded-xl bg-gray-100 px-2 py-3"
 		/>
 		<input
 			type="password"
@@ -82,20 +83,22 @@
 			bind:value={password}
 			name="password"
 			placeholder="password"
-			class="border-t-2 border-{$color}-500 bg-gray-100 px-2 py-3"
+			required
+			class="rounded-xl border-2 border-{$color}-500 bg-gray-100 px-2 py-3"
 		/>
 		<input
 			type="password"
 			id="password2"
 			bind:value={password2}
 			name="passwordConfirm"
-			class="border-t-2 border-{$color}-500 bg-gray-100 px-2 py-3"
+			class="rounded-xl border-2 border-{$color}-500 bg-gray-100 px-2 py-3"
 			placeholder="confirm password"
+			required
 		/>
 		<button
 			aria-busy={loading}
 			disabled={loading}
-			class="flex items-center justify-center gap-3 rounded-b-md text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
+			class="flex items-center justify-center gap-3 rounded-xl text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
 			>Signup
 			{#if loading}
 				<Loader class="animate-spin" size={16} />
@@ -111,7 +114,7 @@
 		</p>
 	{/if}
 	{#if successMessage}
-		<p transition:slide class="w-full max-w-[30rem] rounded bg-green-100 p-6 text-green-500">
+		<p transition:slide class="w-full max-w-[30rem] rounded bg-{$color}-100 p-6 text-{$color}-800">
 			{successMessage}
 		</p>
 	{/if}

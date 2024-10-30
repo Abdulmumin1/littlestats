@@ -28,12 +28,12 @@ export const authentication = async ({ event, resolve }) => {
 
 const unprotectedPrefix = [
 	'/signin',
-	'/onboarding',
 	'/embed',
 	'/signup',
 	'/terms',
 	'/privacy',
-	'/acceptable-use'
+	'/acceptable-use',
+	'/confirm'
 ];
 export const authorization = async ({ event, resolve }) => {
 	const loggedIn = await event.locals.pb.authStore.model;
@@ -49,8 +49,7 @@ export const authorization = async ({ event, resolve }) => {
 				303,
 				'/signin?after=' + event.url.pathname.slice(1, event.url.pathname.length)
 			);
-		}
-		if (!loggedIn.setup_complete) {
+		} else if (!loggedIn?.setup_complete && !event.url.pathname.startsWith('/onboarding')) {
 			throw redirect(303, '/onboarding');
 		}
 
