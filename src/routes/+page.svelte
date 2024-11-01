@@ -8,6 +8,7 @@
 	import PricingSection from '../lib/components/landing/pricingSection.svelte';
 	import FeatureSection from '../lib/components/landing/featureSection.svelte';
 	import Waitlist from '../lib/components/landing/waitlist.svelte';
+	import Banner from '../lib/components/landing/launchBanner.svelte';
 	import Footer from './footer.svelte';
 
 	const plans = [
@@ -37,6 +38,7 @@
 
 <main class="min-h-screen bg-{$color}-100 text-black">
 	<div class="container mx-auto max-w-[1000px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+		<Banner />
 		<Nav />
 
 		<div

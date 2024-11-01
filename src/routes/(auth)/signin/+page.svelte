@@ -84,6 +84,16 @@
 			Don't have an account? <a class="text-{$color}-500" href="/signup">Signup</a>
 		</p>
 	</form>
+
+	<form action="?/oauth" method="post" class="w-full max-w-[28rem]">
+		<div class="my-2 text-center">OR</div>
+		<button
+			type="submit"
+			class="flex w-full items-center justify-center gap-2 bg-{$color}-200 rounded-xl border-2 p-2 border-{$color}-500"
+		>
+			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
+		</button>
+	</form>
 	{#if errMessage}
 		<p transition:slide class="mt-3 w-full max-w-[30rem] rounded bg-red-200 p-6 text-red-500">
 			{errMessage?.message ?? errMessage}

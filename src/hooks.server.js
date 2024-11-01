@@ -21,7 +21,10 @@ export const authentication = async ({ event, resolve }) => {
 	const response = await resolve(event);
 
 	// send back the default 'pb_auth' cookie to the client with the latest store state
-	response.headers.append('set-cookie', event.locals.pb.authStore.exportToCookie());
+	response.headers.append(
+		'set-cookie',
+		event.locals.pb.authStore.exportToCookie({ sameSite: 'Lax' })
+	);
 
 	return response;
 };
@@ -33,7 +36,8 @@ const unprotectedPrefix = [
 	'/terms',
 	'/privacy',
 	'/acceptable-use',
-	'/confirm'
+	'/confirm',
+	'/oauth'
 ];
 export const authorization = async ({ event, resolve }) => {
 	const loggedIn = await event.locals.pb.authStore.model;
