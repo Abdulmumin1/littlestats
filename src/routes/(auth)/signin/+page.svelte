@@ -4,6 +4,7 @@
 	import { slide } from 'svelte/transition';
 	import Logo from '../../../lib/components/generals/logo.svelte';
 	import { color } from '$lib/colors/mixer.js';
+	import Seo from '../../../lib/components/generals/seo.svelte';
 
 	export let form;
 
@@ -43,6 +44,9 @@
 	};
 </script>
 
+<svelte:head>
+	<Seo title="Signin" />
+</svelte:head>
 <div class=" flex min-h-screen flex-col items-center justify-center px-4">
 	<a href="/" class="flex flex-col items-center">
 		<Logo />
