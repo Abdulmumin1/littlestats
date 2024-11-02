@@ -4,6 +4,7 @@
 	import PageItem from './pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import EmptyValues from './emptyValues.svelte';
+	import { flip } from 'svelte/animate';
 
 	export let views, domain;
 	let max_page_item_count = 10;
@@ -69,8 +70,10 @@
 	</div>
 
 	<div class="flex h-full flex-col gap-1">
-		{#each trunaced_pages as page}
-			<PageItem on:filter type="browser" path={page[0]} views={page[1]} />
+		{#each trunaced_pages as page (page[0])}
+			<div animate:flip={{ duration: 150 }} class="w-full">
+				<PageItem on:filter type="browser" path={page[0]} views={page[1]} />
+			</div>
 		{:else}
 			<EmptyValues />
 		{/each}

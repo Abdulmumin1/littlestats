@@ -4,6 +4,7 @@
 
 	export let path, views, type;
 	import { createEventDispatcher } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	const dispatch = createEventDispatcher();
 
@@ -19,7 +20,7 @@
 <button
 	title="Click to filter"
 	on:click={sendFilter}
-	class="flex justify-between rounded-md text-left bg-{$color}-200 px-[9px] py-[3px]"
+	class="flex w-full justify-between rounded-md text-left bg-{$color}-200 px-[9px] py-[3px]"
 >
 	<p class="max-w-[420px] truncate">{path}</p>
 	<p class="text-sm">{formatNumber(views)}</p>

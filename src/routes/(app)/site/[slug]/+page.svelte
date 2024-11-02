@@ -12,11 +12,12 @@
 	import Seo from '../../../../lib/components/generals/seo.svelte';
 	import ReferrerSection from '../../../../lib/components/analytics/referrerSection.svelte';
 	import BrowserSection from '../../../../lib/components/analytics/browserSection.svelte';
-	import CountrySection from '../../../../lib/components/analytics/countrySection.svelte';
+	import OsSection from '../../../../lib/components/analytics/OsSection.svelte';
 	import LoadingState from '../../../../lib/components/analytics/graphStuff/loadingState.svelte';
 	import { X } from 'lucide-svelte';
 	import { scale } from 'svelte/transition';
 	import { isOsInUserAgent, isBrowserInUserAgent } from '$lib/slug/helpers.js';
+	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
 
 	$: page_data = data.records;
 
@@ -109,7 +110,7 @@
 			});
 			if (found) {
 				let ind = seqmented.findIndex((e) => e == found);
-				console.log(found, ind);
+				// console.log(found, ind);
 				seqmented[ind] = filter;
 			} else {
 				seqmented = [...seqmented, filter];
@@ -156,7 +157,7 @@
 		// console.log(mock_page.length, data.records.length);
 		page_data = [...mock_page];
 		// filterlegth = mock_page.length;
-		console.log(mock_page.length, data.records.length);
+		// console.log(mock_page.length, data.records.length);
 	}
 
 	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
@@ -216,7 +217,7 @@
 
 		if (response.ok) {
 			let local_result = deserialize(await response.text());
-			console.log(local_result.data);
+			// console.log(local_result.data);
 
 			if (!local_result.data.cache) {
 				let local_records = local_result.data.results ?? [];
@@ -240,13 +241,13 @@
 					bounce_rate: parseInt(isNaN(backdateBounces.bounceRate) ? 0 : backdateBounces.bounceRate),
 					domain_id: data.domain_id
 				};
-				console.log('Not using catch');
+				// console.log('Not using catch');
 
 				await updateSpikeCache(date, d2);
 			} else {
 				// update spike values.
-				console.log('Using using catch');
-				console.log(local_result.data);
+				// console.log('Using using catch');
+				// console.log(local_result.data);
 				backdateViews = local_result.data.results.record.views;
 				backdateBounces = { bounceRate: local_result.data.results.record.bounce_rate };
 				backdateaverageVisitDuration = local_result.data.results.record.visit_duration;
@@ -265,7 +266,7 @@
 
 	function handleChartFilter(event) {
 		let fl = event.detail.query;
-		console.log(fl);
+		// console.log(fl);
 		if (fl == 'Visitors') {
 			chartD = { data: uniqueUserAgents, label: 'Visitors' };
 		} else if (fl == 'Views') {
@@ -403,6 +404,7 @@
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
 			<BrowserSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<OsSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 			<CountrySection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 		</div>
 	</div>

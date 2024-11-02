@@ -223,8 +223,10 @@
 		const startDate = new Date(now - totalDays * 24 * 60 * 60 * 1000);
 		const intervals = Array.from({ length: totalDays }, (_, i) => totalDays - i);
 		const counts = new Map(intervals.map((day) => [`${day} days ago`, 0]));
+		counts.set('Today', 1);
 
 		viewRecords.forEach((record) => {
+			console.log(counts);
 			const recordDate = new Date(record.timestamp);
 			if (isNaN(recordDate.getTime())) {
 				console.warn(`Invalid date encountered: ${record.timestamp}`);
@@ -237,9 +239,16 @@
 
 			const daysAgo = Math.floor((now - recordDate) / (24 * 60 * 60 * 1000));
 
+			console.log(daysAgo);
 			// Handle views less than a day ago
 			if (daysAgo < 1) {
-				counts.set('1 days ago', counts.get('1 days ago') + 1);
+				console.log(daysAgo);
+
+				if (counts.has('Today')) {
+					counts.set('Today', counts.get('Today') + 1);
+				} else {
+					counts.set('Today', 1);
+				}
 				return;
 			}
 
@@ -257,10 +266,11 @@
 		});
 
 		// Convert Map to Object and ensure all intervals are included
-		const result = Object.fromEntries(
+		const days_ob = Object.fromEntries(
 			intervals.map((day) => [`${day} days ago`, counts.get(`${day} days ago`)])
 		);
 
+		const result = { ...days_ob, Today: counts.get('Today') };
 		// console.log(totalDays, intervals, result);
 		return result;
 	}

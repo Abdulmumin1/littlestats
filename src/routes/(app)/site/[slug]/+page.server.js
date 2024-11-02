@@ -103,6 +103,7 @@ export const actions = {
 					referrer: record.referrer,
 					user_agent: record.user_agent,
 					timestamp: record.timestamp,
+					ip: record.ip,
 					...{ duration: record.duration }
 				};
 			});
@@ -172,6 +173,7 @@ export const actions = {
 					referrer: record.referrer,
 					user_agent: record.user_agent,
 					timestamp: record.timestamp,
+
 					...{ duration: record.duration }
 				};
 			});

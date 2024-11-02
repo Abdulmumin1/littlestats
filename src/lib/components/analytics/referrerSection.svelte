@@ -1,4 +1,5 @@
 <script>
+	import { flip } from 'svelte/animate';
 	import BottomDrawer from '../generals/bottomDrawer.svelte';
 	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
@@ -74,8 +75,10 @@
     </div> -->
 
 	<div class="flex h-full flex-col gap-1">
-		{#each trunaced_pages as page}
-			<PageItem on:filter type="ref" path={page[0]} views={page[1]} />
+		{#each trunaced_pages as page (page[0])}
+			<div animate:flip={{ duration: 150 }} class="w-full">
+				<PageItem on:filter type="ref" path={page[0]} views={page[1]} />
+			</div>
 		{:else}
 			<EmptyValues />
 		{/each}
