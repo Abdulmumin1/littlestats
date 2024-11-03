@@ -3,8 +3,8 @@
 
 	const keyFeatures = [
 		{
-			title: 'Live Traffic Monitoring',
-			description: 'Optimize performance with instant traffic flow insights.'
+			title: 'Traffic Monitoring',
+			description: 'Optimize performance with sweet traffic flow insights.'
 		},
 		{
 			title: 'Customizable Event Tracking',
