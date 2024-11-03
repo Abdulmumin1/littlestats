@@ -15,8 +15,8 @@
 	import OsSection from '../../../../lib/components/analytics/OsSection.svelte';
 	import LoadingState from '../../../../lib/components/analytics/graphStuff/loadingState.svelte';
 	import { X } from 'lucide-svelte';
-	import { scale } from 'svelte/transition';
-	import { isOsInUserAgent, isBrowserInUserAgent } from '$lib/slug/helpers.js';
+	import { scale, slide } from 'svelte/transition';
+	import { isOsInUserAgent, isBrowserInUserAgent, getCountry } from '$lib/slug/helpers.js';
 	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
 
 	$: page_data = data.records;
@@ -150,6 +150,10 @@
 			} else if (filter.type == 'os') {
 				mock_page = mock_page.filter((e) => {
 					return isOsInUserAgent(e.user_agent, filter.query);
+				});
+			} else if (filter.type == 'ip') {
+				mock_page = mock_page.filter((e) => {
+					return getCountry(e.timezone) == filter.query;
 				});
 			}
 		});
@@ -343,10 +347,10 @@
 			</div>
 		</nav>
 		{#if filters.length > 0}
-			<div class="flex w-full flex-row flex-wrap gap-1">
+			<div in:slide={{ duration: 230 }} class="flex w-full flex-row flex-wrap gap-1">
 				{#each filters as filter}
 					<button
-						in:scale
+						transition:scale
 						on:click={() => removeFilter(filter)}
 						class="flex w-fit gap-1 rounded-full bg-{$color}-300 items-center p-1 px-2"
 						>{filter.type} <span class="bg-{$color}-100 rounded-full px-2">{filter.query}</span>
@@ -362,6 +366,7 @@
 				number={views.length}
 				percentange="434%"
 				on:chart_filter={handleChartFilter}
+				filter_on={filters.length > 0}
 			/>
 			<ViewCard
 				name="Visitors"
@@ -369,6 +374,7 @@
 				number={uniqueUserAgents.length}
 				percentange="4%"
 				on:chart_filter={handleChartFilter}
+				filter_on={filters.length > 0}
 			/>
 			<ViewCard
 				name="Visit Duration"
@@ -376,6 +382,7 @@
 				number={averageVisitDuration}
 				type="time"
 				percentange="94%"
+				filter_on={filters.length > 0}
 			/>
 			<ViewCard
 				name="Bounce Rate"
@@ -384,6 +391,7 @@
 				percentange="14%"
 				increase="down"
 				type="percent"
+				filter_on={filters.length > 0}
 			/>
 			<!-- <ViewCard
 				name="Visitors"

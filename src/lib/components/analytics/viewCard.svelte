@@ -3,6 +3,7 @@
 	import { ArrowDown, ArrowUp } from 'lucide-svelte';
 	import { formatNumber } from '$lib/slug/helpers.js';
 	import { createEventDispatcher } from 'svelte';
+	import { fly, slide } from 'svelte/transition';
 
 	const dispatch = createEventDispatcher();
 
@@ -10,6 +11,7 @@
 	export let number = '4.5k';
 	export let backdateData = number;
 	export let percentange = '504%';
+	export let filter_on = false;
 	let increase = 'up';
 	export let type = 'normal';
 
@@ -72,25 +74,28 @@
 				? `${isNaN(number) ? 0 : number}%`
 				: formatNumber(number)}
 	</p>
-	<p
-		title="{percentange}% compare to last x days"
-		class="m-0 flex w-fit items-center gap-1 rounded-md p-0 {type != 'percent'
-			? increase == 'up'
-				? `bg-${$color}-100 text-green-700`
-				: `bg-${$color}-100 text-red-700`
-			: increase == 'down'
-				? `bg-${$color}-100 text-green-700`
-				: `bg-${$color}-100 text-red-700`} px-1 font-bold"
-	>
-		{#if increase == 'up'}
-			<ArrowUp size={14} />
-		{:else}
-			<ArrowDown size={14} />
-		{/if}
-		{parseInt(percentange) < 0
-			? `${parseInt(isNaN(percentange) ? 0 : percentange) * -1}%`
-			: `${parseInt(isNaN(percentange) ? 0 : percentange)}%`}
-	</p>
+	{#if !filter_on}
+		<p
+			transition:slide={{ duration: 100 }}
+			title="{percentange}% compare to last x days"
+			class="m-0 flex w-fit items-center gap-1 rounded-md p-0 {type != 'percent'
+				? increase == 'up'
+					? `bg-${$color}-100 text-green-700`
+					: `bg-${$color}-100 text-red-700`
+				: increase == 'down'
+					? `bg-${$color}-100 text-green-700`
+					: `bg-${$color}-100 text-red-700`} px-1 font-bold"
+		>
+			{#if increase == 'up'}
+				<ArrowUp size={14} />
+			{:else}
+				<ArrowDown size={14} />
+			{/if}
+			{parseInt(percentange) < 0
+				? `${parseInt(isNaN(percentange) ? 0 : percentange) * -1}%`
+				: `${parseInt(isNaN(percentange) ? 0 : percentange)}%`}
+		</p>
+	{/if}
 </div>
 
 <style>

@@ -226,7 +226,7 @@
 		counts.set('Today', 1);
 
 		viewRecords.forEach((record) => {
-			console.log(counts);
+			// console.log(counts);
 			const recordDate = new Date(record.timestamp);
 			if (isNaN(recordDate.getTime())) {
 				console.warn(`Invalid date encountered: ${record.timestamp}`);
@@ -239,10 +239,10 @@
 
 			const daysAgo = Math.floor((now - recordDate) / (24 * 60 * 60 * 1000));
 
-			console.log(daysAgo);
+			// console.log(daysAgo);
 			// Handle views less than a day ago
 			if (daysAgo < 1) {
-				console.log(daysAgo);
+				// console.log(daysAgo);
 
 				if (counts.has('Today')) {
 					counts.set('Today', counts.get('Today') + 1);
@@ -303,7 +303,7 @@
 	let chartType = 'line'; // NEW state for chart type
 
 	$: c = chartData.map((d) => d.myX);
-	$: console.log(c);
+	// $: console.log(c);
 	const MountChart = () => {
 		const ctx = chartCanvas.getContext('2d');
 		chart = new Chart(ctx, {
