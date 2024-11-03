@@ -86,11 +86,11 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 			</div>
 		</div>
 
-		<div class="mt-12 border-t border-{$color}-200 pt-8">
+		<!-- <div class="mt-12 border-t border-{$color}-200 pt-8">
 			<p class="text-center text-sm text-{$color}-800">
 				© {currentYear} Littlestats. All rights reserved.
 			</p>
-		</div>
+		</div> -->
 	</div>
 </footer>
 
