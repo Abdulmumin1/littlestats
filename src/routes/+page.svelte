@@ -55,7 +55,7 @@
 				Your analytics needs without the premium price tag
 			</p>
 			<a
-				href="#waitlist"
+				href="/signin"
 				class="inline-block w-fit transform rounded-full text-white bg-{$color}-500 px-6 py-2 text-base font-semibold text-black transition duration-300 hover:-translate-y-1 hover:bg-{$color}-400 sm:px-8 sm:py-3 sm:text-lg"
 			>
 				Get Started
