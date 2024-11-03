@@ -12,7 +12,7 @@
 	function generateScriptUrl(domain) {
 		// In a real application, you'd generate a unique script URL,
 		// possibly involving a backend call.
-		return `<script src="https://littlestats-backend.fly.dev/embed/${domain.id}">${'</'}script>`;
+		return `<script src="https://api.littlestats.click/embed/${domain.id}">${'</'}script>`;
 	}
 
 	function copyToClipboard(text) {

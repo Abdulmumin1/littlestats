@@ -104,6 +104,7 @@ export const actions = {
 					user_agent: record.user_agent,
 					timestamp: record.timestamp,
 					ip: record.ip,
+					timezone: record.timezone,
 					...{ duration: record.duration }
 				};
 			});
@@ -173,6 +174,7 @@ export const actions = {
 					referrer: record.referrer,
 					user_agent: record.user_agent,
 					timestamp: record.timestamp,
+					timezone: record.timezone,
 
 					...{ duration: record.duration }
 				};
