@@ -101,7 +101,7 @@
 				</div>
 				<div slot="content" class="relative flex flex-col gap-1 overflow-y-auto">
 					<div class="sticky top-0 mb-3 flex justify-between text-gray-950">
-						<p>Referrer</p>
+						<p>Operating System</p>
 						<p>Views</p>
 					</div>
 					{#each fetchPages(views) as page}
