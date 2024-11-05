@@ -90,10 +90,10 @@
 	on:touchend={handleTouchEnd}
 />
 
-<div class="drawer-container mx-auto max-w-7xl">
+<div class="drawer-container">
 	<button class="z-0" on:click={toggleDrawer}><slot name="handle" /></button>
 	<div
-		class="drawer bg-{$color}-100"
+		class="drawer bg-{$color}-100 mx-auto max-w-7xl"
 		style="height: {height}px; bottom: {$position}px;"
 		bind:this={drawerEl}
 		on:mousedown={handleMouseDown}
