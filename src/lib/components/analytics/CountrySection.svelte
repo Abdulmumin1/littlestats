@@ -353,7 +353,7 @@
 
 		// console.log(uniquePages);
 		pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
-		return true;
+		return pages;
 	}
 
 	$: pages = [];
