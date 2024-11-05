@@ -153,7 +153,7 @@
 				});
 			} else if (filter.type == 'country') {
 				mock_page = mock_page.filter((e) => {
-					return getCountry(e.timezone) == filter.query;
+					return getCountry(e?.timezone) == filter.query;
 				});
 			}
 		});

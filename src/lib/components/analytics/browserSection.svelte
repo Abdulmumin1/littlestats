@@ -7,7 +7,7 @@
 	import { flip } from 'svelte/animate';
 
 	export let views, domain;
-	let max_page_item_count = 10;
+	let max_page_item_count = 6;
 
 	function parseUserAgent(userAgent) {
 		let browser = 'Unknown';

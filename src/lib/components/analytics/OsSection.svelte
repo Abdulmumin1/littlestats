@@ -5,7 +5,7 @@
 	import PageItem from './pageItem.svelte';
 
 	export let views, domain;
-	let max_page_item_count = 10;
+	let max_page_item_count = 6;
 
 	function parseUserAgent(userAgent) {
 		let os = 'Unknown';

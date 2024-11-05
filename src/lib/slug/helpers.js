@@ -135,7 +135,7 @@ export function isBrowserInUserAgent(userAgent, browserName) {
 	}
 }
 
-export function getCountry(timezone) {
+export function getCounullntry(timezone) {
 	let countries = {
 		AD: 'Andorra',
 		AE: 'United Arab Emirates',

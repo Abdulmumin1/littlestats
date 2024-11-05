@@ -10,7 +10,7 @@
 	import { getCountry } from '$lib/slug/helpers.js';
 
 	export let views, domain;
-	let max_page_item_count = 10;
+	let max_page_item_count = 6;
 
 	// Function using IP geolocation service
 
