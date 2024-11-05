@@ -4,6 +4,6 @@
 </script>
 
 <InsideNav />
-<div class="p-2">
+<div class="max-w-7xl p-2">
 	<slot />
 </div>
