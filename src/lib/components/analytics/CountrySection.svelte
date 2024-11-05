@@ -402,7 +402,7 @@
 		<div in:fade class="w-ful flex h-full flex-col gap-1">
 			{#each trunaced_pages as page (page[0])}
 				<div animate:flip={{ duration: 150 }} class="min-w-full">
-					<PageItem on:filter type="ip" path={page[0]} views={page[1]} />
+					<PageItem on:filter type="country" path={page[0]} views={page[1]} />
 				</div>
 			{:else}
 				<EmptyValues />
@@ -418,8 +418,8 @@
 							<p>Country</p>
 							<p>Views</p>
 						</div>
-						{#each fetchPages(views) as page}
-							<PageItem on:filter type="ip" path={page[0]} views={page[1]} />
+						{#each pages as page}
+							<PageItem on:filter type="country" path={page[0]} views={page[1]} />
 						{:else}
 							<p>Nothing yet!</p>
 						{/each}
