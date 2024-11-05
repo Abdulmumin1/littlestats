@@ -94,7 +94,7 @@
 			<EmptyValues />
 		{/each}
 
-		{#if pages.length > max_page_item_count}
+		{#if pages.length >= max_page_item_count && trunaced_pages.length < pages.length}
 			<BottomDrawer>
 				<div slot="handle">
 					<button class="no-bg text-right">more &rarr;</button>
