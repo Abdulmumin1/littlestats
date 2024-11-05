@@ -23,27 +23,6 @@ export function isOsInUserAgent(userAgent, osName) {
 	}
 }
 
-export function isBrowserInUserAgent(userAgent, browserName) {
-	// Normalize the browser name for case-insensitivity
-	browserName = browserName.toLowerCase();
-
-	// Check for browser in the user agent string
-	switch (browserName) {
-		case 'firefox':
-			return userAgent.includes('Firefox/');
-		case 'chrome':
-			return userAgent.includes('Chrome/') && !userAgent.includes('Edg/');
-		case 'safari':
-			return userAgent.includes('Safari/') && !userAgent.includes('Chrome/');
-		case 'edge':
-			return userAgent.includes('Edge/') || userAgent.includes('Edg/');
-		case 'opera':
-			return userAgent.includes('Opera/') || userAgent.includes('OPR/');
-		default:
-			return false;
-	}
-}
-
 export function formatNumber(num) {
 	if (num >= 1000000) {
 		return (num / 1000000).toFixed(1) + 'M';
@@ -52,6 +31,108 @@ export function formatNumber(num) {
 		return (num / 1000).toFixed(1) + 'K';
 	}
 	return num.toString();
+}
+
+export function isBrowserInUserAgent(userAgent, browserName) {
+	// Normalize inputs for case-insensitive matching
+	const ua = userAgent.toLowerCase();
+	browserName = browserName.toLowerCase();
+
+	switch (browserName) {
+		// Specialized Browsers
+		case 'amazon silk':
+			return ua.includes('silk/');
+		case 'phantomjs':
+			return ua.includes('phantomjs');
+		case 'electron':
+			return ua.includes('electron');
+		case 'googlebot':
+			return ua.includes('googlebot');
+
+		// Chromium-based browsers
+		case 'edge':
+			return ua.includes('edg/') || ua.includes('edge/');
+		case 'opera':
+			return ua.includes('opr/') || ua.includes('opera/');
+		case 'samsung browser':
+			return ua.includes('samsung browser') || ua.includes('samsungbrowser');
+		case 'uc browser':
+			return ua.includes('ucbrowser') || ua.includes('uc browser');
+		case 'yandex':
+			return ua.includes('yabrowser');
+		case 'vivaldi':
+			return ua.includes('vivaldi');
+		case 'brave':
+			return ua.includes('brave');
+		case 'naver whale':
+			return ua.includes('whale/');
+		case 'maxthon':
+			return ua.includes('maxthon');
+		case '360 browser':
+			return ua.includes('qihu 360');
+		case 'coc coc':
+			return ua.includes('coc_coc_browser');
+		case 'comodo dragon':
+			return ua.includes('dragon/');
+		case 'srware iron':
+			return ua.includes('iron/');
+		case 'chromium':
+			return ua.includes('chromium/');
+		case 'chrome':
+			return (
+				ua.includes('chrome/') &&
+				!ua.includes('edg/') &&
+				!ua.includes('opera/') &&
+				!ua.includes('opr/') &&
+				!ua.includes('chromium/')
+			);
+
+		// Firefox-based browsers
+		case 'seamonkey':
+			return ua.includes('seamonkey');
+		case 'waterfox':
+			return ua.includes('waterfox');
+		case 'pale moon':
+			return ua.includes('palemoon');
+		case 'firefox':
+			return (
+				ua.includes('firefox/') &&
+				!ua.includes('seamonkey') &&
+				!ua.includes('waterfox') &&
+				!ua.includes('palemoon')
+			);
+
+		// WebKit browsers
+		case 'safari':
+			return ua.includes('safari/') && !ua.includes('chrome/') && !ua.includes('chromium/');
+
+		// Legacy browsers
+		case 'internet explorer':
+			return ua.includes('trident/') || ua.includes('msie');
+
+		// Mobile-specific browsers
+		case 'dolphin':
+			return ua.includes('dolphin');
+		case 'opera coast':
+			return ua.includes('coast/');
+		case 'phoenix':
+			return ua.includes('phoenix/');
+		case 'duckduckgo':
+			return ua.includes('duckduckgo/');
+		case 'firefox focus':
+			return ua.includes('focus/');
+		case 'kiwi':
+			return ua.includes('kiwi');
+
+		// Privacy-focused browsers
+		case 'tor browser':
+			return ua.includes('tor');
+		case 'epic privacy browser':
+			return ua.includes('epic/');
+
+		default:
+			return false;
+	}
 }
 
 export function getCountry(timezone) {

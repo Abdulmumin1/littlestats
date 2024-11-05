@@ -79,27 +79,25 @@
 
 <div class="container mx-auto p-6">
 	<div class="flex items-center justify-between">
-		<h1 class="mb-6 text-2xl font-bold text-slate-900">Sites</h1>
+		<h1 class="mb-6 text-2xl font-bold text-black">Sites</h1>
 		<a href="/settings"> + Add Domain </a>
 	</div>
 
 	<div class="flex flex-col gap-4">
 		{#each domains as domain}
-			<div
-				class="w-full rounded-lg border border-{$color}-400 bg-{$color}-200 shadow-sm transition-shadow hover:shadow-md"
-			>
+			<div class="w-full rounded-lg border border-{$color}-400 bg-{$color}-200">
 				<!-- Card Header -->
-				<div class="border-b border-{$color}-500 p-4">
+				<div class="px-4 pt-4">
 					<div class="flex items-center justify-between gap-3">
 						<div class="flex items-center gap-2">
-							<Link class="h-4 w-4 text-{$color}-500" />
-							<h3 class="text-lg font-semibold text-slate-900">{domain.name}</h3>
+							<Link class="h-4 w-4 text-{$color}-700" />
+							<h3 class="text-lg font-semibold text-black">{domain.name}</h3>
 						</div>
-						<div
-							class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-50 text-{$color}-700"
+						<!-- <div
+							class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-100 text-{$color}-700"
 						>
 							ID: {domain.id}
-						</div>
+						</div> -->
 					</div>
 				</div>
 
@@ -111,7 +109,7 @@
 								<Eye class="h-4 w-4 text-{$color}-800" />
 								<div>
 									<p class="text-sm text-gray-900">Lifetime Views</p>
-									<p class="font-semibold text-slate-900">
+									<p class="font-semibold text-black">
 										{filterView(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
 								</div>
@@ -121,7 +119,7 @@
 								<Clock class="h-4 w-4 text-{$color}-800" />
 								<div>
 									<p class="text-sm text-gray-900">Last 24 Hours</p>
-									<p class="font-semibold text-slate-900">
+									<p class="font-semibold text-black">
 										{last24hours(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
 								</div>
@@ -131,7 +129,7 @@
 								<Activity class="h-4 w-4 text-{$color}-800" />
 								<div>
 									<p class="text-sm text-gray-900">Activity Rate</p>
-									<p class="font-semibold text-slate-900">
+									<p class="font-semibold text-black">
 										{getActivityRate(domain.expand.events_via_domain_id)} /hr
 									</p>
 								</div>
@@ -141,10 +139,10 @@
 				{/if}
 
 				<!-- Card Footer -->
-				<div class="{domain.expand ? `border-${$color}-500 border-t` : ''} p-4">
+				<div class=" px-4 pb-4">
 					<a
 						href="/site/{domain.id}"
-						class="flex items-center gap-1 text-sm text-{$color}-800 hover:text-{$color}-900"
+						class="flex items-center gap-1 text-sm text-{$color}-600 hover:text-{$color}-800"
 					>
 						View Details
 						<ArrowUpRight class="h-3 w-3" />

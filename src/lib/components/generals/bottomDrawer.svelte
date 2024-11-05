@@ -5,7 +5,7 @@
 	import { clickOutside } from '$lib/utils';
 	export let height = 520;
 	export let isOpen = false;
-	export let closeThreshold = 0.2; // Percentage of height to trigger close
+	export let closeThreshold = 0.23; // Percentage of height to trigger close
 
 	let drawerEl;
 	let contentEl;
@@ -120,9 +120,9 @@
 		position: fixed;
 		left: 0;
 		right: 0;
-		box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-		border-top-left-radius: 20px;
-		border-top-right-radius: 20px;
+		box-shadow: 0 -10px 100px rgba(0, 0, 0, 0.089);
+		border-top-left-radius: 10px;
+		border-top-right-radius: 10px;
 		transition: transform 0.3s ease;
 		display: flex;
 		flex-direction: column;

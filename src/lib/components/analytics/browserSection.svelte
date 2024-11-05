@@ -8,33 +8,216 @@
 
 	export let views, domain;
 	let max_page_item_count = 10;
+
 	function parseUserAgent(userAgent) {
-		let os = 'Unknown';
 		let browser = 'Unknown';
 
-		// OS detection
-		if (userAgent.includes('Win')) {
-			os = 'Windows';
-		} else if (userAgent.includes('Mac')) {
-			os = 'MacOS';
-		} else if (userAgent.includes('X11') || userAgent.includes('Linux')) {
-			os = 'Linux';
-		}
+		// Converting to lowercase for case-insensitive matching
+		const ua = userAgent.toLowerCase();
 
-		// Browser detection
-		if (userAgent.includes('Firefox/')) {
-			browser = 'Firefox';
-		} else if (userAgent.includes('Chrome/')) {
-			browser = 'Chrome';
-		} else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) {
-			browser = 'Safari';
-		} else if (userAgent.includes('Edge/') || userAgent.includes('Edg/')) {
+		// Specialized Browsers
+		if (ua.includes('silk/')) {
+			browser = 'Amazon Silk';
+		} else if (ua.includes('phantomjs')) {
+			browser = 'PhantomJS';
+		} else if (ua.includes('electron')) {
+			browser = 'Electron';
+		} else if (ua.includes('googlebot')) {
+			browser = 'Google Bot';
+		}
+		// Chromium-based browsers (check these first to avoid false Safari detection)
+		else if (ua.includes('edg/') || ua.includes('edge/')) {
 			browser = 'Edge';
-		} else if (userAgent.includes('Opera/') || userAgent.includes('OPR/')) {
+		} else if (ua.includes('opr/') || ua.includes('opera/')) {
 			browser = 'Opera';
+		} else if (ua.includes('samsung browser') || ua.includes('samsungbrowser')) {
+			browser = 'Samsung Browser';
+		} else if (ua.includes('ucbrowser') || ua.includes('uc browser')) {
+			browser = 'UC Browser';
+		} else if (ua.includes('yabrowser')) {
+			browser = 'Yandex';
+		} else if (ua.includes('vivaldi')) {
+			browser = 'Vivaldi';
+		} else if (ua.includes('brave')) {
+			browser = 'Brave';
+		} else if (ua.includes('whale/')) {
+			browser = 'Naver Whale';
+		} else if (ua.includes('maxthon')) {
+			browser = 'Maxthon';
+		} else if (ua.includes('qihu 360')) {
+			browser = '360 Browser';
+		} else if (ua.includes('coc_coc_browser')) {
+			browser = 'Coc Coc';
+		} else if (ua.includes('dragon/')) {
+			browser = 'Comodo Dragon';
+		} else if (ua.includes('iron/')) {
+			browser = 'SRWare Iron';
+		} else if (ua.includes('chromium/')) {
+			browser = 'Chromium';
+		} else if (ua.includes('chrome/')) {
+			browser = 'Chrome';
+		}
+		// Non-Chromium browsers
+		else if (ua.includes('firefox/')) {
+			if (ua.includes('seamonkey')) {
+				browser = 'SeaMonkey';
+			} else if (ua.includes('waterfox')) {
+				browser = 'Waterfox';
+			} else if (ua.includes('palemoon')) {
+				browser = 'Pale Moon';
+			} else {
+				browser = 'Firefox';
+			}
+		} else if (ua.includes('safari/') && !ua.includes('chrome/')) {
+			browser = 'Safari';
+		} else if (ua.includes('trident/') || ua.includes('msie')) {
+			browser = 'Internet Explorer';
+		}
+		// Mobile-specific browsers
+		else if (ua.includes('dolphin')) {
+			browser = 'Dolphin';
+		} else if (ua.includes('coast/')) {
+			browser = 'Opera Coast';
+		} else if (ua.includes('phoenix/')) {
+			browser = 'Phoenix';
+		} else if (ua.includes('duckduckgo/')) {
+			browser = 'DuckDuckGo';
+		} else if (ua.includes('focus/')) {
+			browser = 'Firefox Focus';
+		} else if (ua.includes('kiwi')) {
+			browser = 'Kiwi';
+		}
+		// Privacy-focused browsers
+		else if (ua.includes('tor')) {
+			browser = 'Tor Browser';
+		} else if (ua.includes('epic/')) {
+			browser = 'Epic Privacy Browser';
 		}
 
-		return browser;
+		// Get browser version
+		const version = getBrowserVersion(ua, browser);
+
+		// Get additional details
+		const details = getBrowserDetails(ua, browser);
+
+		return {
+			name: browser,
+			version: version,
+			...details
+		};
+	}
+
+	function getBrowserVersion(ua, browserName) {
+		let version = '';
+
+		try {
+			switch (browserName) {
+				case 'Chrome':
+					version = ua.match(/chrome\/([0-9.]+)/)?.[1];
+					break;
+				case 'Firefox':
+				case 'Waterfox':
+				case 'Pale Moon':
+					version = ua.match(/(?:firefox|waterfox|palemoon)\/([0-9.]+)/)?.[1];
+					break;
+				case 'Safari':
+					version = ua.match(/version\/([0-9.]+)/)?.[1];
+					break;
+				case 'Edge':
+					version = ua.match(/edg(?:e)?\/([0-9.]+)/)?.[1];
+					break;
+				case 'Opera':
+					version = ua.match(/(?:opera|opr)\/([0-9.]+)/)?.[1];
+					break;
+				case 'Internet Explorer':
+					version = ua.match(/(?:msie |rv:)([0-9.]+)/)?.[1];
+					break;
+				case 'Samsung Browser':
+					version = ua.match(/samsungbrowser\/([0-9.]+)/)?.[1];
+					break;
+				case 'UC Browser':
+					version = ua.match(/ucbrowser\/([0-9.]+)/)?.[1];
+					break;
+				case 'Yandex':
+					version = ua.match(/yabrowser\/([0-9.]+)/)?.[1];
+					break;
+				case 'Naver Whale':
+					version = ua.match(/whale\/([0-9.]+)/)?.[1];
+					break;
+				case 'DuckDuckGo':
+					version = ua.match(/duckduckgo\/([0-9.]+)/)?.[1];
+					break;
+				case 'Amazon Silk':
+					version = ua.match(/silk\/([0-9.]+)/)?.[1];
+					break;
+				case 'Dolphin':
+					version = ua.match(/dolphin\/([0-9.]+)/)?.[1];
+					break;
+				case 'Kiwi':
+					version = ua.match(/kiwi\s?browser\/([0-9.]+)/)?.[1];
+					break;
+				default:
+					// Generic version extraction attempt
+					const matches = ua.match(/(?:version|v)[\s\/]([0-9.]+)/i);
+					version = matches ? matches[1] : '';
+			}
+		} catch (e) {
+			version = 'unknown';
+		}
+
+		return version || 'unknown';
+	}
+
+	function getBrowserDetails(ua, browserName) {
+		const details = {
+			engine: 'Unknown',
+			isPrivate: false,
+			isMobile: false,
+			platform: 'Unknown'
+		};
+
+		// Detect rendering engine
+		if (ua.includes('gecko/')) {
+			details.engine = 'Gecko';
+		} else if (ua.includes('webkit/')) {
+			details.engine = 'WebKit';
+		} else if (ua.includes('presto/')) {
+			details.engine = 'Presto';
+		} else if (ua.includes('trident/')) {
+			details.engine = 'Trident';
+		}
+
+		// Detect if privacy-focused
+		if (['Tor Browser', 'Epic Privacy Browser', 'Brave'].includes(browserName)) {
+			details.isPrivate = true;
+		}
+
+		// Detect if mobile
+		if (
+			ua.includes('mobile') ||
+			ua.includes('android') ||
+			ua.includes('iphone') ||
+			ua.includes('ipod') ||
+			ua.includes('ipad') ||
+			ua.includes('windows phone')
+		) {
+			details.isMobile = true;
+		}
+
+		// Detect platform
+		if (ua.includes('windows')) {
+			details.platform = 'Windows';
+		} else if (ua.includes('macintosh') || ua.includes('mac os x')) {
+			details.platform = 'macOS';
+		} else if (ua.includes('linux')) {
+			details.platform = 'Linux';
+		} else if (ua.includes('android')) {
+			details.platform = 'Android';
+		} else if (ua.includes('iphone') || ua.includes('ipod') || ua.includes('ipad')) {
+			details.platform = 'iOS';
+		}
+
+		return details;
 	}
 
 	function fetchPages(events) {
@@ -46,10 +229,11 @@
 
 			if (ref) {
 				let user_agent = parseUserAgent(event.user_agent);
-				if (!uniquePages.has(user_agent)) {
-					uniquePages.set(user_agent, 1);
+				let browser = user_agent.name;
+				if (!uniquePages.has(browser)) {
+					uniquePages.set(browser, 1);
 				} else {
-					uniquePages.set(user_agent, uniquePages.get(user_agent) + 1);
+					uniquePages.set(browser, uniquePages.get(browser) + 1);
 				}
 			}
 		});

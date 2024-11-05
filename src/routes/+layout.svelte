@@ -1216,7 +1216,29 @@
 		'bg-slate-50',
 		'bg-gray-50',
 		'bg-zinc-50',
-		'bg-neutral-50'
+		'bg-neutral-50',
+		'bg-stone-950',
+		'bg-red-950',
+		'bg-orange-950',
+		'bg-amber-950',
+		'bg-yellow-950',
+		'bg-lime-950',
+		'bg-green-950',
+		'bg-emerald-950',
+		'bg-teal-950',
+		'bg-cyan-950',
+		'bg-sky-950',
+		'bg-blue-950',
+		'bg-indigo-950',
+		'bg-violet-950',
+		'bg-purple-950',
+		'bg-fuchsia-950',
+		'bg-pink-950',
+		'bg-rose-950',
+		'bg-slate-950',
+		'bg-gray-950',
+		'bg-zinc-950',
+		'bg-neutral-950'
 	];
 
 	// onMount(() => {
@@ -1376,7 +1398,7 @@
 
 <LoadProgress />
 {#if loaded}
-	<div class="bg-{$color}-100 min-h-screen">
+	<div class="min-h-screen bg-{$color}-100">
 		<slot></slot>
 	</div>
 {/if}

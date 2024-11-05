@@ -12,7 +12,7 @@
 
 {#if isVisible}
 	<div
-		class="w-full bg-{$color}-500 relative mb-4 rounded-lg px-4 py-3 text-center text-white"
+		class="w-full bg-{$color}-200 relative mb-8 rounded-full px-4 py-3 text-center text-black"
 		style="z-index: 1000;"
 	>
 		<div class="mx-auto flex max-w-6xl items-center justify-center">

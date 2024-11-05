@@ -36,7 +36,7 @@
 	<Seo />
 </svelte:head>
 
-<main class="min-h-screen bg-{$color}-100 text-black">
+<main class="min-h-screen text-black">
 	<div class="container mx-auto max-w-[1000px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
 		<Banner />
 		<Nav />

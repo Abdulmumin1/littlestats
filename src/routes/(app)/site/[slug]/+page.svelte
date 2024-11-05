@@ -151,7 +151,7 @@
 				mock_page = mock_page.filter((e) => {
 					return isOsInUserAgent(e.user_agent, filter.query);
 				});
-			} else if (filter.type == 'ip') {
+			} else if (filter.type == 'country') {
 				mock_page = mock_page.filter((e) => {
 					return getCountry(e.timezone) == filter.query;
 				});

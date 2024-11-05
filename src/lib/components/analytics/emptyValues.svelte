@@ -12,5 +12,5 @@
 			<CuteCloud />
 		</div>
 	</div>
-	<p class="text-{$color}-500 mt-3 font-extrabold opacity-75">Nothing yet, keep grinding!</p>
+	<!-- <p class="text-{$color}-500 mt-3 font-extrabold opacity-75">Nothing yet, keep grinding!</p> -->
 </div>
