@@ -3,6 +3,7 @@
 	import BottomDrawer from '../generals/bottomDrawer.svelte';
 	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
+	import { color } from '$lib/colors/mixer.js';
 
 	export let views;
 	let max_page_item_count = 10;
@@ -63,7 +64,7 @@
 			<EmptyValues />
 		{/each}
 
-		{#if trunaced_pages.length >= max_page_item_count}
+		{#if trunaced_pages.length > max_page_item_count}
 			<BottomDrawer>
 				<div slot="handle">
 					<button class="no-bg text-right">more &rarr;</button>

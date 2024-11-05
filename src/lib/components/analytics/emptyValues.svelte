@@ -8,7 +8,7 @@
 <div class="flex h-full flex-col items-center justify-center rounded-2xl">
 	<!-- <CircleOff size={50} class="text-{$color}-300" /> -->
 	<div class="flex h-28 items-center justify-center opacity-30">
-		<div class="scale-50" style="scale: 0.5;">
+		<div class="scale-50" style="scale: 0.45;">
 			<CuteCloud />
 		</div>
 	</div>

@@ -244,7 +244,7 @@
 	$: pages = fetchPages(views);
 	$: trunaced_pages = pages.splice(0, max_page_item_count);
 
-	$: console.log(pages);
+	// $: console.log(pages);
 </script>
 
 <div class="min-h-[130px] min-w-[230px] flex-1">
@@ -262,7 +262,7 @@
 			<EmptyValues />
 		{/each}
 
-		{#if trunaced_pages.length >= max_page_item_count}
+		{#if trunaced_pages.length > max_page_item_count}
 			<BottomDrawer>
 				<div slot="handle">
 					<button class="no-bg text-right">more &rarr;</button>

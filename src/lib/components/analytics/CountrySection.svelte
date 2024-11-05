@@ -298,7 +298,7 @@
 	let loading = false;
 	let loading_indicator = [1];
 
-	async function fetchPages(events) {
+	function fetchPages(events) {
 		// console.log('re-run', events);
 		let uniquePages = new Map();
 		loading_indicator = [1];
@@ -335,10 +335,10 @@
 						// console.log(country);
 						if (!uniquePages.has(country)) {
 							uniquePages.set(country, 1);
-							pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
+							// pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
 						} else {
 							uniquePages.set(country, uniquePages.get(country) + 1);
-							pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
+							// pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
 						}
 					}
 					// }
@@ -352,17 +352,10 @@
 		// });
 
 		// console.log(uniquePages);
-		pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
-		return pages;
+		return Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
 	}
 
-	$: pages = [];
-	$: {
-		if (views) {
-			// console.log('views changed');
-			fetchPages(views).then(() => {});
-		}
-	}
+	$: pages = fetchPages(views);
 
 	$: trunaced_pages = pages.splice(0, max_page_item_count);
 
@@ -398,44 +391,32 @@
         <button class="no-bg text-right">more &rarr;</button>
     </div> -->
 
-	{#if !loading}
-		<div in:fade class="w-ful flex h-full flex-col gap-1">
-			{#each trunaced_pages as page (page[0])}
-				<div animate:flip={{ duration: 150 }} class="min-w-full">
-					<PageItem on:filter type="country" path={page[0]} views={page[1]} />
-				</div>
-			{:else}
-				<EmptyValues />
-			{/each}
+	<div class="w-ful flex h-full flex-col gap-1">
+		{#each trunaced_pages as page (page[0])}
+			<div animate:flip={{ duration: 150 }} class="min-w-full">
+				<PageItem on:filter type="country" path={page[0]} views={page[1]} />
+			</div>
+		{:else}
+			<EmptyValues />
+		{/each}
 
-			{#if trunaced_pages.length >= max_page_item_count}
-				<BottomDrawer>
-					<div slot="handle">
-						<button class="no-bg text-right">more &rarr;</button>
-					</div>
-					<div slot="content" class="relative flex flex-col gap-1 overflow-y-auto">
-						<div class="sticky top-0 mb-3 flex justify-between text-gray-950">
-							<p>Country</p>
-							<p>Views</p>
-						</div>
-						{#each pages as page}
-							<PageItem on:filter type="country" path={page[0]} views={page[1]} />
-						{:else}
-							<p>Nothing yet!</p>
-						{/each}
-					</div>
-				</BottomDrawer>
-			{/if}
-		</div>
-	{:else}
-		<div class="w-ful flex h-full flex-col gap-1">
-			{#each loading_indicator as page (page)}
-				<div in:fade class="z-50 w-full">
-					<div
-						class="flex h-7 w-full justify-between rounded-md text-left bg-{$color}-200 px-[9px] py-[3px]"
-					></div>
+		{#if trunaced_pages.length > max_page_item_count}
+			<BottomDrawer>
+				<div slot="handle">
+					<button class="no-bg text-right">more &rarr;</button>
 				</div>
-			{/each}
-		</div>
-	{/if}
+				<div slot="content" class="relative flex flex-col gap-1 overflow-y-auto">
+					<div class="sticky top-0 mb-3 flex justify-between text-gray-950">
+						<p>Country</p>
+						<p>Views</p>
+					</div>
+					{#each fetchPages(views) as page}
+						<PageItem on:filter type="country" path={page[0]} views={page[1]} />
+					{:else}
+						<p>Nothing yet!</p>
+					{/each}
+				</div>
+			</BottomDrawer>
+		{/if}
+	</div>
 </div>
