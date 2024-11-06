@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
 	import { DatePicker } from '@svelte-plugins/datepicker';
 	import { format } from 'date-fns';
 	import { Calendar, CalendarRange } from 'lucide-svelte';
@@ -50,9 +50,6 @@
 	}
 </script>
 
-DatePickerModal.svelte
-<!-- <svelte:window on:click={handleClickOutside} /> -->
-
 <div class="date-picker-container">
 	<DatePicker bind:startDate bind:endDate isRange showPresets bind:isOpen />
 </div>
@@ -102,4 +99,4 @@ DatePickerModal.svelte
 			opacity: 1;
 		}
 	}
-</style>
+</style> -->
