@@ -19,7 +19,6 @@
 	import { isOsInUserAgent, isBrowserInUserAgent, getCountry } from '$lib/slug/helpers.js';
 	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
 	import Dropdown from '../../../../lib/components/generals/dropdown.svelte';
-	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
 
 	$: page_data = data.records;
 
