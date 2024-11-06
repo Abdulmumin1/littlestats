@@ -136,9 +136,6 @@ export function isBrowserInUserAgent(userAgent, browserName) {
 }
 
 export function getCountry(timezone) {
-	if (!timezone) {
-		return null;
-	}
 	let countries = {
 		AD: 'Andorra',
 		AE: 'United Arab Emirates',
@@ -2995,8 +2992,8 @@ export function getCountry(timezone) {
 		}
 	};
 
-	if (timezone === '' || !timezone) {
-		return null;
+	if (timezone == '' || !timezone) {
+		return false;
 	}
 
 	const _country = timezones[timezone].c[0];

@@ -32,6 +32,7 @@
 	"dependencies": {
 		"@lemonsqueezy/lemonsqueezy.js": "^3.3.1",
 		"@neoconfetti/svelte": "^2.2.1",
+		"@svelte-plugins/datepicker": "^1.0.9",
 		"chart.js": "^4.4.4",
 		"layercake": "8.4.0-beta.1",
 		"lucide-svelte": "^0.446.0",

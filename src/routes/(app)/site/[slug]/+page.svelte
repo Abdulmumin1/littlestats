@@ -14,10 +14,12 @@
 	import BrowserSection from '../../../../lib/components/analytics/browserSection.svelte';
 	import OsSection from '../../../../lib/components/analytics/OsSection.svelte';
 	import LoadingState from '../../../../lib/components/analytics/graphStuff/loadingState.svelte';
-	import { X } from 'lucide-svelte';
+	import { X, Calendar } from 'lucide-svelte';
 	import { scale, slide } from 'svelte/transition';
 	import { isOsInUserAgent, isBrowserInUserAgent, getCountry } from '$lib/slug/helpers.js';
 	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
+	import Dropdown from '../../../../lib/components/generals/dropdown.svelte';
+	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
 
 	$: page_data = data.records;
 
@@ -153,8 +155,13 @@
 				});
 			} else if (filter.type == 'country') {
 				mock_page = mock_page.filter((e) => {
-					if (!e.timezone) return false;
-					return getCountry(e?.timezone) == filter.query;
+					// console.log(e.timezone == '', filter.query);
+					try {
+						if (e.timezone == '') return false;
+						return getCountry(e?.timezone) == filter.query;
+					} catch (error) {
+						return false;
+					}
 				});
 			}
 		});
@@ -283,17 +290,30 @@
 		}
 	}
 	async function handleDateChange(e) {
-		// console.log(parseInt(e.target.value));
-		await fetchFromDefaultDates(e.target.value);
-		await fetchSpikes(e.target.value);
+		// console.log(e.detail);
+		// return;
+		await fetchFromDefaultDates(e.detail.value);
+		await fetchSpikes(e.detail.value);
 
-		sortInterval = parseInt(e.target.value);
+		sortInterval = parseInt(e.detail.value);
 	}
 
 	onMount(async () => {
 		// console.log(result);
 		await fetchSpikes(0);
 	});
+
+	let optis = [
+		{ value: 0, label: 'Last 24 hours' },
+		{ value: 7, label: 'Last 7 days' },
+		{ value: 14, label: 'Last 14 days' },
+		{ value: 21, label: 'Last 21 days' },
+		{ value: 30, label: 'Last 30 days' }
+	];
+	let domain_options = Array.from(managed_domains).map((e) => {
+		return { value: e.id, label: e.name };
+	});
+	// console.log(domain_options);
 </script>
 
 <svelte:head>
@@ -309,7 +329,7 @@
 	<div class="container mx-auto flex flex-col gap-4">
 		<nav class="flex flex-wrap justify-between gap-4 py-2">
 			<div class="flex flex-wrap items-center gap-4 md:gap-5">
-				<select
+				<!-- <select
 					name="domains"
 					id="domains"
 					on:change={(e) => {
@@ -317,18 +337,38 @@
 					}}
 					class="rounded-full border border-gray-600 font-bold text-white bg-{$color}-500 px-2 py-1"
 				>
-					<!-- devcanvas.art -->
 					{#each managed_domains as domain}
 						<option value={domain.id}>{domain.name}</option>
 					{/each}
 					<button>Add domain</button>
-				</select>
+				</select> -->
+				<Dropdown
+					on:change={(e) => {
+						window.location.href = `/site/${e.detail.value}`;
+					}}
+					title=""
+					value={data.domain_id}
+					options={domain_options}
+				>
+					<div slot="btn">
+						<a href="/settings">+ add domain</a>
+					</div>
+				</Dropdown>
+
 				<div class="flex items-center gap-2">
 					<div class="h-3 w-3 rounded-full bg-{$color}-400"></div>
 					0 current visitors
 				</div>
 			</div>
-			<div class="flex items-center gap-2">
+			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
+				<div slot="btn">
+					<button class="flex items-center gap-1">
+						<Calendar size={16} /> Custom Date
+					</button>
+				</div>
+			</Dropdown>
+
+			<!-- <div class="flex items-center gap-2">
 				<label for="filter">Filter</label>
 				<select
 					name="domains"
@@ -336,17 +376,16 @@
 					on:change={handleDateChange}
 					class="rounded-full border border-gray-600 font-bold text-white bg-{$color}-500 px-4 py-1"
 				>
-					<!-- devcanvas.art -->
 					<option value="0">Last 24 hours</option>
 
 					<option value="7">Last 7 days</option>
 					<option value="14">Last 14 days</option>
 					<option value="21">Last 21 days</option>
 					<option value="30">Last 30 days</option>
-					<!-- <option value="devcanvas.art">Last 50 days</option> -->
 				</select>
-			</div>
+			</div> -->
 		</nav>
+
 		{#if filters.length > 0}
 			<div in:slide={{ duration: 230 }} class="flex w-full flex-row flex-wrap gap-1">
 				{#each filters as filter}
@@ -360,6 +399,7 @@
 				{/each}
 			</div>
 		{/if}
+
 		<header class="grid grid-cols-2 gap-1 divide-gray-500 md:grid-cols-3 lg:grid-cols-5">
 			<ViewCard
 				name="Views"
@@ -401,6 +441,7 @@
 				type="down"
 			/> -->
 		</header>
+
 		<!-- {backdateaverageVisitDuration}{JSON.stringify(backdateBounces)}{backdateBounces.bounceRate ==
 			NaN} -->
 		<!-- <GrapthView viewRecords={views} /> -->
