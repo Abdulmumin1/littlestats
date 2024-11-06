@@ -104,6 +104,8 @@
 		}}
 	>
 		<div class="drawer-handle bg-{$color}-400"></div>
+		<slot name="header" />
+
 		<div class="drawer-content" bind:this={contentEl}>
 			<!-- <p>Drag down to close.</p> -->
 			<slot name="content" />

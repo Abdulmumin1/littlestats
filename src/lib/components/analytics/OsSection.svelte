@@ -99,11 +99,15 @@
 				<div slot="handle">
 					<button class="no-bg text-right">more &rarr;</button>
 				</div>
+				<div
+					slot="header"
+					style="padding: 0 20px;"
+					class="sticky top-0 mb-3 flex justify-between text-gray-950"
+				>
+					<p>Operating System</p>
+					<p>Views</p>
+				</div>
 				<div slot="content" class="relative flex flex-col gap-1 overflow-y-auto">
-					<div class="sticky top-0 mb-3 flex justify-between text-gray-950">
-						<p>Operating System</p>
-						<p>Views</p>
-					</div>
 					{#each fetchPages(views) as page}
 						<PageItem on:filter type="os" path={page[0]} views={page[1]} />
 					{:else}
