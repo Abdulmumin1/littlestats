@@ -11,6 +11,9 @@ dependencies:
   '@neoconfetti/svelte':
     specifier: ^2.2.1
     version: 2.2.1
+  '@svelte-plugins/datepicker':
+    specifier: ^1.0.9
+    version: 1.0.9
   chart.js:
     specifier: ^4.4.4
     version: 4.4.4
@@ -924,6 +927,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@svelte-plugins/datepicker@1.0.9:
+    resolution: {integrity: sha512-HagVB8jLUwNFbwfAcJBNURN1QMQ+qAQQjLJPH97GMqI6auo7jIxOMiSIEWpx7SxTDewHJAlH1izQy3cwBVV8oQ==}
+    dev: false
 
   /@sveltejs/adapter-auto@3.2.5(@sveltejs/kit@2.6.1):
     resolution: {integrity: sha512-27LR+uKccZ62lgq4N/hvyU2G+hTP9fxWEAfnZcl70HnyfAjMSsGk1z/SjAPXNCD1mVJIE7IFu3TQ8cQ/UH3c0A==}
