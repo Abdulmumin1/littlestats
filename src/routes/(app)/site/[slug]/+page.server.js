@@ -91,7 +91,7 @@ export const actions = {
 			// you can also fetch all records at once via getFullList
 			const records = await pb.collection('events').getFullList({
 				sort: '-created',
-				filter: `domain_id = '${domain_id}' && created >= '${filterToUse}'`
+				filter: `domain_id = '${domain_id}' && timestamp >= '${filterToUse}'`
 			});
 			// console.log(records);
 			const results = records.map((record) => {
@@ -162,7 +162,7 @@ export const actions = {
 			// console.log(startDate, endDate);
 			// you can also fetch all records at once via getFullList
 			const records = await pb.collection('events').getFullList({
-				filter: `domain_id = '${domain_id}' && created >= '${startDate}' && created < '${endDate}'`
+				filter: `domain_id = '${domain_id}' && timestamp >= '${startDate}' && timestamp < '${endDate}'`
 			});
 			// console.log(records);
 			const results = records.map((record) => {
@@ -230,7 +230,7 @@ export async function load({ locals: { pb }, params }) {
 		// you can also fetch all records at once via getFullList
 		const records = await pb.collection('events').getFullList({
 			sort: '-created',
-			filter: `domain_id = '${params.slug}' && created >= '${last24Hours}'`
+			filter: `domain_id = '${params.slug}' && timestamp >= '${last24Hours}'`
 		});
 		// console.log(records);
 		return { records, domains, domain_id: params.slug };

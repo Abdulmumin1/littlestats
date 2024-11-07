@@ -33,12 +33,12 @@
 		const validEvents = events.filter((e) => e.event_type !== 'pageExit');
 
 		const now = Date.now(); // Current timestamp in milliseconds
-		const twentyFourHoursAgo = now - 24 * 60 * 60 * 1000;
+		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).getTime();
 
 		return formatNumber(
 			validEvents.filter((event) => {
 				const eventTime = new Date(event.timestamp).getTime();
-				return eventTime >= twentyFourHoursAgo && eventTime <= now;
+				return eventTime >= twentyFourHoursAgo && eventTime <= now.getTime();
 			}).length
 		);
 	}
