@@ -13,9 +13,14 @@ export function isOsInUserAgent(userAgent, osName) {
 		case 'windows':
 			return userAgent.includes('Win');
 		case 'macos':
-			return userAgent.includes('Mac');
+			return (
+				userAgent.includes('Mac') &&
+				!(userAgent.includes('iPhone') || userAgent.includes('iPad') || userAgent.includes('iPod'))
+			);
 		case 'linux':
-			return userAgent.includes('X11') || userAgent.includes('Linux');
+			return (
+				userAgent.includes('X11') || (userAgent.includes('Linux') && !userAgent.includes('Android'))
+			);
 		case 'unknown':
 			return true; // Return true if "unknown" is specified, for unrecognized OS
 		default:
