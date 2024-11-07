@@ -38,7 +38,7 @@
 		return formatNumber(
 			validEvents.filter((event) => {
 				const eventTime = new Date(event.timestamp).getTime();
-				return eventTime >= twentyFourHoursAgo && eventTime <= now.getTime();
+				return eventTime >= twentyFourHoursAgo;
 			}).length
 		);
 	}
