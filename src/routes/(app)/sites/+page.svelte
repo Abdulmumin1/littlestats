@@ -32,7 +32,7 @@
 		// Filter out pageExit events first
 		const validEvents = events.filter((e) => e.event_type !== 'pageExit');
 
-		const now = Date(); // Current timestamp in milliseconds
+		const now = new Date();
 		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).getTime();
 
 		return formatNumber(
