@@ -34,6 +34,7 @@
 		"@neoconfetti/svelte": "^2.2.1",
 		"@svelte-plugins/datepicker": "^1.0.9",
 		"chart.js": "^4.4.4",
+		"date-fns": "^4.1.0",
 		"layercake": "8.4.0-beta.1",
 		"lucide-svelte": "^0.446.0",
 		"pocketbase": "^0.21.5",
