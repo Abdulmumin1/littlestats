@@ -15,8 +15,8 @@
 	</div>
 	<div class="flex flex-wrap items-center justify-center space-x-2 sm:justify-end sm:space-x-4">
 		<!-- <a href="#" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Features</a> -->
-		<MixerComp />
-		<a href="#pricing" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Pricing</a>
+		<MixerComp hide={false} />
+		<a href="/#pricing" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Pricing</a>
 		<a href="/signin" class="px-2 py-1 text-gray-600 hover:text-{$color}-600">Signin</a>
 		<a
 			href="/signup"

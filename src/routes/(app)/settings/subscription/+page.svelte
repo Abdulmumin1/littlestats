@@ -44,13 +44,36 @@
 	export let data;
 	onMount(() => {
 		// Simulating fetching subscriptions from an API
-		subscriptions = [
-			{
-				name: data.user.variant_name,
-				status: data.user.sub_status,
-				renewalDate: '2024-11-01'
-			}
-		];
+		if (!data.user.sub_id) {
+			// Given date (for example, 15 days ago)
+			const givenDate = new Date(data.user.date_activated); // Replace with your date
+
+			// Get the current date
+			const now = new Date();
+
+			// Calculate the difference in milliseconds
+			const trialEnd = now.setDate(now.getDate() + 14); // 14 day free trial
+			const timeDifference = trialEnd - givenDate;
+
+			// Convert milliseconds to days
+			const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+			subscriptions = [
+				{
+					name: 'Free Trial',
+					status: `Ends in ${parseInt(daysDifference)} days`,
+					renewalDate: '2024-11-01'
+				}
+			];
+		} else {
+			subscriptions = [
+				{
+					name: data.user?.variant_name,
+					status: data.user.sub_status,
+					renewalDate: '2024-11-01'
+				}
+			];
+		}
 	});
 </script>
 
@@ -102,25 +125,29 @@
 							<div>
 								Currently on: <span class="font-semibold">{subscription.name}</span><span></span>
 							</div>
-							<div class="text-{$color}-600 font-semibold">
-								Subscription Status: <span class="font-extrabold"> {subscription.status}</span>
+							<div class=" text-black">
+								Subscription Status: <span class="font-extrabold text-black">
+									{subscription.status}</span
+								>
 							</div>
 						</div>
+						{#if data.user.sub_id}
+							<div class="flex gap-2">
+								<a
+									href="https://abdulmuminyqn.lemonsqueezy.com/billing"
+									class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-500 p-2 text-sm text-white hover:bg-{$color}-800"
+								>
+									<Settings size={20} />
+									Manage Subscripiton
+								</a>
+								<button
+									class="mt-2 self-end rounded-full bg-{$color}-50 p-2 text-sm text-{$color}-600 hover:text-{$color}-800"
+								>
+									Change Plan
+								</button>
+							</div>
+						{/if}
 						<!-- <div class="text-sm text-gray-600">Renewal: {subscription.renewalDate}</div> -->
-						<div class="flex gap-2">
-							<a
-								href="https://abdulmuminyqn.lemonsqueezy.com/billing"
-								class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-500 p-2 text-sm text-white hover:bg-{$color}-800"
-							>
-								<Settings size={20} />
-								Manage Subscripiton
-							</a>
-							<button
-								class="mt-2 self-end rounded-full bg-{$color}-50 p-2 text-sm text-{$color}-600 hover:text-{$color}-800"
-							>
-								Change Plan
-							</button>
-						</div>
 					</div>
 				{/each}
 			</div>

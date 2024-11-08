@@ -12,8 +12,8 @@
 			'Real-time Data',
 			'Custom Events',
 			'Geographical data',
-			'Up to 9 Website',
-			'3 month of viewable history',
+			'Up to 5 Website',
+			'Less than 100k pageview a month',
 			'Support'
 		]
 	};
@@ -100,6 +100,9 @@
 			>
 				Start free trial
 			</a>
+			<p class="mt-1 text-center">
+				<em> <span class="text-xl text-{$color}-800">*</span>No credit card required</em>
+			</p>
 		</div>
 	</div>
 </div>

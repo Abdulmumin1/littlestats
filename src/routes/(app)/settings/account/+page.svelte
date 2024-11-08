@@ -165,11 +165,10 @@
 				<CreditCard class="mr-2" /> Billing Information
 			</h2>
 			<p class="mb-2 text-sm text-black">
-				Your current plan: <strong>{data.user.variant_name}</strong>
+				Your current plan: <strong
+					>{data.user.variant_name.length > 0 ? data.user.variant_name : 'Free Trial'}</strong
+				>
 			</p>
-			<button type="button" class="text-sm font-medium text-{$color}-600 hover:text-{$color}-800">
-				Update billing details
-			</button>
 		</div>
 
 		<div class="flex justify-end">

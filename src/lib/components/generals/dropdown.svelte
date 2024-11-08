@@ -11,6 +11,10 @@
 	export let options = [];
 
 	function handleSelect(newValue) {
+		if (value == newValue) {
+			isOpen = false;
+			return;
+		}
 		value = newValue;
 		isOpen = false;
 		dispatch('change', { value: newValue });

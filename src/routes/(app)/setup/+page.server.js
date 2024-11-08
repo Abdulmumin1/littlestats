@@ -7,7 +7,7 @@ import { fail } from '@sveltejs/kit';
 export async function load({ locals: { pb }, url }) {
 	const user = pb.authStore.model;
 
-	if (user.setup_complete) {
+	if (user?.account_activated) {
 		throw redirect(303, '/sites');
 	}
 	if (!user) {
@@ -21,20 +21,13 @@ export const actions = {
 	updateUser: async ({ locals: { pb }, request }) => {
 		const formdata = await request.formData();
 		const name = formdata.get('name');
-		const license = formdata.get('license');
 
-		if (!name || license) {
-			return fail(400, {
-				namerequired: name == null,
-				license: license == null,
-				message: 'Entries incomplete'
-			});
-		}
 		const userId = pb.authStore.model?.id;
 		try {
 			let dt = {
 				name: name,
-				setup_complete: true
+				account_activated: true,
+				date_activated: new Date()
 			};
 			await pb.collection('users').update(userId, dt);
 		} catch (error) {

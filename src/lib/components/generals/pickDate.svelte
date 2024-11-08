@@ -1,8 +1,11 @@
-<!-- <script>
+<script>
 	import { DatePicker } from '@svelte-plugins/datepicker';
 	import { format } from 'date-fns';
 	import { Calendar, CalendarRange } from 'lucide-svelte';
 	import { onMount, createEventDispatcher } from 'svelte';
+	import { color } from '$lib/colors/mixer.js';
+	import { clickOutside } from '$lib/index.js';
+	import { fade } from 'svelte/transition';
 
 	const dispatch = createEventDispatcher();
 	const today = new Date();
@@ -16,7 +19,7 @@
 	export let endDate = today;
 	let dateFormat = 'MMM d, yyyy';
 	let dateModal;
-	let isOpen = true;
+	export let isOpen = false;
 
 	const onClearDates = () => {
 		startDate = '';
@@ -30,8 +33,8 @@
 	}
 
 	export function closeModal() {
-		dateModal.close();
-		// isOpen = false;
+		// dateModal.close();
+		isOpen = false;
 	}
 
 	const formatDate = (dateString) => (dateString && format(new Date(dateString), dateFormat)) || '';
@@ -50,24 +53,43 @@
 	}
 </script>
 
-<div class="date-picker-container">
-	<DatePicker bind:startDate bind:endDate isRange showPresets bind:isOpen />
-</div>
-<dialog
-	bind:this={dateModal}
-	class="modal"
-	on:close={() => {
-		isOpen = false;
-		dispatch('close');
-	}}
-></dialog>
+{#if isOpen}
+	<div transition:fade={{ duration: 400 }} class="modal">
+		<div
+			transition:fade={{ duration: 150 }}
+			class="date-picker-container"
+			use:clickOutside
+			on:click_outside={closeModal}
+		>
+			<!-- <DatePicker bind:startDate bind:endDate isRange showPresets alwaysShow bind:isOpen /> -->
+			<p class="w-fit text-5xl text-white bg-{$color}-500">Feature incoming...</p>
+			<div class="mt-96 flex w-full items-end justify-end gap-2">
+				<button on:click={closeModal} class=" text-black bg-{$color}-200 rounded-full px-3 py-2"
+					>close</button
+				>
+				<button on:click={closeModal} class=" text-white bg-{$color}-500 rounded-full px-3 py-2"
+					>Select</button
+				>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.modal {
 		padding: 0;
 		border: none;
-		background: rgba(0, 0, 0, 0.5);
+		/* background: rgba(0, 0, 0, 0.5); */
+		background-color: transparent;
 		backdrop-filter: blur(4px);
+		height: 100vh;
+		width: 100vw;
+		z-index: 9999;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		position: fixed;
+		/* overflow: auto; */
 	}
 
 	.modal::backdrop {
@@ -75,20 +97,23 @@
 	}
 
 	.date-picker-container {
-		position: fixed;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		background: white;
+		background: transparent;
 		padding: 1rem;
-		height: 100vh;
-		width: 100vw;
+		z-index: 999;
+		/* pointer-events: none; */
 		border-radius: 8px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	}
+		/* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); */
+		/* display: flex; */
+		height: 460px;
+		max-width: 570px;
+		width: 100%;
+		position: fixed;
+		/* overflow: auto; */
 
-	.modal[open] {
-		animation: fadeIn 0.3s ease-out;
+		/* display: flex; */
 	}
 
 	@keyframes fadeIn {
@@ -99,4 +124,4 @@
 			opacity: 1;
 		}
 	}
-</style> -->
+</style>

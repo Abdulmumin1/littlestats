@@ -78,8 +78,8 @@
 </script>
 
 <div class="container mx-auto p-6">
-	<div class="flex items-center justify-between">
-		<h1 class="mb-6 text-2xl font-bold text-black">Sites</h1>
+	<div class="mb-6 flex items-center justify-between">
+		<h1 class="text-2xl font-bold text-black">Sites</h1>
 		<a href="/settings"> + Add Domain </a>
 	</div>
 
@@ -149,11 +149,21 @@
 					</a>
 				</div>
 			</div>
+		{:else}
+			<div
+				class="w-full h-56 flex-col border-2 border-dashed rounded-xl border-{$color}-500 flex items-center justify-center"
+			>
+				<div class="flex h-28 items-center justify-center">
+					<div class="scale-50 opacity-20">
+						<CuteCloud />
+					</div>
+				</div>
+				<p>No domains yet</p>
+
+				<a href="/settings" class="my-4 bg-{$color}-500 rounded-full px-2 text-white p-1">
+					+ Add Domain
+				</a>
+			</div>
 		{/each}
-	</div>
-</div>
-<div class="flex h-28 items-center justify-center">
-	<div class="scale-50 opacity-20">
-		<CuteCloud />
 	</div>
 </div>

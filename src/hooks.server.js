@@ -53,8 +53,24 @@ export const authorization = async ({ event, resolve }) => {
 				303,
 				'/signin?after=' + event.url.pathname.slice(1, event.url.pathname.length)
 			);
-		} else if (!loggedIn?.setup_complete && !event.url.pathname.startsWith('/onboarding')) {
-			throw redirect(303, '/onboarding');
+		} else if (!loggedIn?.account_activated && !event.url.pathname.startsWith('/setup')) {
+			throw redirect(303, '/setup');
+		} else if (!loggedIn?.sub_id) {
+			// Given date (for example, 15 days ago)
+			const givenDate = new Date(loggedIn?.date_activated); // Replace with your date
+
+			// Get the current date
+			const now = new Date();
+
+			// Calculate the difference in milliseconds
+			const timeDifference = now - givenDate;
+
+			// Convert milliseconds to days
+			const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+			if (!event.url.pathname.startsWith('/billing') && daysDifference >= 14) {
+				throw redirect(303, '/billing');
+			}
 		}
 
 		event.locals.user = loggedIn;

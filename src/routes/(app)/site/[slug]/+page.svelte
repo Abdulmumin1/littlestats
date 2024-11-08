@@ -19,6 +19,7 @@
 	import { isOsInUserAgent, isBrowserInUserAgent, getCountry } from '$lib/slug/helpers.js';
 	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
 	import Dropdown from '../../../../lib/components/generals/dropdown.svelte';
+	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
 
 	$: page_data = data.records;
 
@@ -313,6 +314,20 @@
 		return { value: e.id, label: e.name };
 	});
 	// console.log(domain_options);
+
+	let datePickerModal;
+	let selectedStartDate;
+	let selectedEndDate;
+	let isOpen = false;
+
+	function openDatePicker() {
+		isOpen = !isOpen;
+	}
+
+	function handleCustomDateChange(event) {
+		selectedStartDate = event.detail.startDate;
+		selectedEndDate = event.detail.endDate;
+	}
 </script>
 
 <svelte:head>
@@ -321,6 +336,17 @@
 
 <div class="min-h-screen p-2 text-black">
 	<!-- <div>devcanvas.art</div> -->
+	<PickDate
+		bind:this={datePickerModal}
+		bind:startDate={selectedStartDate}
+		bind:endDate={selectedEndDate}
+		bind:isOpen
+		on:dateChange={handleCustomDateChange}
+		on:clear={() => {
+			selectedStartDate = null;
+			selectedEndDate = null;
+		}}
+	/>
 	{#if loading}
 		<LoadingState />
 	{/if}
@@ -361,7 +387,7 @@
 			</div>
 			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
 				<div slot="btn">
-					<button class="flex items-center gap-1">
+					<button on:click={openDatePicker} class="flex items-center gap-1">
 						<Calendar size={16} /> Custom Date
 					</button>
 				</div>

@@ -33,7 +33,7 @@
 					<li>Page views (URL paths only, no query parameters)</li>
 					<li>Referrer domain (no full URLs)</li>
 					<li>Browser type</li>
-					<li>Country (derived from IP, IP address is not stored)</li>
+					<li>Country (derived from Timezone or IP fallback, IP address is not stored)</li>
 				</ul>
 			</div>
 
@@ -56,7 +56,7 @@
 				<ul class="mt-2 list-disc pl-6">
 					<li>Only used for generating anonymous analytics</li>
 					<li>Never sold or shared with third parties</li>
-					<li>Automatically deleted after 30 days</li>
+					<li>Automatically deleted after 150 days</li>
 					<li>Stored in encrypted format</li>
 				</ul>
 			</div>

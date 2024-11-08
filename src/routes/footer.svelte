@@ -22,7 +22,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 					<a
 						href="https://twitter.com/abdulmuminyqn"
 						target="_blank"
-						class="text-{$color}-800 hover:text-{$color}-800"
+						class="text-{$color}-800 hover:text-{$color}-900"
 					>
 						<Twitter size={20} />
 					</a>
@@ -30,7 +30,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 					<a
 						href="mailto:abdulmuminyqn@gmail.com"
 						title="abdulmuminyqn@gmail.com"
-						class="text-{$color}-800 hover:text-{$color}-800"
+						class="text-{$color}-800 hover:text-{$color}-900"
 					>
 						<Mail size={20} />
 					</a>
@@ -42,12 +42,13 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 				<h3 class="text-sm font-semibold text-{$color}-900">Product</h3>
 				<ul class="mt-4 space-y-3">
 					<li>
-						<a href="#features" class="text-sm text-{$color}-800 hover:text-{$color}-900"
+						<a href="/#features" class="text-sm text-{$color}-800 hover:text-{$color}-900"
 							>Features</a
 						>
 					</li>
 					<li>
-						<a href="#pricing" class="text-sm text-{$color}-800 hover:text-{$color}-900">Pricing</a>
+						<a href="/#pricing" class="text-sm text-{$color}-800 hover:text-{$color}-900">Pricing</a
+						>
 					</li>
 
 					<!-- <li><a href="#" class="text-sm text-{$color}-800 hover:text-{$color}-900">API</a></li> -->

@@ -34,7 +34,7 @@
 				<ul class="mt-2 list-disc pl-6">
 					<li>Use our unmodified script</li>
 					<li>Implement over HTTPS only</li>
-					<li>Keep API keys secure</li>
+					<!-- <li>Keep API keys secure</li> -->
 					<li>Respect rate limits</li>
 				</ul>
 			</div>
