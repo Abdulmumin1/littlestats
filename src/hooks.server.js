@@ -37,7 +37,9 @@ const unprotectedPrefix = [
 	'/privacy',
 	'/acceptable-use',
 	'/confirm',
-	'/oauth'
+	'/oauth',
+	'/sitemap.xml',
+	'/robots.txt'
 ];
 export const authorization = async ({ event, resolve }) => {
 	const loggedIn = await event.locals.pb.authStore.model;
