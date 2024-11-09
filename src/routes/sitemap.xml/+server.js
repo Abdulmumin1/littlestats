@@ -22,7 +22,7 @@ export async function GET() {
         <loc>https://littlestats.click/terms</loc>
     </url>
     <url>
-        <loc>https://littlestats.click/privacy-policy</loc>  <!-- Corrected typo here -->
+        <loc>https://littlestats.click/privacy-policy</loc>
     </url>
     <url>
         <loc>https://littlestats.click/acceptable-use</loc>
