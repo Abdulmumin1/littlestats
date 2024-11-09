@@ -1,17 +1,4 @@
-import { error } from '@sveltejs/kit';
-
-export async function GET({ fetch, url, locals: { supabase } }) {
-	const response = await fetch('blog/api/posts');
-	const posts = await response.json();
-	let { data: keys, error: err } = await supabase
-		.from('htmlPlayground')
-		.select('project_key')
-		.order('created_at', { ascending: false })
-		.is('public', true);
-
-	if (err) {
-		throw error(500, { message: 'Internal Error' });
-	}
+export async function GET() {
 	const xml = `
     <?xml version="1.0" encoding="UTF-8" ?>
     <urlset
