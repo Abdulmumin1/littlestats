@@ -195,9 +195,6 @@
 			page_data = local_records;
 			data.records = page_data;
 			// console.log(local_records);
-			if (filters.length > 0) {
-				applyfilter(filters);
-			}
 		}
 	}
 
@@ -296,6 +293,10 @@
 		await fetchSpikes(e.detail.value);
 
 		sortInterval = parseInt(e.detail.value);
+
+		if (filters.length > 0) {
+			applyfilter(filters);
+		}
 	}
 
 	onMount(async () => {
