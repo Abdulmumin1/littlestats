@@ -169,6 +169,9 @@
 				.querySelector('meta[name="theme-color"]')
 				.setAttribute('content', colorList[c].primary);
 			document.querySelector('html').classList.add(`bg-${color}-100`);
+			try {
+				document.querySelector('body').classList.add(`bg-${color}-100`);
+			} catch (error) {}
 		</script>
 		<!-- <script src="https://littlestats-backend.fly.dev/embed/boza4r5wbk3mh9q"></script> -->
 		<!-- https://littlestats-backend.fly.dev/mwn1qyxs2n8ha58 -->

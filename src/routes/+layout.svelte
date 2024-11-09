@@ -1389,6 +1389,9 @@
 		const c = localStorage.getItem('little_stat_color');
 		color.set(c ?? 'lime');
 		loaded = true;
+		try {
+			document.querySelector('body').classList.add(`bg-${c ?? 'lime'}-100`);
+		} catch (error) {}
 	});
 </script>
 
