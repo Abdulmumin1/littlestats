@@ -10,24 +10,25 @@ export async function GET() {
         xmlns:video="https://www.google.com/schemas/sitemap-video/1.1"
     >
     <url>
-    <loc>https://littlestats.click</loc>
-  </url>
+        <loc>https://littlestats.click</loc>
+    </url>
     <url>
-    <loc>https://littlestats.click/signin</loc>
-  </url>
-   <url>
-    <loc>https://littlestats.click/signup</loc>
-  </url>
-  <url>
-    <loc>https://littlestats.click/terms</loc>
-  </url>
-  <url>
-    <loc>https://littlestats.click/privary-policy</loc>
-  </url>
-  <url>
-    <loc>https://littlestats.click/acceptable-use</loc>
-  </url>
-  </urlset>`.trim();
+        <loc>https://littlestats.click/signin</loc>
+    </url>
+    <url>
+        <loc>https://littlestats.click/signup</loc>
+    </url>
+    <url>
+        <loc>https://littlestats.click/terms</loc>
+    </url>
+    <url>
+        <loc>https://littlestats.click/privacy-policy</loc>  <!-- Corrected typo here -->
+    </url>
+    <url>
+        <loc>https://littlestats.click/acceptable-use</loc>
+    </url>
+    </urlset>`.trim();
+
 	return new Response(xml, {
 		headers: {
 			'Content-Type': 'application/xml'
