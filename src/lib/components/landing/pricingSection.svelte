@@ -29,7 +29,11 @@
 	}
 </script>
 
-<div id="pricing" class="mt-16 sm:mt-20 lg:mt-24">
+<div id="pricing"></div>
+<div class="mt-16 sm:mt-20 lg:mt-24">
+	<div
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-500 rounded-full"
+	></div>
 	<h2 class="text-center text-2xl font-bold sm:text-3xl">Ridiculously Cheap Pricing</h2>
 	<p
 		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600 sm:mb-8 sm:max-w-2xl sm:text-xl"
