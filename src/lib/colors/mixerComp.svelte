@@ -67,7 +67,7 @@
 					on:click={() => selectColor(c)}
 					class="w-5 rounded-full hover:scale-125 bg-{c}-500 h-5"
 				>
-					<Palette />
+					<!-- <Palette /> -->
 				</button>
 				<!-- {c} -->
 			{/each}

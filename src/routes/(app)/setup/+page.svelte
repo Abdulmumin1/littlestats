@@ -3,7 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { Loader, User, Info, ChevronUp, Lock, Mail, CreditCard } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
-	import { invalidateAll, goto } from '$app/navigation';
+	// import { invalidateAll, goto } from '$app/navigation';
 	let user = {
 		name: '',
 		email: ''
@@ -137,7 +137,7 @@
 					</h2>
 					<!-- <p class="mb-2 text-sm text-gray-600">Currenly on <strong>Free Trial</strong></p> -->
 					<p class="mb-2 text-sm text-gray-900">
-						- Your trial is valid for <strong>14 days</strong>.
+						- Your trial is valid for <strong>a month</strong>.
 					</p>
 					<p class="mb-2 text-sm text-gray-900">
 						- After your trial ends, we'll continue collecting analytics data from your website for
@@ -145,7 +145,10 @@
 					</p>
 					<p class="mb-2 text-sm text-gray-900">
 						- During this 7-day grace period, you can still update your billing details to continue
-						using our service without loss of any analytics data 🤩.
+						using our service without loss of any analytics data.
+					</p>
+					<p class="mb-2 text-sm text-gray-900">
+						- Subscripiton is ridiculously cheap, starting at <strong>3.99/month</strong>
 					</p>
 				</div>
 			{/if}

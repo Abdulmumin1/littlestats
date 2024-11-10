@@ -52,7 +52,7 @@
 			const now = new Date();
 
 			// Calculate the difference in milliseconds
-			const trialEnd = now.setDate(now.getDate() + 14); // 14 day free trial
+			const trialEnd = now.setDate(givenDate.getDate() + 30); // 30 day free trial
 			const timeDifference = trialEnd - givenDate;
 
 			// Convert milliseconds to days

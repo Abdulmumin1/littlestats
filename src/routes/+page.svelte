@@ -38,7 +38,7 @@
 
 <main class="min-h-screen text-black">
 	<div class="container mx-auto max-w-[1000px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-		<Banner />
+		<!-- <Banner /> -->
 		<Nav />
 
 		<div
@@ -52,7 +52,7 @@
 				>
 			</h1>
 			<p class=" mb-6 max-w-xl text-lg text-gray-900 sm:mb-8 sm:max-w-2xl sm:text-xl">
-				Your analytics needs without the premium price tag
+				Your analytics needs with founder-friendly pricing
 			</p>
 			<a
 				href="/signin"

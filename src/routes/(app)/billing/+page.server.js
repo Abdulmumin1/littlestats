@@ -19,7 +19,7 @@ export async function load({ locals: { pb }, url }) {
 	// Convert milliseconds to days
 	const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-	if (daysDifference <= 14) {
+	if (daysDifference <= 30) {
 		throw redirect(303, '/sites');
 	}
 	if (user.setup_complete) {

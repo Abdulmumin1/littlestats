@@ -70,7 +70,7 @@ export const authorization = async ({ event, resolve }) => {
 			// Convert milliseconds to days
 			const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-			if (!event.url.pathname.startsWith('/billing') && daysDifference >= 14) {
+			if (!event.url.pathname.startsWith('/billing') && daysDifference >= 30) {
 				throw redirect(303, '/billing');
 			}
 		}
