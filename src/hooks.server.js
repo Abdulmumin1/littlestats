@@ -45,6 +45,7 @@ export const authorization = async ({ event, resolve }) => {
 	const loggedIn = await event.locals.pb.authStore.model;
 
 	if (event.url.pathname == '/') {
+		// # redirect to homepage
 		if (loggedIn) {
 			event.locals.user = loggedIn;
 			throw redirect(303, '/sites');

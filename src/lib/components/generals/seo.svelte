@@ -1,7 +1,7 @@
 <script>
 	export let title = 'Littlestats - sweet web analytics for your website';
 	export let description;
-	export let imageUrl;
+	export let imageUrl = '/littlestats_banner.png';
 	export let url;
 	export let jsonLd;
 	export let index = true;
