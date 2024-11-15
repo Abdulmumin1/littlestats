@@ -63,11 +63,11 @@
 
 <div
 	on:click={sendFilter}
-	class="views cursor-pointer bg-{$color}-200 px-6"
+	class="views cursor-pointer bg-{$color}-200 dark:bg-stone-800/50 px-6"
 	class:red={increase == 'down'}
 >
-	<p class="text-gray-800">{name}</p>
-	<p class="text-2xl font-extrabold leading-10">
+	<p class="text-gray-800 dark:text-white">{name}</p>
+	<p class="text-2xl font-extrabold leading-10 dark:text-white">
 		{type == 'time'
 			? formatDuration(parseInt(isNaN(number) ? 0 : number))
 			: type == 'percent'
@@ -80,11 +80,11 @@
 			title="{percentange}% compare to last x days"
 			class="m-0 flex w-fit items-center gap-1 rounded-md p-0 {type != 'percent'
 				? increase == 'up'
-					? `bg-${$color}-100 text-green-700`
-					: `bg-${$color}-100 text-red-700`
+					? `bg-${$color}-100 dark:bg-${$color}-200 text-green-700`
+					: `bg-${$color}-100 dark:bg-${$color}-200 text-red-700`
 				: increase == 'down'
-					? `bg-${$color}-100 text-green-700`
-					: `bg-${$color}-100 text-red-700`} px-1 font-bold"
+					? `bg-${$color}-100 dark:bg-${$color}-200 text-green-700`
+					: `bg-${$color}-100 dark:bg-${$color}-200 text-red-700`} px-1 font-bold"
 		>
 			{#if increase == 'up'}
 				<ArrowUp size={14} />

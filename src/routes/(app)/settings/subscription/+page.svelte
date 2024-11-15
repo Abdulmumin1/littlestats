@@ -92,12 +92,12 @@
 				placeholder="Enter license key"
 				required
 				name="name"
-				class="flex-grow rounded-full border border-gray-600 bg-{$color}-100 p-2 text-black md:px-3 md:py-2"
+				class="flex-grow rounded-full border border-gray-600 bg-{$color}-100 p-2 text-black dark:text-gray-100 md:px-3 md:py-2"
 			/>
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-4 py-2 font-bold text-black hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-4 py-2 font-bold text-black dark:text-gray-100 hover:bg-{$color}-700"
 			>
 				Activate License
 				{#if loading}
@@ -108,7 +108,7 @@
 	</div> -->
 
 	<div class="rounded-md">
-		<h2 class="mb-4 text-xl font-semibold">Managed Subscriptions</h2>
+		<h2 class="mb-4 text-xl font-semibold dark:text-gray-100">Managed Subscriptions</h2>
 		{#if subscriptions.length === 0}
 			<p>No subscriptions added yet.</p>
 		{:else}
@@ -116,7 +116,7 @@
 				{#each subscriptions as subscription (subscription.name)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-200 p-3"
+						class="flex flex-col rounded-md bg-{$color}-200 dark:bg-stone-800/50 p-3 dark:text-gray-100"
 					>
 						<h2 class="mb-4 flex items-center text-xl font-semibold">
 							<CreditCard class="mr-2" /> Subscripiton Information
@@ -125,8 +125,8 @@
 							<div>
 								Currently on: <span class="font-semibold">{subscription.name}</span><span></span>
 							</div>
-							<div class=" text-black">
-								Subscription Status: <span class="font-extrabold text-black">
+							<div class=" text-black dark:text-gray-100">
+								Subscription Status: <span class="font-extrabold text-black dark:text-gray-100">
 									{subscription.status}</span
 								>
 							</div>

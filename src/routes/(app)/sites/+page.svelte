@@ -78,20 +78,20 @@
 </script>
 
 <div class="container mx-auto p-6">
-	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-2xl font-bold text-black">Sites</h1>
+	<div class="mb-6 flex items-center justify-between dark:text-gray-200">
+		<h1 class="text-2xl font-bold ">Sites</h1>
 		<a href="/settings"> + Add Domain </a>
 	</div>
 
 	<div class="flex flex-col gap-4">
 		{#each domains as domain}
-			<div class="w-full rounded-lg border border-{$color}-400 bg-{$color}-200">
+			<div class="w-full rounded-lg border dark:border-none border-{$color}-400 bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-200">
 				<!-- Card Header -->
 				<div class="px-4 pt-4">
 					<div class="flex items-center justify-between gap-3">
 						<div class="flex items-center gap-2">
 							<Link class="h-4 w-4 text-{$color}-700" />
-							<h3 class="text-lg font-semibold text-black">{domain.name}</h3>
+							<h3 class="text-lg font-semibold text-black dark:text-gray-200 ">{domain.name}</h3>
 						</div>
 						<!-- <div
 							class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-100 text-{$color}-700"
@@ -108,8 +108,8 @@
 							<div class="flex items-center gap-2">
 								<Eye class="h-4 w-4 text-{$color}-800" />
 								<div>
-									<p class="text-sm text-gray-900">Lifetime Views</p>
-									<p class="font-semibold text-black">
+									<p class="text-sm text-gray-900 dark:text-gray-300">Lifetime Views</p>
+									<p class="font-semibold text-black dark:text-gray-200">
 										{filterView(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
 								</div>
@@ -118,8 +118,8 @@
 							<div class="flex items-center gap-2">
 								<Clock class="h-4 w-4 text-{$color}-800" />
 								<div>
-									<p class="text-sm text-gray-900">Last 24 Hours</p>
-									<p class="font-semibold text-black">
+									<p class="text-sm text-gray-900 dark:text-gray-300">Last 24 Hours</p>
+									<p class="font-semibold text-black dark:text-gray-200">
 										{last24hours(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
 								</div>
@@ -128,8 +128,8 @@
 							<div class="flex items-center gap-2">
 								<Activity class="h-4 w-4 text-{$color}-800" />
 								<div>
-									<p class="text-sm text-gray-900">Activity Rate</p>
-									<p class="font-semibold text-black">
+									<p class="text-sm text-gray-900 dark:text-gray-300">Activity Rate</p>
+									<p class="font-semibold text-black dark:text-gray-200">
 										{getActivityRate(domain.expand.events_via_domain_id)} /hr
 									</p>
 								</div>

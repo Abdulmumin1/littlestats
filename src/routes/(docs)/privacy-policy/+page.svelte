@@ -4,12 +4,12 @@
 
 <section class="mb-16">
 	<Header>Privacy Policy</Header>
-	<div class="prose max-w-none">
+	<div class="prose dark:text-white max-w-none">
 		<!-- <p class="mb-4 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p> -->
 
 		<div class="space-y-6">
 			<div>
-				<h2 class="mb-3 text-xl font-semibold">1. Core Privacy Principles</h2>
+				<h2 class="mb-3 text-xl font-semibold dark:text-white">1. Core Privacy Principles</h2>
 				<ul class="mt-2 list-disc pl-6">
 					<li>No personal data collection</li>
 					<li>No user tracking</li>
@@ -19,7 +19,7 @@
 			</div>
 
 			<div>
-				<h2 class="mb-3 text-xl font-semibold">2. Data Collection</h2>
+				<h2 class="mb-3 text-xl font-semibold dark:text-white">2. Data Collection</h2>
 				<p>We collect minimal data:</p>
 				<ul class="mt-2 list-disc pl-6">
 					<li>Page URLs (paths only)</li>
@@ -30,7 +30,7 @@
 			</div>
 
 			<div>
-				<h2 class="mb-3 text-xl font-semibold">3. Data Processing</h2>
+				<h2 class="mb-3 text-xl font-semibold dark:text-white">3. Data Processing</h2>
 				<ul class="mt-2 list-disc pl-6">
 					<li>All data is aggregated immediately</li>
 					<li>No raw data storage</li>
@@ -40,7 +40,7 @@
 			</div>
 
 			<div>
-				<h2 class="mb-3 text-xl font-semibold">4. Data Security</h2>
+				<h2 class="mb-3 text-xl font-semibold dark:text-white">4. Data Security</h2>
 				<ul class="mt-2 list-disc pl-6">
 					<li>TLS encryption in transit</li>
 					<li>AES-256 encryption at rest</li>

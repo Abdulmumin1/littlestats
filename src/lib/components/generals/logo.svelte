@@ -148,17 +148,17 @@
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" width={size} {height} viewBox="0 0 200 100">
-	<defs>
+	<!-- <defs>
 		<linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-			<stop offset="0%" style={{ stopColor: `${usedColor.complement}`, stopOpacity: 1 }} />
-			<stop offset="50%" style={{ stopColor: `${usedColor.secondary}`, stopOpacity: 1 }} />
+			<stop offset="0%" style={{ stopColor: `${usedColor.primary}`, stopOpacity: 1 }} />
+			<stop offset="50%" style={{ stopColor: `${usedColor.primary}`, stopOpacity: 1 }} />
 			<stop offset="100%" style={{ stopColor: `${usedColor.primary}`, stopOpacity: 1 }} />
 		</linearGradient>
-	</defs>
+	</defs> -->
 
 	<path
 		d="M20 80 Q50 20, 100 50 T180 30"
-		stroke="url(#grad1)"
+		class="stroke-black dark:stroke-white"
 		strokeWidth={8 * scaleFactor}
 		fill="none"
 	/>

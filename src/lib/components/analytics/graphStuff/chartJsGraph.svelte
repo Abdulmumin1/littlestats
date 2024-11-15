@@ -414,14 +414,14 @@
 			<button
 				on:click={() => toggleChartType('line')}
 				class="{chartType == 'line'
-					? `bg-${$color}-500 text-white`
-					: `bg-${$color}-200`}  rounded rounded-l-full px-2">Line</button
+					? `bg-${$color}-500 text-gray-100 `
+					: `bg-${$color}-200 dark:bg-stone-800/50 dark:text-gray-100`}  rounded rounded-l-full px-2 dark:text-black">Line</button
 			>
 			<button
 				on:click={() => toggleChartType('bar')}
 				class=" {chartType == 'bar'
-					? `bg-${$color}-500 text-white`
-					: `bg-${$color}-200`}  rounded rounded-r-full px-2">Bar</button
+					? `bg-${$color}-500 text-gray-100 `
+					: `bg-${$color}-200 dark:bg-stone-800/50 dark:text-gray-100`}  rounded rounded-r-full px-2 dark:text-black">Bar</button
 			>
 		</div>
 	</div>

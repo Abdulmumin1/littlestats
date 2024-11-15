@@ -68,7 +68,7 @@
 	>
 		<Link size={16} />{domain.name}
 	</a>
-	<button on:click={toggleDropdown} class="rounded px-3 py-1 text-sm font-bold text-black">
+	<button on:click={toggleDropdown} class="rounded px-3 py-1 text-sm font-bold text-gray-100">
 		{#if hide}
 			<ChevronDown />
 		{:else}
@@ -84,17 +84,17 @@
 		<div class="flex items-center justify-end gap-2">
 			<button
 				on:click={() => copyToClipboard(generateScriptUrl(domain))}
-				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-black hover:bg-{$color}-600"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-600"
 			>
 				Copy Snippet <Code size={16} />
 			</button>
 			<a
 				href="site/{domain.id}"
-				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-black hover:bg-{$color}-600"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-600"
 			>
 				Go to Dashboard <ExternalLink size={16} />
 			</a>
-			<button on:click={showModal} class="rounded px-3 py-1 text-sm font-bold text-black">
+			<button on:click={showModal} class="rounded px-3 py-1 text-sm font-bold text-gray-100">
 				<Trash class="hover:text-red-500" size={17} />
 			</button>
 		</div>

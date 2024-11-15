@@ -6,6 +6,7 @@
 	let pickerOpen = false;
 
 	function togglePicker() {
+		console.log('click')
 		pickerOpen = !pickerOpen;
 	}
 
@@ -44,13 +45,13 @@
 <div class="relative">
 	<button
 		on:click={togglePicker}
-		class="flex gap-1 border-2 border-{$color}-500 bg-{$color}-200 items-center rounded-full {hide
+		class="flex gap-1 border-2 border-{$color}-500 bg-{$color}-100 dark:bg-stone-800 dark:text-white items-center rounded-full {hide
 			? 'p-1'
 			: ' px-2 py-1'}"
 		>{#if !hide}
 			Change Theme
 		{/if}
-		<Palette class="text-{$color}-800" />
+		<Palette class="text-{$color}-800 dark:text-white" />
 
 		<!-- <div class="h-5 w-5 bg-{$color}-500 rounded-full"></div> -->
 	</button>

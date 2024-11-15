@@ -5,6 +5,7 @@
 	import MixerComp from '../../colors/mixerComp.svelte';
 	import { slide } from 'svelte/transition';
 	import { clickOutside } from '$lib/utils';
+	import DarkMode from './darkMode.svelte';
 
 	let isMenuOpen = false;
 	let clickoutside = false;
@@ -33,42 +34,44 @@
 	$: path = $page.url.pathname;
 </script>
 
-<nav class="mb-4 text-black">
+<nav class="mb-4 text-black bg-{$color}-200 mt-4 dark:bg-stone-800/50 max-w-[1230px] rounded-full py-1 mx-4  md:py-3 md:mx-auto ">
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<div class="flex items-center">
 				<a
 					href="/"
-					class="flex flex-shrink-0 items-center rounded-full border-2 border-{$color}-600 bg-{$color}-500 px-2 py-1"
+					class="flex flex-shrink-0 items-center rounded-full border-2 border-{$color}-600 bg-{$color}-500 dark:bg-transparent px-2 py-1"
 				>
 					<!-- <ChartBar size={18} class="text-{$color}-950" /> -->
-					<span class="px-2 text-lg font-bold text-white">Littlestats</span>
+					<span class="px-2 text-lg font-bold text-gray-100">Littlestats</span>
 				</a>
 			</div>
-			<div class="flex items-center gap-1">
+			<div class="flex items-center gap-2">
 				<MixerComp />
 				<div
-					class="hidden items-center rounded-full border-2 px-4 py-2 md:flex border-{$color}-600 bg-{$color}-500 px-2 py-1 md:block"
+					class="hidden items-center rounded-full border-2 px-4 py-2 md:flex border-{$color}-600 bg-{$color}-500 dark:bg-transparent px-2 py-1 md:block"
 				>
-					<div class=" flex items-center justify-center gap-3 text-white md:ml-0">
+					<div class=" flex items-center justify-center gap-3 text-gray-100 md:ml-0">
 						<div class="flex">
 							<a href="/sites" class=" rounded-md text-sm font-bold">Dashboard</a>
 						</div>
 						<a
 							href="/settings"
-							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
+							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:ring-offset-2 focus:ring-offset-{$color}-800"
 						>
 							<Settings size={20} />
 						</a>
 
 						<!-- <button
-							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-{$color}-800"
+							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:ring-offset-2 focus:ring-offset-{$color}-800"
 						>
 							<LogOut size={20} />
 						</button> -->
 					</div>
 				</div>
-				<div class="-mr-2 flex md:hidden">
+				<DarkMode/>
+
+				<div class="-mr-2 flex md:hidden dark:text-gray-100">
 					<button
 						on:click={toggleMenu}
 						type="button"
@@ -122,7 +125,7 @@
 				>
 			</div> -->
 			<div class="wavy-line bg-{$color}-500"></div>
-			<div class=" bg-gray-50 pb-3 pt-4">
+			<div class=" bg-gray-50 dark:bg-gray-300 pb-3 pt-4">
 				<!-- <div class="flex items-center px-5">
 					<div class="flex-shrink-0">
 						<User size={40} class="rounded-full" />
@@ -135,19 +138,19 @@
 				<div class="mt-1 space-y-1 px-2">
 					<a
 						href="/sites"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500 hover:text-white"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500 hover:text-gray-100"
 						>Dashboard</a
 					>
 					<a
 						href="/settings"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500 hover:text-white"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-500 hover:text-gray-100"
 						>Settings</a
 					>
 				</div>
 			</div>
 		</div>
 	{/if}
-	<div class="wavy-line bg-{$color}-600"></div>
+	<!-- <div class="wavy-line bg-{$color}-600"></div> -->
 </nav>
 
 <style>

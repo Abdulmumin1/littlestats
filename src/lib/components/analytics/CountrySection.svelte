@@ -8,6 +8,7 @@
 	import { ip_cache } from '$lib/cache/ips.js';
 	import { flip } from 'svelte/animate';
 	import { getCountry } from '$lib/slug/helpers.js';
+	import MiniSectionWrapper from './miniSectionWrapper.svelte';
 
 	export let views, domain;
 	let max_page_item_count = 6;
@@ -362,11 +363,7 @@
 	// $: console.log(pages);
 </script>
 
-<div class="min-h-24 min-w-[230px] flex-1 md:min-h-[240px]">
-	<div class="mb-3 flex justify-between text-gray-950">
-		<p>Country</p>
-		<p>Views</p>
-	</div>
+<MiniSectionWrapper title="Country">
 	<!-- <div class="flex flex-col gap-1 *:rounded-md *:bg-{$color}-200 *:px-[9px] *:py-[3px]">
         <div class="flex justify-between">
             <p>/</p>
@@ -400,15 +397,15 @@
 			<EmptyValues />
 		{/each}
 
-		{#if trunaced_pages.length < pages.length}
+		{#if trunaced_pages.length < fetchPages(views).length}
 			<BottomDrawer>
-				<div slot="handle">
-					<button class="no-bg text-right">more &rarr;</button>
+				<div slot="handle" class="z-0">
+					<button class="no-bg z-0 text-right">more &rarr;</button>
 				</div>
 				<div
 					slot="header"
 					style="padding: 0 20px;"
-					class="sticky top-0 mb-3 flex justify-between text-gray-950"
+					class="sticky top-0 mb-3 flex justify-between text-gray-950 "
 				>
 					<p>Country</p>
 					<p>Views</p>
@@ -423,4 +420,4 @@
 			</BottomDrawer>
 		{/if}
 	</div>
-</div>
+</MiniSectionWrapper>

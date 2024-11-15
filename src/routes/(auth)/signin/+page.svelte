@@ -58,9 +58,9 @@
 		method="post"
 		use:enhance={handleSubmit}
 		action="?/login"
-		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 p-2 px-3 md:p-5"
+		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 dark:bg-stone-800/50 p-2 px-3 md:p-5"
 	>
-		<p class=" mb-3 mt-2 text-3xl font-semibold text-gray-800">Welcome Back</p>
+		<p class=" mb-3 mt-2 text-3xl font-semibold text-gray-800 dark:text-gray-100">Welcome Back</p>
 		<input
 			type="email"
 			placeholder="email@example.com"
@@ -78,13 +78,13 @@
 		<button
 			aria-busy={loading}
 			disabled={loading}
-			class="flex items-center justify-center gap-3 rounded-xl text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
+			class="flex items-center justify-center gap-3 rounded-xl text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-210 hover:bg-{$color}-400"
 			>Login
 			{#if loading}
 				<Loader class="animate-spin" size={16} />
 			{/if}
 		</button>
-		<p class="mt-3 text-gray-800">
+		<p class="mt-3 text-gray-800 dark:text-gray-100">
 			Don't have an account? <a class="text-{$color}-500" href="/signup">Signup</a>
 		</p>
 	</form>
@@ -93,13 +93,13 @@
 		<div class="my-2 text-center">OR</div>
 		<button
 			type="submit"
-			class="flex w-full items-center justify-center gap-2 bg-{$color}-200 rounded-xl border-2 p-2 border-{$color}-500"
+			class="flex w-full items-center justify-center gap-2 bg-{$color}-200 dark:text-gray-100 dark:bg-stone-800/50 rounded-xl border-2 p-2 border-{$color}-500"
 		>
 			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
 		</button>
 	</form>
 	{#if errMessage}
-		<p transition:slide class="mt-3 w-full max-w-[30rem] rounded bg-red-200 p-6 text-red-500">
+		<p transition:slide class="mt-3 w-full max-w-[30rem] rounded bg-red-210 p-6 text-red-500">
 			{errMessage?.message ?? errMessage}
 		</p>
 	{/if}

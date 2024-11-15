@@ -5,6 +5,7 @@
 	import { color } from '$lib/colors/mixer.js';
 	import EmptyValues from './emptyValues.svelte';
 	import { flip } from 'svelte/animate';
+	import MiniSectionWrapper from './miniSectionWrapper.svelte';
 
 	export let views, domain;
 	let max_page_item_count = 6;
@@ -246,13 +247,7 @@
 
 	// $: console.log(pages);
 </script>
-
-<div class="min-h-[130px] min-w-[230px] flex-1">
-	<div class="mb-3 flex justify-between text-gray-950">
-		<p>Browser</p>
-		<p>Views</p>
-	</div>
-
+<MiniSectionWrapper title="Browser">
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page (page[0])}
 			<div animate:flip={{ duration: 150 }} class="w-full">
@@ -262,7 +257,7 @@
 			<EmptyValues />
 		{/each}
 
-		{#if trunaced_pages.length < pages.length}
+		{#if trunaced_pages.length < fetchPages(views).length}
 			<BottomDrawer>
 				<div slot="handle">
 					<button class="no-bg text-right">more &rarr;</button>
@@ -270,7 +265,7 @@
 				<div
 					slot="header"
 					style="padding: 0 20px;"
-					class="sticky top-0 mb-3 flex justify-between text-gray-950"
+					class="sticky top-0 mb-3 flex justify-between text-gray-950 "
 				>
 					<p>Browsers</p>
 					<p>Views</p>
@@ -285,4 +280,4 @@
 			</BottomDrawer>
 		{/if}
 	</div>
-</div>
+</MiniSectionWrapper>

@@ -45,24 +45,53 @@
 	];
 </script>
 
+
+
+<div class="  bg-{$color}-200 dark:bg-{$color}-100 rounded">
+	<div
+	id="box"
+	class="bg-{$color}-100 dark:bg-stone-900 "
+	style="--mask: radial-gradient(14.14px at 50% calc(100% - 20px),#000 99%,#0000 101%) calc(50% - 20px) 0/40px 100%,
+radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(100% - 10px)/40px 100% repeat-x;"
+></div>
 <div
-	id="features"
-	class="mx-auto mt-12 max-w-5xl bg-{$color}-100 rounded-2xl border-4 p-4 border-{$color}-300"
->
-	<h3
-		class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-500 text-{$color}-100 w-fit rounded-full px-3 py-[.15rem]"
+		id="features"
+		class="container py-12 max-w-[1000px] mx-auto z-50  mt-12   rounded-2xl  dark:border-none p-4 border-{$color}-300"
 	>
-		<ArrowRight size={20} /> Features
-	</h3>
-	<div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-		{#each keyFeatures as feature}
-			<div class="rounded-xl bg-{$color}-200 p-6">
-				<div class="mb-2 flex items-center gap-2">
-					<svelte:component this={feature.icon} size={24} class="text-{$color}-600" />
-					<h4 class=" text-lg font-semibold">{feature.title}</h4>
+		<h3
+			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-500 text-white w-fit rounded-full px-3 py-[.15rem]"
+		>
+			<ArrowRight size={20} /> Features
+		</h3>
+		<div class="grid grid-cols-1 gap-12 mt-8 md:grid-cols-2">
+			{#each keyFeatures as feature}
+				<div class="rounded-xl  ">
+					<div class="mb-2 flex items-center gap-2">
+						<svelte:component this={feature.icon} size={24} class="text-{$color}-600" />
+						<h4 class=" text-lg font-semibold">{feature.title}</h4>
+					</div>
+					<p class="text-{$color}-950">{feature.description}</p>
 				</div>
-				<p class="text-{$color}-950">{feature.description}</p>
-			</div>
-		{/each}
+			{/each}
+		</div>
 	</div>
 </div>
+
+<style>
+	/* .skewed {
+  position: absolute;
+ right: 0;
+  width: 100vw;
+  height: 110%;
+  z-index: 0;
+  transform: skewY(2deg);
+  transform-origin: top right;
+} */
+#box {
+	height: 40px;
+	mask: var(--mask);
+}
+</style>
+
+<!-- <style> -->
+<!-- </style> -->

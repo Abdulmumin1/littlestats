@@ -69,9 +69,9 @@
 		use:enhance={handleSubmit}
 		method="post"
 		action="?/register"
-		class="container m-2 flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 p-2 px-3 md:p-5"
+		class="container m-2 flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 dark:bg-stone-800/50 p-2 px-3 md:p-5"
 	>
-		<p class=" mb-3 text-3xl font-semibold text-gray-800">Sign Up</p>
+		<p class=" mb-3 text-3xl font-semibold text-gray-800 dark:text-gray-100">Sign Up</p>
 		<input
 			type="email"
 			bind:value={email}
@@ -108,7 +108,7 @@
 				<Loader class="animate-spin" size={16} />
 			{/if}
 		</button>
-		<p class="mt-3 text-gray-800">
+		<p class="mt-3 text-gray-800 dark:text-gray-100">
 			Have an account already? <a class="text-{$color}-500" href="/signin">Signin</a>
 		</p>
 	</form>
@@ -117,7 +117,7 @@
 		<div class="my-2 text-center">OR</div>
 		<button
 			type="submit"
-			class="flex w-full items-center justify-center gap-2 bg-{$color}-200 rounded-xl border-2 p-2 border-{$color}-500"
+			class="flex w-full items-center justify-center gap-2 bg-{$color}-200 dark:text-gray-100 dark:bg-stone-800/50 rounded-xl border-2 p-2 border-{$color}-500"
 		>
 			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
 		</button>
@@ -128,7 +128,7 @@
 		</p>
 	{/if}
 	{#if successMessage}
-		<p transition:slide class="w-full max-w-[30rem] rounded bg-{$color}-100 p-6 text-{$color}-800">
+		<p transition:slide class="w-full max-w-[30rem] rounded bg-{$color}-200 dark:bg-stone-800/50 p-6 text-{$color}-800">
 			{successMessage}
 		</p>
 	{/if}

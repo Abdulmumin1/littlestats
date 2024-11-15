@@ -35,19 +35,23 @@
 	};
 </script>
 
-<p class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 sm:mb-8 sm:max-w-2xl sm:text-xl">
-	<span class=" text-{$color}-500"><ArrowRight /></span>Not just cheap though,
-	<span class="bg-{$color}-500 text-{$color}-100 font-extrabold">Super fun to use</span>
-</p>
-<h2
-	class="mb-4 font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-5xl lg:text-7xl"
->
-	Your <span class="text-{$color}-400 italic">View</span>, Your
-	<span class="text-{$color}-400 italic" style="font-family: inter;">Vibes</span>
-</h2>
-
-{#key $color}
-	<div class="rounded-2xl border-4 bg-{$color}-200 p-3 border-{$color}-300">
-		<img in:fly={{ y: 10 }} class="rounded-xl" src={images[$color]} alt="" srcset="" />
-	</div>
-{/key}
+<div class="container max-w-[1000px] mx-auto">
+	
+	
+	<!-- <p class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 dark:text-white sm:mb-8 sm:max-w-2xl sm:text-xl">
+		<span class=" text-{$color}-500"><ArrowRight /></span>Not just cheap though,
+		<span class="bg-{$color}-900 text-{$color}-100 font-extrabold">Super fun to use</span>
+	</p> -->
+	<h2
+		class="mb-4 mt-20 font-serif text-2xl font-extrabold leading-tight text-black dark:text-white sm:mb-6 sm:text-3xl lg:text-4xl text-center"
+	>
+		Your <span class="text-{$color}-400 italic">View</span>, Your
+		<span class="text-{$color}-400 italic" style="font-family: inter;">Vibes</span>
+	</h2>
+	
+	{#key $color}
+		<div class="rounded-2xl mt-12 border-4 bg-{$color}-50 p-3 border-{$color}-300">
+			<img in:fly={{ y: 10 }} class="rounded-xl " src={images[$color]} alt="" srcset="" />
+		</div>
+	{/key}
+</div>

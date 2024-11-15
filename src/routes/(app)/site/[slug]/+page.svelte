@@ -352,7 +352,7 @@
 		<LoadingState />
 	{/if}
 
-	<div class="container mx-auto flex flex-col gap-4">
+	<div class="container mx-auto flex flex-col gap-4 dark:text-white">
 		<nav class="flex flex-wrap justify-between gap-4 py-2">
 			<div class="flex flex-wrap items-center gap-4 md:gap-5">
 				<!-- <select
@@ -418,7 +418,7 @@
 					<button
 						transition:scale
 						on:click={() => removeFilter(filter)}
-						class="flex w-fit gap-1 rounded-full bg-{$color}-300 items-center p-1 px-2"
+						class="flex w-fit gap-1 rounded-full bg-{$color}-300 dark:bg-{$color}-400 dark:text-black items-center p-1 px-2"
 						>{filter.type} <span class="bg-{$color}-100 rounded-full px-2">{filter.query}</span>
 						<span><X size={13} /></span></button
 					>

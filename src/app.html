@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="">
 	<head>
 		<meta charset="utf-8" />
 		<!-- <link rel="icon" href="%sveltekit.assets%/favicon.png" /> -->
@@ -163,15 +163,52 @@
 				teal: tealColors
 			};
 
+			// Check localStorage and system preference
+			const theme = (() => {
+				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+					return localStorage.getItem('theme');
+				}
+				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+					return 'dark';
+				}
+				return 'light';
+			})();
+			
+			
+
 			const c = localStorage.getItem('little_stat_color');
 			let color = c ?? 'lime';
 			document
 				.querySelector('meta[name="theme-color"]')
 				.setAttribute('content', colorList[c].primary);
-			document.querySelector('html').classList.add(`bg-${color}-100`);
+			
+			// Apply theme immediately
+			if (theme === 'dark') {
+				document.documentElement.classList.add('dark');
+				document.querySelector('html').classList.add(`bg-stone-900`);
+			try {
+				document.querySelector('body').classList.add(`bg-stone-900`);
+			} catch (error) {}
+			
+			} else {
+				document.documentElement.classList.remove('dark');
+				document.querySelector('html').classList.add(`bg-${color}-100`);
 			try {
 				document.querySelector('body').classList.add(`bg-${color}-100`);
 			} catch (error) {}
+			
+			}
+
+			// Listen for system theme changes
+			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+				if (!localStorage.getItem('theme')) {  // Only if no manual preference is set
+					if (e.matches) {
+						document.documentElement.classList.add('dark');
+					} else {
+						document.documentElement.classList.remove('dark');
+					}
+				}
+			});
 		</script>
 		<!-- <script src="https://littlestats-backend.fly.dev/embed/boza4r5wbk3mh9q"></script> -->
 		<!-- https://littlestats-backend.fly.dev/mwn1qyxs2n8ha58 -->

@@ -4,6 +4,7 @@
 	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
+	import SectionWrapper from './sectionWrapper.svelte';
 
 	export let views;
 	let max_page_item_count = 10;
@@ -25,12 +26,9 @@
 	$: pages = fetchPages(views);
 	$: trunaced_pages = pages.splice(0, max_page_item_count);
 </script>
+<SectionWrapper title="Pages">
 
-<div class="min-h-24 min-w-[230px] flex-1 md:min-h-[240px]">
-	<div class="mb-3 flex justify-between text-gray-950">
-		<p>Pages</p>
-		<p>Views</p>
-	</div>
+	
 	<!-- <div class="flex flex-col gap-1 *:rounded-md *:bg-{$color}-200 *:px-[9px] *:py-[3px]">
         <div class="flex justify-between">
             <p>/</p>
@@ -63,8 +61,8 @@
 		{:else}
 			<EmptyValues />
 		{/each}
-
-		{#if trunaced_pages.length < pages.length}
+			<!-- {trunaced_pages.length}={ fetchPages(views).length}={pages.length} -->
+		{#if trunaced_pages.length < fetchPages(views).length}
 			<BottomDrawer>
 				<div slot="handle">
 					<button class="no-bg text-right">more &rarr;</button>
@@ -87,4 +85,4 @@
 			</BottomDrawer>
 		{/if}
 	</div>
-</div>
+</SectionWrapper>

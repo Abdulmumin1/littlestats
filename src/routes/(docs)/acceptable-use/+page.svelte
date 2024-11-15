@@ -5,10 +5,10 @@
 <section class="mb-16">
 	<Header>Acceptable Use Policy</Header>
 
-	<div class="prose max-w-none">
+	<div class="prose dark:text-white max-w-none">
 		<div class="space-y-6">
 			<div>
-				<h2 class="mb-3 text-xl font-semibold">1. Acceptable Use</h2>
+				<h2 class="mb-3 text-xl font-semibold dark:text-white">1. Acceptable Use</h2>
 				<p>You may use littlestats for:</p>
 				<ul class="mt-2 list-disc pl-6">
 					<li>Page view analytics</li>
@@ -19,7 +19,7 @@
 			</div>
 
 			<div>
-				<h2 class="mb-3 text-xl font-semibold">2. Prohibited Use</h2>
+				<h2 class="mb-3 text-xl font-semibold dark:text-white">2. Prohibited Use</h2>
 				<p>You may not:</p>
 				<ul class="mt-2 list-disc pl-6">
 					<li>Modify our script to collect additional data</li>
@@ -30,7 +30,7 @@
 			</div>
 
 			<div>
-				<h2 class="mb-3 text-xl font-semibold">3. Implementation Requirements</h2>
+				<h2 class="mb-3 text-xl font-semibold dark:text-white">3. Implementation Requirements</h2>
 				<ul class="mt-2 list-disc pl-6">
 					<li>Use our unmodified script</li>
 					<li>Implement over HTTPS only</li>

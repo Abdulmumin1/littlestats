@@ -3,6 +3,8 @@
 	import BottomDrawer from '../generals/bottomDrawer.svelte';
 	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
+	import { color } from '$lib/colors/mixer.js';
+	import MiniSectionWrapper from './miniSectionWrapper.svelte';
 
 	export let views, domain;
 	let max_page_item_count = 6;
@@ -55,12 +57,8 @@
 
 	// $: console.log(pages);
 </script>
+<MiniSectionWrapper title="Operating System">
 
-<div class="min-h-[130px] min-w-[230px] flex-1">
-	<div class="mb-3 flex justify-between text-gray-950">
-		<p>Operating System</p>
-		<p>Views</p>
-	</div>
 	<!-- <div class="flex flex-col gap-1 *:rounded-md *:bg-{$color}-200 *:px-[9px] *:py-[3px]">
         <div class="flex justify-between">
             <p>/</p>
@@ -94,7 +92,7 @@
 			<EmptyValues />
 		{/each}
 
-		{#if trunaced_pages.length < pages.length}
+		{#if trunaced_pages.length < fetchPages(views).length}
 			<BottomDrawer>
 				<div slot="handle">
 					<button class="no-bg text-right">more &rarr;</button>
@@ -102,7 +100,7 @@
 				<div
 					slot="header"
 					style="padding: 0 20px;"
-					class="sticky top-0 mb-3 flex justify-between text-gray-950"
+					class="sticky top-0 mb-3 flex justify-between text-gray-950 "
 				>
 					<p>Operating System</p>
 					<p>Views</p>
@@ -117,4 +115,4 @@
 			</BottomDrawer>
 		{/if}
 	</div>
-</div>
+</MiniSectionWrapper>

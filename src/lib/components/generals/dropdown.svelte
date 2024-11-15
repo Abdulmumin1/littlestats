@@ -36,7 +36,7 @@
 		<button
 			id="custom-select"
 			on:click={() => (isOpen = !isOpen)}
-			class="flex w-48 items-center justify-between px-4 py-1 text-white bg-{$color}-500 rounded-full border border-gray-600 font-bold"
+			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100  bg-{$color}-500 dark:bg-stone-800/50 dark:border-2 border-{$color}-500 rounded-full  font-bold"
 			type="button"
 			aria-haspopup="listbox"
 			aria-expanded={isOpen}
@@ -66,7 +66,7 @@
 							{option.label}
 						</li>
 					{/each}
-					<li role="option" class=" px-4 py-2"><slot name="btn" /></li>
+					<li role="option" class=" px-4 py-2 dark:text-black"><slot name="btn" /></li>
 				</ul>
 			</div>
 		{/if}

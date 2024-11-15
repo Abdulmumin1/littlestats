@@ -77,13 +77,13 @@
 </script>
 
 <div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-4">
-	<div class=" rounded-md">
-		<h2 class="mb-4 text-xl font-semibold">Add New Domain</h2>
+	<div class=" rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<h2 class="mb-4 text-xl font-semibold ">Add New Domain</h2>
 		<form
 			use:enhance={handleAdd}
 			action="?/updateDomain"
 			method="post"
-			class="mb-4 flex flex-wrap gap-2"
+			class="mb-4 flex flex-wrap gap-2 "
 		>
 			<input
 				type="url"
@@ -109,7 +109,7 @@
 	</div>
 
 	<div class="b] rounded-md">
-		<h2 class="mb-4 text-xl font-semibold">Managed Domains</h2>
+		<h2 class="mb-4 text-xl font-semibold dark:text-white">Managed Domains</h2>
 		{#if domains.length === 0}
 			<p>No domains added yet.</p>
 		{:else}
@@ -117,7 +117,7 @@
 				{#each domains as domain (domain)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-200 p-3"
+						class="flex flex-col rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-3"
 					>
 						<DomainCard {domain} hide={domain?.hide ?? true} {removeDomain} />
 					</div>

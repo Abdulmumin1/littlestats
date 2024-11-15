@@ -32,11 +32,11 @@
 <div id="pricing"></div>
 <div class="mt-16 sm:mt-20 lg:mt-24">
 	<div
-		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-500 rounded-full"
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-500 rounded-full dark:text-white"
 	></div>
-	<h2 class="text-center text-2xl font-bold sm:text-3xl">Ridiculously Cheap Pricing</h2>
+	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">Super Affordable Pricing</h2>
 	<p
-		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600 sm:mb-8 sm:max-w-2xl sm:text-xl"
+		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600  sm:mb-8 sm:max-w-2xl sm:text-xl"
 	>
 		Use Littlestats for free for a whole month - <span
 			class="text-{$color}-100 rounded-full px-2 bg-{$color}-500 font-extrabold">30</span
@@ -44,11 +44,11 @@
 	</p>
 
 	<div class="mb-8 flex justify-center">
-		<div class="flex items-center rounded-full bg-${$color}-300 p-1">
+		<div class="flex items-center rounded-full bg-${$color}-300 border-2 border-{$color}-500 p-1">
 			<button
-				class=" rounded-l-full px-2 py-1 font-medium {!isYearly
+				class=" rounded-l-full px-2 py-1 font-medium  {!isYearly
 					? `bg-${$color}-500 text-white`
-					: `bg-${$color}-50`} "
+					: `bg-white`} "
 				class:text-{$color}-600={isYearly < 0.5}
 				on:click={() => toggleSubscription(false)}>Monthly</button
 			>
