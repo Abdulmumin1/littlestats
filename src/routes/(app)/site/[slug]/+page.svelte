@@ -40,7 +40,7 @@
 	// Function to calculate average visit duration
 	function calculateAverageDuration(events) {
 		// Filter out events with duration
-		const durations = events.map((event) => event.duration);
+		const durations = events.map((event) => event.duration > 0);
 
 		// Calculate total duration
 		const totalDuration = durations.reduce((acc, curr) => acc + curr, 0);
