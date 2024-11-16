@@ -100,7 +100,7 @@
 				<div
 					slot="header"
 					style="padding: 0 20px;"
-					class="sticky top-0 mb-3 flex justify-between text-gray-950 "
+					class="sticky top-0 mb-3 flex justify-between text-gray-950 dark:text-gray-100"
 				>
 					<p>Operating System</p>
 					<p>Views</p>

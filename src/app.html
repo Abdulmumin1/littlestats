@@ -20,6 +20,44 @@
 			button:disabled {
 				opacity: 0.5;
 			}
+
+			.cool-scrollbar::-webkit-scrollbar {
+		display: block;
+		width: var(--sds, 14px);
+		/* /.cool-scrollbar position: absolute; .cool-scrollbar/ */
+	}
+
+	.cool-scrollbar::-webkit-scrollbar-button {
+		display: none;
+	}
+
+	.cool-scrollbar::-webkit-scrollbar-track {
+		background-color:transparent;
+	}
+
+	.cool-scrollbar::-webkit-scrollbar-track-piece {
+		background-color: #00000000;
+	}
+
+	.cool-scrollbar::-webkit-scrollbar-thumb {
+		background-color: #00000040;
+		border: 1px solid #ffffff40;
+		border-radius: 24px;
+	}
+
+	:is(.dark) {
+		--scroll-bg: #333;
+	}
+
+	/* box-sizing: /; */
+	.cool-scrollbar::-webkit-scrollbar-thumb {
+		background-color: #00000000;
+		border: 5px solid transparent;
+
+		border-radius: 24px;
+		box-shadow: 4px 0px 0px 4px var(--scroll-bg, #c0c0c086) inset;
+	}
+
 		</style>
 		<script>
 			let greenColors = {

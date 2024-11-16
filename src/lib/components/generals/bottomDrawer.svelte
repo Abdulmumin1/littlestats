@@ -91,7 +91,7 @@
 />
 
 <div class="drawer-container">
-	<button class="z-0 handle text-black" on:click={toggleDrawer}><slot name="handle" /></button>
+	<button class="z-0 handle text-black dark:text-gray-100" on:click={toggleDrawer}><slot name="handle" /></button>
 	<div
 		class="drawer bg-{$color}-50 dark:bg-stone-900 mx-auto max-w-7xl"
 		style="height: {height}px; bottom: {$position}px;"
@@ -106,7 +106,7 @@
 		<div class="drawer-handle bg-{$color}-700"></div>
 		<slot name="header" />
 
-		<div class="drawer-content" bind:this={contentEl}>
+		<div class="drawer-content cool-scrollbar" bind:this={contentEl}>
 			<!-- <p>Drag down to close.</p> -->
 			<slot name="content" />
 		</div>
