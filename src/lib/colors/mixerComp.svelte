@@ -45,7 +45,7 @@
 <div class="relative">
 	<button
 		on:click={togglePicker}
-		class="flex gap-1 border-2 border-{$color}-500 bg-{$color}-100 dark:bg-stone-800 dark:text-white items-center rounded-full {hide
+		class="flex gap-1 border-2 border-{$color}-700 bg-{$color}-50 dark:bg-stone-800 dark:text-white items-center rounded-full {hide
 			? 'p-1'
 			: ' px-2 py-1'}"
 		>{#if !hide}

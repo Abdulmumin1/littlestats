@@ -78,23 +78,23 @@
 </script>
 
 <div class="container mx-auto p-6">
-	<div class="mb-6 flex items-center justify-between dark:text-gray-200">
+	<div class="mb-6 flex items-center justify-between dark:text-black dark:text-gray-200">
 		<h1 class="text-2xl font-bold ">Sites</h1>
 		<a href="/settings"> + Add Domain </a>
 	</div>
 
-	<div class="flex flex-col gap-4">
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 		{#each domains as domain}
-			<div class="w-full rounded-lg border dark:border-none border-{$color}-400 bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-200">
+			<div class="w-full rounded-lg  dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200">
 				<!-- Card Header -->
 				<div class="px-4 pt-4">
 					<div class="flex items-center justify-between gap-3">
 						<div class="flex items-center gap-2">
-							<Link class="h-4 w-4 text-{$color}-700" />
-							<h3 class="text-lg font-semibold text-black dark:text-gray-200 ">{domain.name}</h3>
+							<Link class="h-4 w-4 text-black dark:text-gray-200" />
+							<h3 class="text-lg font-semibold text-black dark:text-black dark:text-gray-200 ">{domain.name}</h3>
 						</div>
 						<!-- <div
-							class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-100 text-{$color}-700"
+							class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-100 text-black dark:text-gray-200"
 						>
 							ID: {domain.id}
 						</div> -->
@@ -106,30 +106,30 @@
 					<div class="p-4">
 						<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div class="flex items-center gap-2">
-								<Eye class="h-4 w-4 text-{$color}-800" />
+								<Eye class="h-4 w-4 text-black dark:text-gray-200" />
 								<div>
 									<p class="text-sm text-gray-900 dark:text-gray-300">Lifetime Views</p>
-									<p class="font-semibold text-black dark:text-gray-200">
+									<p class="font-semibold text-black dark:text-black dark:text-gray-200">
 										{filterView(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
 								</div>
 							</div>
 
 							<div class="flex items-center gap-2">
-								<Clock class="h-4 w-4 text-{$color}-800" />
+								<Clock class="h-4 w-4 text-black dark:text-gray-200" />
 								<div>
 									<p class="text-sm text-gray-900 dark:text-gray-300">Last 24 Hours</p>
-									<p class="font-semibold text-black dark:text-gray-200">
+									<p class="font-semibold text-black dark:text-black dark:text-gray-200">
 										{last24hours(domain.expand.events_via_domain_id).toLocaleString()}
 									</p>
 								</div>
 							</div>
 
 							<div class="flex items-center gap-2">
-								<Activity class="h-4 w-4 text-{$color}-800" />
+								<Activity class="h-4 w-4 text-black dark:text-gray-200" />
 								<div>
 									<p class="text-sm text-gray-900 dark:text-gray-300">Activity Rate</p>
-									<p class="font-semibold text-black dark:text-gray-200">
+									<p class="font-semibold text-black  dark:text-gray-200">
 										{getActivityRate(domain.expand.events_via_domain_id)} /hr
 									</p>
 								</div>
@@ -142,7 +142,7 @@
 				<div class=" px-4 pb-4">
 					<a
 						href="/site/{domain.id}"
-						class="flex items-center gap-1 text-sm text-{$color}-600 hover:text-{$color}-800"
+						class="flex items-center gap-1 text-sm text-{$color}-700"
 					>
 						View Details
 						<ArrowUpRight class="h-3 w-3" />

@@ -185,19 +185,15 @@
 			// Apply theme immediately
 			if (theme === 'dark') {
 				document.documentElement.classList.add('dark');
-				document.querySelector('html').classList.add(`bg-stone-900`);
-			try {
-				document.querySelector('body').classList.add(`bg-stone-900`);
-			} catch (error) {}
 			
 			} else {
 				document.documentElement.classList.remove('dark');
-				document.querySelector('html').classList.add(`bg-${color}-100`);
-			try {
-				document.querySelector('body').classList.add(`bg-${color}-100`);
-			} catch (error) {}
-			
 			}
+
+			document.querySelector('html').classList.add(`bg-${color}-50`, `dark:bg-stone-900`);
+			try {
+				document.querySelector('body').classList.add(`bg-${color}-50`, `dark:bg-stone-900`);
+			} catch (error) {}
 
 			// Listen for system theme changes
 			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
@@ -217,7 +213,7 @@
 		<script src="https://api.littlestats.click/embed/mwn1qyxs2n8ha58"></script>
 		<!-- <script src="https://littlestats-backend.fly.dev/embed/boza4r5wbk3mh9q"></script> -->
 	</head>
-	<body data-sveltekit-preload-data="hover" class="bg-gray-100 text-black">
+	<body data-sveltekit-preload-data="hover" class="dark:bg-stone-900 text-black">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

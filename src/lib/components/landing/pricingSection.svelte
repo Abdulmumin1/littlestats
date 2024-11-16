@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
 	import { spring } from 'svelte/motion';
 	import { derived } from 'svelte/store';
 	import { color } from '$lib/colors/mixer.js';
@@ -32,14 +32,14 @@
 <div id="pricing"></div>
 <div class="mt-16 sm:mt-20 lg:mt-24">
 	<div
-		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-500 rounded-full dark:text-white"
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-700 rounded-full dark:text-white"
 	></div>
 	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">Super Affordable Pricing</h2>
 	<p
 		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600  sm:mb-8 sm:max-w-2xl sm:text-xl"
 	>
 		Use Littlestats for free for a whole month - <span
-			class="text-{$color}-100 rounded-full px-2 bg-{$color}-500 font-extrabold">30</span
+			class="text-{$color}-100 rounded-full px-2 bg-{$color}-700 font-extrabold">30</span
 		> day trial
 	</p>
 
@@ -47,7 +47,7 @@
 		<div class="flex items-center rounded-full bg-${$color}-300 border-2 border-{$color}-500 p-1">
 			<button
 				class=" rounded-l-full px-2 py-1 font-medium  {!isYearly
-					? `bg-${$color}-500 text-white`
+					? `bg-${$color}-700 text-white`
 					: `bg-white`} "
 				class:text-{$color}-600={isYearly < 0.5}
 				on:click={() => toggleSubscription(false)}>Monthly</button
@@ -55,7 +55,7 @@
 
 			<button
 				class="rounded-r-full px-2 py-1 font-medium {isYearly
-					? `bg-${$color}-500 text-white`
+					? `bg-${$color}-700 text-white`
 					: `bg-${$color}-50`} "
 				on:click={() => toggleSubscription(true)}
 				class:text-{$color}-600={isYearly > 0.5}>Yearly</button
@@ -101,7 +101,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-500 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
 			>
 				Start for free
 			</a>
@@ -110,7 +110,7 @@
 			</p>
 		</div>
 	</div>
-</div>
+</div> -->
 
 <!-- <script>
 	import { spring } from 'svelte/motion';
@@ -172,7 +172,7 @@
 	  <div class="flex items-center rounded-full bg-${$color}-300 p-1">
 		<button
 		  class="rounded-l-full px-4 py-2 font-medium {!isYearly
-			? `bg-${$color}-500 text-white`
+			? `bg-${$color}-700 text-white`
 			: `bg-${$color}-100`}"
 		  on:click={() => toggleSubscription(false)}
 		>
@@ -180,7 +180,7 @@
 		</button>
 		<button
 		  class="rounded-r-full px-4 py-2 font-medium {isYearly
-			? `bg-${$color}-500 text-white`
+			? `bg-${$color}-700 text-white`
 			: `bg-${$color}-100`}"
 		  on:click={() => toggleSubscription(true)}
 		 
@@ -238,7 +238,7 @@
   
 		<a
 		  href="/signup"
-		  class="rounded-full bg-{$color}-500 px-6 py-3 text-center font-semibold text-white transition duration-300 hover:bg-{$color}-400"
+		  class="rounded-full bg-{$color}-700 px-6 py-3 text-center font-semibold text-white transition duration-300 hover:bg-{$color}-400"
 		>
 		  Start 30-day free trial
 		</a>
@@ -249,3 +249,178 @@
 	  </div>
 	</div>
   </div> -->
+
+  <script>
+	import { spring } from 'svelte/motion';
+	import { derived } from 'svelte/store';
+	import { color } from '$lib/colors/mixer.js';
+
+	const plans = [
+		{
+			name: 'Monthly',
+			priceMonthly: 7,
+			priceYearly: 50,
+			features: [
+				'Full Analytics Suite',
+				'Real-time Data',
+				'Custom Events',
+				'Geographical data',
+				'Up to 5 Website',
+				'Less than 30k pageview a month',
+				'Support'
+			]
+		},
+		{
+			name: 'Lifetime',
+			price: 145,
+			features: [
+				'Everything in Monthly plan',
+				'Lifetime Updates',
+				'VIP Support',
+				'Early Access to Features',
+				'No Monthly/Annual Fees Ever',
+				'Priority Support',
+				'Extended Data Retention'
+			]
+		}
+	];
+
+	let isYearly = false;
+
+	$: yearlyPrice = isYearly ? plans[0].priceYearly : plans[0].priceMonthly * 12;
+	$: savings = (plans[0].priceMonthly * 12 - yearlyPrice).toFixed(2);
+
+	function toggleSubscription(v) {
+		isYearly = v;
+	}
+</script>
+
+<div id="pricing"></div>
+<div class="mt-16 sm:mt-20 lg:mt-24">
+	<div
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-700 rounded-full dark:text-white"
+	></div>
+	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">Simple, Affordable Pricing</h2>
+	<p
+		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600  sm:mb-8 sm:max-w-2xl sm:text-xl"
+	>
+		Start with a free month - <span
+			class="text-{$color}-100 rounded-full px-2 bg-{$color}-700 font-extrabold">30</span
+		> day trial
+	</p>
+
+	<div class="mb-8 flex justify-center">
+		<div class="flex items-center rounded-full bg-${$color}-300 border-2 border-{$color}-500 p-1">
+			<button
+				class="rounded-l-full px-2 py-1 font-medium {!isYearly
+					? `bg-${$color}-700 text-white`
+					: `bg-white`}"
+				class:text-{$color}-600={isYearly < 0.5}
+				on:click={() => toggleSubscription(false)}>Monthly</button
+			>
+
+			<button
+				class="rounded-r-full px-2 py-1 font-medium {isYearly
+					? `bg-${$color}-700 text-white`
+					: `bg-${$color}-50`}"
+				on:click={() => toggleSubscription(true)}
+				class:text-{$color}-600={isYearly > 0.5}>Yearly</button
+			>
+		</div>
+	</div>
+
+	<div class="flex flex-col md:flex-row justify-center gap-8 px-4">
+		<!-- Monthly/Yearly Plan -->
+		<div
+			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border-4 p-6 shadow-inner border-{$color}-300 shadow-{$color}-700"
+		>
+			<h3 class="mb-4 text-xl font-semibold">{isYearly ? 'Yearly' : 'Monthly'}</h3>
+			<div class="mb-4 text-4xl font-bold">
+				${isYearly ? plans[0].priceYearly : plans[0].priceMonthly}<span class="text-xl font-normal"
+					>/{isYearly ? 'year' : 'month'}</span
+				>
+			</div>
+			{#if isYearly}
+				<div class="mb-4 text-lg text-{$color}-600 font-semibold">
+					Save ${savings} per year
+				</div>
+			{/if}
+			<ul class="mb-6 flex-grow">
+				{#each plans[0].features as feature}
+					<li class="mb-2 flex items-center">
+						<svg
+							class="mr-2 h-4 w-4 text-{$color}-500"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M5 13l4 4L19 7"
+							></path>
+						</svg>
+						{feature}
+					</li>
+				{/each}
+			</ul>
+			<a
+				href="/signup"
+				class="rounded-full text-white bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+			>
+				Start for free
+			</a>
+			<p class="mt-1 text-center">
+				<em> <span class="text-xl text-{$color}-800">*</span>No credit card required</em>
+			</p>
+		</div>
+
+		<!-- Lifetime Plan -->
+		<div
+			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border-4 p-6 shadow-inner border-{$color}-300 shadow-{$color}-700 relative"
+		>
+			<div class="absolute top-4 right-4 bg-{$color}-700 text-white px-3 py-1 rounded-full text-sm">
+				Best Value
+			</div>
+			<h3 class="mb-4 text-xl font-semibold">{plans[1].name}</h3>
+			<div class="mb-4 text-4xl font-bold">
+				${plans[1].price}<span class="text-xl font-normal">/lifetime</span>
+			</div>
+			<div class="mb-4 text-lg text-{$color}-600 font-semibold">
+				One-time payment, lifetime access
+			</div>
+			<ul class="mb-6 flex-grow">
+				{#each plans[1].features as feature}
+					<li class="mb-2 flex items-center">
+						<svg
+							class="mr-2 h-4 w-4 text-{$color}-500"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M5 13l4 4L19 7"
+							></path>
+						</svg>
+						{feature}
+					</li>
+				{/each}
+			</ul>
+			<a
+				href="/signup"
+				class="rounded-full text-white bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+			>
+				Get lifetime access
+			</a>
+			<p class="mt-1 text-center">
+				<em> <span class="text-xl text-{$color}-800">*</span>One-time payment</em>
+			</p>
+		</div>
+	</div>
+</div>

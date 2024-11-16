@@ -51,7 +51,7 @@
   <div class="relative">
     <button
       on:click={toggleDropdown}
-      class="flex items-center justify-center rounded-full border-2 p-2 border-{$color}-600 bg-{$color}-100 text-black dark:bg-stone-900  dark:text-gray-100 "
+      class="flex items-center justify-center rounded-full border-2 p-2 border-{$color}-700 bg-{$color}-50 text-black dark:bg-stone-900  dark:text-gray-100 "
       aria-label="Toggle theme"
     >
       {#if darkMode}
@@ -71,21 +71,21 @@
         <div class="py-1">
           <button
             on:click={() => updateTheme(false)}
-            class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-500 hover:text-white"
+            class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-700 hover:text-white"
           >
             <Sun size={16} class="mr-2" />
             Light
           </button>
           <button
             on:click={() => updateTheme(true)}
-            class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-500 hover:text-white"
+            class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-700 hover:text-white"
           >
             <Moon size={16} class="mr-2" />
             Dark (experimental)
           </button>
           <button
             on:click={setSystemTheme}
-            class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-500 hover:text-white"
+            class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-700 hover:text-white"
           >
             <Monitor size={16} class="mr-2" />
             System

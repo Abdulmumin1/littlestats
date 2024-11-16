@@ -418,8 +418,8 @@
 					<button
 						transition:scale
 						on:click={() => removeFilter(filter)}
-						class="flex w-fit gap-1 rounded-full bg-{$color}-300 dark:bg-{$color}-400 dark:text-black items-center p-1 px-2"
-						>{filter.type} <span class="bg-{$color}-100 rounded-full px-2">{filter.query}</span>
+						class="flex w-fit gap-1 rounded-full bg-{$color}-700 dark:bg-{$color}-700  text-gray-100 items-center p-1 px-2"
+						>{filter.type} <span class="bg-{$color}-100 dark:bg-stone-800 text-black dark:text-gray-100 rounded-full px-2">{filter.query}</span>
 						<span><X size={13} /></span></button
 					>
 				{/each}

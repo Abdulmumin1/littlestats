@@ -59,7 +59,7 @@
 	<h1 class="mb-4 text-2xl font-bold dark:text-white">Account Management</h1>
 
 	<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
-		<div class="rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
 			<h2 class="mb-4 flex items-center text-xl font-semibold" >
 				<User class="mr-2" /> Personal Information
 			</h2>
@@ -87,7 +87,7 @@
 			</div>
 		</div>
 
-		<div class="rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
 			<h2 class=" flex items-center text-xl font-semibold">
 				<button
 					type="button"
@@ -144,7 +144,7 @@
 			{/if}
 		</div>
 
-		<div class="rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<Mail class="mr-2" /> Notification Preferences
 			</h2>
@@ -160,7 +160,7 @@
 			</div>
 		</div>
 
-		<div class="rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<CreditCard class="mr-2" /> Billing Information
 			</h2>
@@ -175,7 +175,7 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-gray-100 hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-700 px-6 py-2 font-bold text-gray-100 hover:bg-{$color}-700"
 			>
 				Save Changes
 				{#if loading}

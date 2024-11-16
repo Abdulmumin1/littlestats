@@ -64,7 +64,7 @@
 	<a
 		href="https://{domain.name}"
 		target="_blank"
-		class="flex items-center gap-1 font-semibold text-{$color}-700"
+		class="flex items-center gap-1 font-semibold text-{$color}-600"
 	>
 		<Link size={16} />{domain.name}
 	</a>
@@ -84,13 +84,13 @@
 		<div class="flex items-center justify-end gap-2">
 			<button
 				on:click={() => copyToClipboard(generateScriptUrl(domain))}
-				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-600"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-700 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-700"
 			>
 				Copy Snippet <Code size={16} />
 			</button>
 			<a
 				href="site/{domain.id}"
-				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-500 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-600"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-700 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-700"
 			>
 				Go to Dashboard <ExternalLink size={16} />
 			</a>
@@ -110,7 +110,7 @@
 	>
 		<p>Remove domain - {domain.name}</p>
 		<input type="text" class="hidden" name="id" value={domain.id} />
-		<p class="bg-{$color}-200 py-2">This action is irreversible! All data collected will be gone</p>
+		<p class="bg-{$color}-100 py-2">This action is irreversible! All data collected will be gone</p>
 		<div class="flex justify-end">
 			<button type="button" on:click={closeModal} class="p-2">Cancel</button>
 			<button

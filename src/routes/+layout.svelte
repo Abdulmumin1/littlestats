@@ -1386,14 +1386,43 @@
 		teal: tealColors
 	};
 	$: usedColor = colorList[$color] ?? greenColors;
+
 	let loaded = false;
+
+	function removeBgClassesFromElement(element) {
+    if (!element?.classList) return;
+    [...element.classList].forEach(cls => {
+        if (cls.startsWith('bg-') || cls.startsWith('dark:bg-')) {
+            element.classList.remove(cls);
+        }
+    });
+}
 	onMount(() => {
 		const c = localStorage.getItem('little_stat_color');
 		color.set(c ?? 'lime');
 		loaded = true;
+		
+		let htmlEl = document.querySelector('html');
+		let bodyEl = document.querySelector('body');
 		try {
-			document.querySelector('body').classList.add(`bg-${c ?? 'lime'}-100`);
-		} catch (error) {}
+				removeBgClassesFromElement(htmlEl)
+				removeBgClassesFromElement(bodyEl)
+				htmlEl.classList.add(`bg-${c}-50`, `dark:bg-stone-900`);
+				bodyEl.classList.add(`bg-${c}-50`, `dark:bg-stone-900`);
+			} catch (error) {}
+
+		const unsubscribe = color.subscribe((da)=>{
+			try {
+				removeBgClassesFromElement(htmlEl)
+				removeBgClassesFromElement(bodyEl)
+				htmlEl.classList.add(`bg-${da}-50`, `dark:bg-stone-900`);
+				bodyEl.classList.add(`bg-${da}-50`, `dark:bg-stone-900`);
+			} catch (error) {}
+		})
+
+		return ()=>{
+			unsubscribe()
+		}
 	});
 </script>
 
@@ -1403,7 +1432,7 @@
 
 <LoadProgress />
 {#if loaded}
-	<div class="min-h-screen bg-{$color}-100 dark:bg-stone-900 ">
+	<div class="min-h-screen bg-{$color}-50 dark:bg-stone-900 ">
 		<slot></slot>
 	</div>
 {/if}

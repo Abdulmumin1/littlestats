@@ -89,7 +89,7 @@
 
 <div class="" style="max-width:486px; padding:20px; margin-inline:auto;">
 	<div class=" flex flex-1 flex-col gap-6">
-		<h1 class="px-2 text-2xl font-bold">Welcome to Littlestats</h1>
+		<h1 class="px-2 text-2xl font-bold dark:text-gray-100">Welcome to Littlestats</h1>
 
 		<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
 			<div class="rounded-md bg-{$color}-200 p-4">
@@ -131,24 +131,24 @@
 					</p>
 				</div>
 			{:else}
-				<div class="rounded-md bg-{$color}-200 p-4">
-					<h2 class="mb-4 flex items-center text-xl font-semibold">
+				<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 p-4">
+					<h2 class="mb-4 flex items-center text-xl font-semibold dark:text-gray-100">
 						<Info class="mr-2" /> About Trial
 					</h2>
 					<!-- <p class="mb-2 text-sm text-gray-600">Currenly on <strong>Free Trial</strong></p> -->
-					<p class="mb-2 text-sm text-gray-900">
+					<p class="mb-2 text-sm text-gray-900 dark:text-gray-200">
 						- Your trial is valid for <strong>a month</strong>.
 					</p>
-					<p class="mb-2 text-sm text-gray-900">
+					<p class="mb-2 text-sm text-gray-900 dark:text-gray-200">
 						- After your trial ends, we'll continue collecting analytics data from your website for
 						an additional <strong>7 days</strong>.
 					</p>
-					<p class="mb-2 text-sm text-gray-900">
+					<p class="mb-2 text-sm text-gray-900 dark:text-gray-200">
 						- During this 7-day grace period, you can still update your billing details to continue
 						using our service without loss of any analytics data.
 					</p>
-					<p class="mb-2 text-sm text-gray-900">
-						- Subscripiton is ridiculously cheap, starting at <strong>3.99/month</strong>
+					<p class="mb-2 text-sm text-gray-900 dark:text-gray-200">
+						- Subscripiton is ridiculously cheap, starting at <strong>$7/month</strong>
 					</p>
 				</div>
 			{/if}

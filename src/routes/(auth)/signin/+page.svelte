@@ -54,11 +54,20 @@
 			Littlestats.click
 		</div>
 	</a>
+	<form action="?/oauth" method="post" class="w-fit max-w-[28rem]">
+		<button
+		type="submit"
+		class="flex w-full items-center justify-center gap-2 bg-{$color}-100 dark:text-gray-100 dark:bg-stone-800/50 rounded-xl border-b-2 dark:bg-stone-700/50 p-2 border-{$color}-500"
+		>
+		<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
+	</button>
+	<div class="my-4 text-center dark:text-white">OR</div>
+	</form>
 	<form
 		method="post"
 		use:enhance={handleSubmit}
 		action="?/login"
-		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 dark:bg-stone-800/50 p-2 px-3 md:p-5"
+		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100 dark:bg-stone-800/50 p-2 px-3 md:p-5"
 	>
 		<p class=" mb-3 mt-2 text-3xl font-semibold text-gray-800 dark:text-gray-100">Welcome Back</p>
 		<input
@@ -66,14 +75,14 @@
 			placeholder="email@example.com"
 			name="email"
 			bind:value={email}
-			class="rounded-xl border-2 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
+			class="rounded-xl border-b-2 dark:bg-stone-700/50 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
 		/>
 		<input
 			type="password"
 			placeholder="password"
 			name="password"
 			bind:value={password}
-			class="rounded-xl border-2 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
+			class="rounded-xl border-b-2 dark:bg-stone-700/50 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
 		/>
 		<button
 			aria-busy={loading}
@@ -89,15 +98,7 @@
 		</p>
 	</form>
 
-	<form action="?/oauth" method="post" class="w-full max-w-[28rem]">
-		<div class="my-2 text-center">OR</div>
-		<button
-			type="submit"
-			class="flex w-full items-center justify-center gap-2 bg-{$color}-200 dark:text-gray-100 dark:bg-stone-800/50 rounded-xl border-2 p-2 border-{$color}-500"
-		>
-			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
-		</button>
-	</form>
+
 	{#if errMessage}
 		<p transition:slide class="mt-3 w-full max-w-[30rem] rounded bg-red-210 p-6 text-red-500">
 			{errMessage?.message ?? errMessage}

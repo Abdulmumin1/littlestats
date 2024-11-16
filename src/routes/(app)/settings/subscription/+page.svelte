@@ -97,7 +97,7 @@
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-4 py-2 font-bold text-black dark:text-gray-100 hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-700 px-4 py-2 font-bold text-black dark:text-gray-100 hover:bg-{$color}-700"
 			>
 				Activate License
 				{#if loading}
@@ -116,7 +116,7 @@
 				{#each subscriptions as subscription (subscription.name)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-200 dark:bg-stone-800/50 p-3 dark:text-gray-100"
+						class="flex flex-col rounded-md bg-{$color}-100 dark:bg-stone-800/50 p-3 dark:text-gray-100"
 					>
 						<h2 class="mb-4 flex items-center text-xl font-semibold">
 							<CreditCard class="mr-2" /> Subscripiton Information
@@ -135,7 +135,7 @@
 							<div class="flex gap-2">
 								<a
 									href="https://abdulmuminyqn.lemonsqueezy.com/billing"
-									class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-500 p-2 text-sm text-white hover:bg-{$color}-800"
+									class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
 								>
 									<Settings size={20} />
 									Manage Subscripiton

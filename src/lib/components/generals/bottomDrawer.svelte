@@ -93,7 +93,7 @@
 <div class="drawer-container">
 	<button class="z-0 handle text-black" on:click={toggleDrawer}><slot name="handle" /></button>
 	<div
-		class="drawer bg-{$color}-100 dark:bg-{$color}-300 mx-auto max-w-7xl"
+		class="drawer bg-{$color}-50 dark:bg-stone-900 mx-auto max-w-7xl"
 		style="height: {height}px; bottom: {$position}px;"
 		bind:this={drawerEl}
 		on:mousedown={handleMouseDown}
@@ -103,7 +103,7 @@
 			isOpen = false;
 		}}
 	>
-		<div class="drawer-handle bg-{$color}-400"></div>
+		<div class="drawer-handle bg-{$color}-700"></div>
 		<slot name="header" />
 
 		<div class="drawer-content" bind:this={contentEl}>

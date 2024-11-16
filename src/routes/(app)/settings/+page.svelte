@@ -77,7 +77,7 @@
 </script>
 
 <div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-4">
-	<div class=" rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+	<div class=" rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
 		<h2 class="mb-4 text-xl font-semibold ">Add New Domain</h2>
 		<form
 			use:enhance={handleAdd}
@@ -96,7 +96,7 @@
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-4 py-2 font-bold hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-700 px-4 py-2 font-bold hover:bg-{$color}-700"
 			>
 				Add Domain {#if loading}
 					<Loader class="animate-spin" size={16} />
@@ -117,7 +117,7 @@
 				{#each domains as domain (domain)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-200 dark:bg-stone-800/50 dark:text-gray-100 p-3"
+						class="flex flex-col rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-3"
 					>
 						<DomainCard {domain} hide={domain?.hide ?? true} {removeDomain} />
 					</div>
