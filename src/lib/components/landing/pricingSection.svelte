@@ -259,7 +259,7 @@
 		{
 			name: 'Monthly',
 			priceMonthly: 7,
-			priceYearly: 50,
+			priceYearly: 60,
 			features: [
 				'Full Analytics Suite',
 				'Real-time Data',
@@ -289,7 +289,17 @@
 
 	$: yearlyPrice = isYearly ? plans[0].priceYearly : plans[0].priceMonthly * 12;
 	$: savings = (plans[0].priceMonthly * 12 - yearlyPrice).toFixed(2);
+	
 
+	function calculateDiscountPercentage() {
+  const monthlyPriceTotal = plans[0].priceMonthly * 12; // Total of monthly plan for one year
+  const yearlyPrice = plans[0].priceYearly; // Price of yearly plan
+  
+  const savings = monthlyPriceTotal - yearlyPrice; // Savings amount
+  const discountPercentage = (savings / monthlyPriceTotal) * 100; // Discount percentage calculation
+
+  return discountPercentage.toFixed(); // Return the discount percentage rounded to two decimal places
+}
 	function toggleSubscription(v) {
 		isYearly = v;
 	}
@@ -310,21 +320,23 @@
 	</p>
 
 	<div class="mb-8 flex justify-center">
-		<div class="flex items-center rounded-full bg-${$color}-300 border-2 border-{$color}-500 p-1">
+		<div class="flex items-center rounded-full bg-${$color}-300 border-2 dark:border border-{$color}-300">
 			<button
-				class="rounded-l-full px-2 py-1 font-medium {!isYearly
+				class="rounded-l-full px-3 py-2 font-medium {!isYearly
 					? `bg-${$color}-700 text-white`
-					: `bg-white`}"
+					: `bg-${$color}-50`}"
 				class:text-{$color}-600={isYearly < 0.5}
 				on:click={() => toggleSubscription(false)}>Monthly</button
 			>
 
 			<button
-				class="rounded-r-full px-2 py-1 font-medium {isYearly
+				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
 					? `bg-${$color}-700 text-white`
 					: `bg-${$color}-50`}"
 				on:click={() => toggleSubscription(true)}
-				class:text-{$color}-600={isYearly > 0.5}>Yearly</button
+				class:text-{$color}-600={isYearly > 0.5}>  Yearly
+				<span class="absolute -top-4 border-2 dark:border border-{$color}-300 left-10  text-gray-100 bg-{$color}-700  rounded-full text-xs p-1 w-16 flex items-center justify-center">{calculateDiscountPercentage()}% off</span>
+				</button
 			>
 		</div>
 	</div>

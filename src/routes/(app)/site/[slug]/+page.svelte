@@ -381,10 +381,10 @@
 					</div>
 				</Dropdown>
 
-				<div class="flex items-center gap-2">
+				<!-- <div class="flex items-center gap-2">
 					<div class="h-3 w-3 rounded-full bg-{$color}-400"></div>
 					0 current visitors
-				</div>
+				</div> -->
 			</div>
 			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
 				<div slot="btn">
