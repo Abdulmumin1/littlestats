@@ -40,7 +40,8 @@
 	// Function to calculate average visit duration
 	function calculateAverageDuration(events) {
 		// Filter out events with duration
-		const durations = events.map((event) => event.duration > 0);
+		events = events.filter((e) => e.event_type == 'pageExit');
+		const durations = events.map((event) => event.duration);
 
 		// Calculate total duration
 		const totalDuration = durations.reduce((acc, curr) => acc + curr, 0);
