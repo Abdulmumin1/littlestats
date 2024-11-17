@@ -37,9 +37,6 @@ export const actions = {
 	updateDomain: async ({ locals: { pb, user }, request }) => {
 		const domain_recs = await pb.collection('domain').getFullList();
 
-		if (!user.sub_id && domain_recs.length >= 1) {
-			return fail(400, { message: 'only one domain in free trial period' });
-		}
 		if (domain_recs.length >= 5) {
 			return fail(400, { message: 'Domain Limit reached!' });
 		}
