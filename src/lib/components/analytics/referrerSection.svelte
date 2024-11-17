@@ -20,6 +20,13 @@
 			if (ref) {
 				try {
 					let hostname = new URL(ref).hostname;
+					if (!hostname) {
+						const customUrlRegex = /^([a-zA-Z-]+):\/\/([^\/]+)(\/.*)?$/;
+						const match = ref.match(customUrlRegex);
+						if (match) {
+							return match[2];
+						}
+					}
 					if (hostname != domain.name) {
 						if (!uniquePages.has(hostname)) {
 							uniquePages.set(hostname, 1);
@@ -48,7 +55,6 @@
 </script>
 
 <SectionWrapper title="Referrer">
-
 	<!-- <div class="flex flex-col gap-1 *:rounded-md *:bg-{$color}-200 *:px-[9px] *:py-[3px]">
         <div class="flex justify-between">
             <p>/</p>
@@ -90,7 +96,7 @@
 				<div
 					slot="header"
 					style="padding: 0 20px;"
-					class="sticky top-0 mb-3 flex justify-between text-gray-950 dark:text-gray-100 "
+					class="sticky top-0 mb-3 flex justify-between text-gray-950 dark:text-gray-100"
 				>
 					<p>Referrer</p>
 					<p>Views</p>

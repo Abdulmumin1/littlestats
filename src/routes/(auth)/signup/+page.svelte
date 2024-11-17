@@ -61,24 +61,22 @@
 <div class=" flex min-h-screen flex-col items-center justify-center px-2">
 	<a href="/" class="flex flex-col items-center">
 		<Logo />
-		<div class="pb-6 text-2xl font-bold text-{$color}-600 sm:mb-0 ">
-			Littlestats.click
-		</div>
+		<div class="pb-6 text-2xl font-bold text-{$color}-600 sm:mb-0">Littlestats.click</div>
 	</a>
-	<form action="?/oauth" method="post" class="w-fit max-w-[28rem] ">
+	<form action="?/oauth" method="post" class="w-fit max-w-[28rem]">
 		<button
-		type="submit"
-		class="flex w-full items-center justify-center gap-2 bg-{$color}-100 dark:text-gray-100 dark:bg-stone-800/50 rounded-xl  p-2 border-{$color}-500"
+			type="submit"
+			class="flex w-full items-center justify-center gap-2 bg-{$color}-100 rounded-xl p-2 dark:bg-stone-800/50 dark:text-gray-100 border-{$color}-500"
 		>
-		<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
-	</button>
-	<div class="my-6 text-center dark:text-white">OR</div>
+			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
+		</button>
+		<div class="my-6 text-center dark:text-white">OR</div>
 	</form>
 	<form
 		use:enhance={handleSubmit}
 		method="post"
 		action="?/register"
-		class="container m-2 flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100 dark:bg-stone-800/50 p-2 px-3 md:p-5"
+		class="container m-2 flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100 p-2 px-3 md:p-5 dark:bg-stone-800/50"
 	>
 		<p class=" mb-3 text-3xl font-semibold text-gray-800 dark:text-gray-100">Sign Up</p>
 		<input
@@ -88,7 +86,7 @@
 			id="email"
 			name="email"
 			required
-			class="border-b-2 border-{$color}-500 rounded-xl bg-gray-100 dark:bg-stone-700/50  dark:text-gray-100 px-2 py-3"
+			class="border-b-2 border-{$color}-500 rounded-xl bg-gray-100 px-2 py-3 dark:bg-stone-700/50 dark:text-gray-100"
 		/>
 		<input
 			type="password"
@@ -97,21 +95,21 @@
 			name="password"
 			placeholder="password"
 			required
-			class="rounded-xl border-b-2 border-{$color}-500 bg-gray-100 dark:bg-stone-700/50  dark:text-gray-100 dark:broder-b px-2 py-3"
+			class="rounded-xl border-b-2 border-{$color}-500 dark:broder-b bg-gray-100 px-2 py-3 dark:bg-stone-700/50 dark:text-gray-100"
 		/>
 		<input
 			type="password"
 			id="password2"
 			bind:value={password2}
 			name="passwordConfirm"
-			class="rounded-xl border-b-2 border-{$color}-500 bg-gray-100 dark:bg-stone-700/50  dark:text-gray-100 dark:broder-b px-2 py-3"
+			class="rounded-xl border-b-2 border-{$color}-500 dark:broder-b bg-gray-100 px-2 py-3 dark:bg-stone-700/50 dark:text-gray-100"
 			placeholder="confirm password"
 			required
 		/>
 		<button
 			aria-busy={loading}
 			disabled={loading}
-			class="flex items-center justify-center gap-3 rounded-xl text-white bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
+			class="flex items-center justify-center gap-3 rounded-xl text-black bg-{$color}-500 px-4 py-3 text-black transition-colors duration-200 hover:bg-{$color}-400"
 			>Signup
 			{#if loading}
 				<Loader class="animate-spin" size={16} />
@@ -122,14 +120,16 @@
 		</p>
 	</form>
 
-	
 	{#if errMessage}
 		<p transition:slide class="w-full max-w-[30rem] rounded bg-red-100 p-6 text-red-500">
 			{errMessage?.message ?? errMessage}
 		</p>
 	{/if}
 	{#if successMessage}
-		<p transition:slide class="w-full max-w-[30rem] rounded bg-{$color}-100 dark:bg-stone-800/50 p-6 text-{$color}-800">
+		<p
+			transition:slide
+			class="w-full max-w-[30rem] rounded bg-{$color}-100 p-6 dark:bg-stone-800/50 text-{$color}-800"
+		>
 			{successMessage}
 		</p>
 	{/if}

@@ -59,35 +59,39 @@
 	<h1 class="mb-4 text-2xl font-bold dark:text-white">Account Management</h1>
 
 	<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
-		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
-			<h2 class="mb-4 flex items-center text-xl font-semibold" >
+		<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
+			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<User class="mr-2" /> Personal Information
 			</h2>
 			<div class="space-y-4">
 				<div>
-					<label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+					<label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+						>Name</label
+					>
 					<input
 						type="text"
 						id="name"
 						name="name"
 						bind:value={user.name}
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 					/>
 				</div>
 				<div>
-					<label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+					<label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+						>Email</label
+					>
 					<input
 						type="email"
 						id="email"
 						disabled
 						bind:value={user.email}
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 					/>
 				</div>
 			</div>
 		</div>
 
-		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class=" flex items-center text-xl font-semibold">
 				<button
 					type="button"
@@ -106,30 +110,35 @@
 			{#if password_slide}
 				<div transition:slide class="mt-4 space-y-4">
 					<div>
-						<label for="current-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+						<label
+							for="current-password"
+							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
 							>Current Password</label
 						>
 						<input
 							type="password"
 							id="current-password"
 							name="currentPassword"
-							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 						/>
 					</div>
 					<div>
-						<label for="new-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-							>New Password</label
+						<label
+							for="new-password"
+							class="block text-sm font-medium text-gray-700 dark:text-gray-300">New Password</label
 						>
 						<input
 							type="password"
 							id="new-password"
 							name="newPassword"
 							bind:value={user.newPassword}
-							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 						/>
 					</div>
 					<div>
-						<label for="confirm-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+						<label
+							for="confirm-password"
+							class="block text-sm font-medium text-gray-700 dark:text-gray-300"
 							>Confirm New Password</label
 						>
 						<input
@@ -137,14 +146,14 @@
 							id="confirm-password"
 							name="confirmPassword"
 							bind:value={user.confirmPassword}
-							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-{$color}-500 focus:ring-{$color}-500"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 						/>
 					</div>
 				</div>
 			{/if}
 		</div>
 
-		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<Mail class="mr-2" /> Notification Preferences
 			</h2>
@@ -160,11 +169,11 @@
 			</div>
 		</div>
 
-		<div class="rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
+		<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<CreditCard class="mr-2" /> Billing Information
 			</h2>
-			<p class="mb-2 text-sm text-gray-100">
+			<p class="mb-2 text-sm dark:text-gray-100">
 				Your current plan: <strong
 					>{data.user.variant_name.length > 0 ? data.user.variant_name : 'Free Trial'}</strong
 				>

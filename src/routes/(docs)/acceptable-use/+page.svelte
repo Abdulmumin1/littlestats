@@ -5,7 +5,7 @@
 <section class="mb-16">
 	<Header>Acceptable Use Policy</Header>
 
-	<div class="prose dark:text-white max-w-none">
+	<div class="prose max-w-none dark:text-white">
 		<div class="space-y-6">
 			<div>
 				<h2 class="mb-3 text-xl font-semibold dark:text-white">1. Acceptable Use</h2>
@@ -45,9 +45,8 @@
 <!-- Contact Section -->
 <section class="rounded-lg bg-white p-6 shadow-sm">
 	<h2 class="mb-4 text-xl font-semibold">Questions?</h2>
-	<p class="mb-4">Contact us at:</p>
+	<p class="mb-4">Contact me at:</p>
 	<ul class="space-y-2">
-		<li>Technical support: support@littlestats.com</li>
-		<li>General inquiries: hello@littlestats.com</li>
+		<li>Personal Email: abdulmuminyqn@gmail.com</li>
 	</ul>
 </section>

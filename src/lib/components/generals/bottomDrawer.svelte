@@ -91,9 +91,11 @@
 />
 
 <div class="drawer-container">
-	<button class="z-0 handle text-black dark:text-gray-100" on:click={toggleDrawer}><slot name="handle" /></button>
+	<button class="handle z-0 text-black dark:text-gray-100" on:click={toggleDrawer}
+		><slot name="handle" /></button
+	>
 	<div
-		class="drawer bg-{$color}-50 dark:bg-stone-900 mx-auto max-w-7xl"
+		class="drawer bg-{$color}-50 mx-auto max-w-7xl dark:bg-stone-900"
 		style="height: {height}px; bottom: {$position}px;"
 		bind:this={drawerEl}
 		on:mousedown={handleMouseDown}
@@ -116,7 +118,7 @@
 <style>
 	.drawer-container {
 		position: relative;
-		z-index: 9999;
+		z-index: 9999 !important;
 	}
 
 	.drawer {
@@ -129,6 +131,7 @@
 		transition: transform 0.3s ease;
 		display: flex;
 		flex-direction: column;
+		z-index: 9999 !important;
 	}
 
 	.drawer-handle {
@@ -138,20 +141,19 @@
 		margin: 10px auto;
 		flex-shrink: 0;
 	}
-	.handle{
+	.handle {
 		z-index: 0 !important;
-
 	}
 
-	* .handle{
+	* .handle {
 		z-index: 0 !important;
-
 	}
 
 	.drawer-content {
 		padding: 0 20px 20px;
 		overflow-y: auto;
 		flex-grow: 1;
+		z-index: 9999 !important;
 		height: calc(100% - 25px); /* Subtracting the handle height and its margin */
 	}
 </style>

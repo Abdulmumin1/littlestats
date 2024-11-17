@@ -77,13 +77,13 @@
 </script>
 
 <div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-4">
-	<div class=" rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-4">
-		<h2 class="mb-4 text-xl font-semibold ">Add New Domain</h2>
+	<div class=" rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
+		<h2 class="mb-4 text-xl font-semibold">Add New Domain</h2>
 		<form
 			use:enhance={handleAdd}
 			action="?/updateDomain"
 			method="post"
-			class="mb-4 flex flex-wrap gap-2 "
+			class="mb-4 flex flex-wrap gap-2"
 		>
 			<input
 				type="url"
@@ -91,12 +91,12 @@
 				placeholder="Enter new domain"
 				required
 				name="name"
-				class="flex-grow rounded-full border border-gray-600 bg-{$color}-100 p-2 text-black md:px-3 md:py-2"
+				class="flex-grow rounded-full border border-gray-600 bg-{$color}-50 p-2 text-black md:px-3 md:py-2 dark:bg-stone-700/50 dark:text-gray-100"
 			/>
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-700 px-4 py-2 font-bold hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-gray-100 bg-{$color}-700 px-4 py-2 font-bold hover:bg-{$color}-700"
 			>
 				Add Domain {#if loading}
 					<Loader class="animate-spin" size={16} />
@@ -111,13 +111,13 @@
 	<div class="b] rounded-md">
 		<h2 class="mb-4 text-xl font-semibold dark:text-white">Managed Domains</h2>
 		{#if domains.length === 0}
-			<p>No domains added yet.</p>
+			<p class="dark:text-gray-100">No domains added yet.</p>
 		{:else}
 			<div class="flex flex-col gap-2">
 				{#each domains as domain (domain)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-100 dark:bg-stone-800/50 dark:text-gray-100 p-3"
+						class="flex flex-col rounded-md bg-{$color}-100 p-3 dark:bg-stone-800/50 dark:text-gray-100"
 					>
 						<DomainCard {domain} hide={domain?.hide ?? true} {removeDomain} />
 					</div>
