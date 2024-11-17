@@ -35,7 +35,7 @@
 	};
 </script>
 
-<div class="container max-w-[1000px] mx-auto">
+<div class="container max-w-[1000px] mx-auto p-3">
 	
 	
 	<!-- <p class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 dark:text-white sm:mb-8 sm:max-w-2xl sm:text-xl">

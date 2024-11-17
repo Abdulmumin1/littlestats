@@ -10,6 +10,7 @@
 	import Banner from '../lib/components/landing/launchBanner.svelte';
 	import Footer from './footer.svelte';
 	import Hero from '../lib/components/landing/hero.svelte';
+	import ReasonSection from '../lib/components/landing/reasonSection.svelte';
 
 	const plans = [
 		{
@@ -44,6 +45,7 @@
 		<Hero/>
 		<ImageSection />
 		<FeatureSection />
+		<ReasonSection/>
 		<PricingSection />
 		<!-- <Waitlist /> -->
 	</div>

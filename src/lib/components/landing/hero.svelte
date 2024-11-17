@@ -13,7 +13,7 @@
 					>But Affordable</span
 				>
 			</h1>
-			<p class=" max-w-xl text-lg  text-gray-900 dark:text-white sm:mb-8 sm:max-w-2xl sm:text-xl">
+			<p class=" max-w-xl text-lg  text-gray-900 mb-3 px-3 md:p-0 dark:text-white sm:mb-8 sm:max-w-2xl sm:text-xl">
 				Your analytics needs without breaking the bank
 			</p>
 			<a

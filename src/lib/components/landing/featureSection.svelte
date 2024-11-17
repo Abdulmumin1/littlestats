@@ -39,7 +39,7 @@
 		},
 		{
 			title: 'Your site stays fast',
-			description: 'Maintain website speed with our compact tracking script under 3kb.',
+			description: 'Maintain website speed with our compact tracking script under 2kb.',
 			icon: Zap
 		}
 	];
@@ -47,7 +47,7 @@
 
 
 
-<div class="  bg-{$color}-100 dark:bg-{$color}-100 rounded">
+<div class=" px-4 md:px-0 bg-{$color}-100 dark:bg-{$color}-100 rounded">
 	<div
 	id="box"
 	class="bg-{$color}-50 dark:bg-stone-900 "
