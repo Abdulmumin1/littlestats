@@ -24,7 +24,7 @@
 						const customUrlRegex = /^([a-zA-Z-]+):\/\/([^\/]+)(\/.*)?$/;
 						const match = ref.match(customUrlRegex);
 						if (match) {
-							return match[2];
+							hostname = match[2];
 						}
 					}
 					if (hostname != domain.name) {
