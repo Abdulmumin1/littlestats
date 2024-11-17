@@ -118,7 +118,6 @@
 <style>
 	.drawer-container {
 		position: relative;
-		z-index: 9999 !important;
 	}
 
 	.drawer {
