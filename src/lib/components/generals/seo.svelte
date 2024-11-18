@@ -2,7 +2,7 @@
 	export let title = 'Littlestats - Simple, Affordable Analytics for Websites';
 	export let description;
 	export let imageUrl = '/littlestats.png';
-	export let url;
+	export let url = 'https://littlestats.click';
 	export let jsonLd;
 	export let index = true;
 	export let keywords = '';
@@ -14,18 +14,14 @@
 	export let siteName = 'Littlestats';
 	export let twitterHandle = '@abdulmuminyqn';
 
-	let LittleStatsDetails = {
-		des: 'Littlestats - Simple, Affordable Analytics for Websites',
-		url: 'https://littlestats.click',
-		imageUrl: '/littlestats.png'
-	};
+
 </script>
 
 <!-- Basic Meta Tags -->
 <title>{title}</title>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-<meta name="description" content={description ?? LittleStatsDetails.des} />
+<meta name="description" content={description} />
 <meta name="keywords" content={keywords} />
 <meta name="author" content={author} />
 {#if canonicalUrl}
@@ -34,10 +30,10 @@
 
 <!-- Open Graph / Facebook Meta Tags -->
 <meta property="og:type" content="website" />
-<meta property="og:url" content={url ?? LittleStatsDetails.url} />
+<meta property="og:url" content={url} />
 <meta property="og:title" content={title} />
-<meta property="og:description" content={description ?? LittleStatsDetails.des} />
-<meta property="og:image" content={imageUrl ?? LittleStatsDetails.imageUrl} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={imageUrl} />
 <meta property="og:site_name" content={siteName} />
 <meta property="og:locale" content={locale} />
 {#if publishedDate}
@@ -51,10 +47,10 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content={twitterHandle} />
 <meta name="twitter:creator" content={twitterHandle} />
-<meta name="twitter:url" content={url ?? LittleStatsDetails.url} />
+<meta name="twitter:url" content={url} />
 <meta name="twitter:title" content={title} />
-<meta name="twitter:description" content={description ?? LittleStatsDetails.des} />
-<meta name="twitter:image" content={imageUrl ?? LittleStatsDetails.imageUrl} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
 
 <!-- Robots Meta Tag -->
 {#if index}
