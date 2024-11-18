@@ -1,8 +1,8 @@
 <script>
 	export let title = 'Littlestats - Simple, Affordable Analytics for Websites';
 	export let description = 'Littlestats gives you easy, affordable website analytics—simple insights to help your site grow faster.';
-	export let imageUrl = 'https://littestatsl.click/littlestats.png';
-	export let url = 'https://littestatsl.click';
+	export let imageUrl = 'https://littlestats.click/littlestats.png';
+	export let url = 'https://littlestats.click';
 	export let jsonLd;
 	export let index = true;
 	export let keywords = '';
