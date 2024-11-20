@@ -51,7 +51,7 @@ export function isBrowserInUserAgent(userAgent, browserName) {
 			return ua.includes('phantomjs');
 		case 'electron':
 			return ua.includes('electron');
-		case 'googlebot':
+		case 'google bot':
 			return ua.includes('googlebot');
 
 		// Chromium-based browsers
