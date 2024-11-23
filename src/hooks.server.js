@@ -2,6 +2,7 @@ import PocketBase from 'pocketbase';
 import { env } from '$env/dynamic/private';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import { calculateTrialDaysLeft } from './lib/utils';
 
 export const authentication = async ({ event, resolve }) => {
 	event.locals.pb = new PocketBase(env.PB_URL);
@@ -59,19 +60,9 @@ export const authorization = async ({ event, resolve }) => {
 		} else if (!loggedIn?.account_activated && !event.url.pathname.startsWith('/setup')) {
 			throw redirect(303, '/setup');
 		} else if (!loggedIn?.sub_id) {
-			// Given date (for example, 15 days ago)
-			const givenDate = new Date(loggedIn?.date_activated); // Replace with your date
+			const daysLeft = calculateTrialDaysLeft(loggedIn.date_activated)
 
-			// Get the current date
-			const now = new Date();
-
-			// Calculate the difference in milliseconds
-			const timeDifference = now - givenDate;
-
-			// Convert milliseconds to days
-			const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-
-			if (!event.url.pathname.startsWith('/billing') && daysDifference >= 30) {
+			if (!event.url.pathname.startsWith('/billing') && daysLeft <= 0) {
 				throw redirect(303, '/billing');
 			}
 		}

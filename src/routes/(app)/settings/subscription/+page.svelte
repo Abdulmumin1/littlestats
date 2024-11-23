@@ -6,7 +6,7 @@
 	import { enhance } from '$app/forms';
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
-
+	import {calculateTrialDaysLeft} from '$lib/utils.js'
 	let subscriptions = [];
 	let newSubscriptionName = '';
 	let errMessage;
@@ -45,23 +45,11 @@
 	onMount(() => {
 		// Simulating fetching subscriptions from an API
 		if (!data.user.sub_id) {
-			// Given date (for example, 15 days ago)
-			const givenDate = new Date(data.user.date_activated); // Replace with your date
-
-			// Get the current date
-			const now = new Date();
-
-			// Calculate the difference in milliseconds
-			const trialEnd = now.setDate(givenDate.getDate() + 30); // 30 day free trial
-			const timeDifference = trialEnd - givenDate;
-
-			// Convert milliseconds to days
-			const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-
+			
 			subscriptions = [
 				{
 					name: 'Free Trial',
-					status: `Ends in ${parseInt(daysDifference)} days`,
+					status: `Ends in ${parseInt(calculateTrialDaysLeft(date.user.date_activated))} days`,
 					renewalDate: '2024-11-01'
 				}
 			];

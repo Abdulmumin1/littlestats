@@ -2,24 +2,15 @@
 
 import { redirect } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
+import { calculateTrialDaysLeft } from '../../../lib/utils';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ locals: { pb }, url }) {
 	const user = pb.authStore.model;
 
-	// Given date (for example, 15 days ago)
-	const givenDate = new Date(user?.date_activated); // Replace with your date
+	const daysLeft = calculateTrialDaysLeft(user.date_activated)
 
-	// Get the current date
-	const now = new Date();
-
-	// Calculate the difference in milliseconds
-	const timeDifference = now - givenDate;
-
-	// Convert milliseconds to days
-	const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
-
-	if (daysDifference <= 30) {
+	if (daysLeft > 0) {
 		throw redirect(303, '/sites');
 	}
 	if (user.setup_complete) {
