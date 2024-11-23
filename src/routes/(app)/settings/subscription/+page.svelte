@@ -49,7 +49,7 @@
 			subscriptions = [
 				{
 					name: 'Free Trial',
-					status: `Ends in ${parseInt(calculateTrialDaysLeft(date.user.date_activated))} days`,
+					status: `Ends in ${parseInt(calculateTrialDaysLeft(data.user.date_activated))} days`,
 					renewalDate: '2024-11-01'
 				}
 			];

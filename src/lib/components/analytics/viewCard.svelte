@@ -51,12 +51,15 @@
 
 	// Percentage increase = [ (Final value - Starting value) / |Starting value| ] * 100.
 	// $: console.log(backdateData == Nan)
-	$: percentange = ((number - backdateData) / number) * 100;
+	$: percentange = (number === 0 || isNaN(((number - backdateData) / number) * 100)) ? 0 : ((number - backdateData) / number) * 100;
 	$: {
 		if (percentange < 0) {
 			increase = 'down';
 		} else {
 			increase = 'up';
+			if (type == 'percent'){
+				increase = 'down'
+			}
 		}
 	}
 </script>

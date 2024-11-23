@@ -37,58 +37,63 @@
 		return Array.from(uniqueAgents.values());
 	}
 
-	// Function to calculate average visit duration
 	function calculateAverageDuration(events) {
-		// Filter out events with duration
-		events = events.filter((e) => e.event_type == 'pageExit');
-		const durations = events.map((event) => event.duration);
+		// Filter out 'pageExit' events that have a valid 'duration'
+		const validEvents = events.filter((e) => e.event_type === 'pageExit' && e.duration > 0);
+
+		// Check if there are no valid events
+		if (validEvents.length === 0) {
+			return 0;
+		}
 
 		// Calculate total duration
-		const totalDuration = durations.reduce((acc, curr) => acc + curr, 0);
+		const totalDuration = validEvents.reduce((acc, curr) => acc + curr.duration, 0);
 
-		// Calculate average
-		const averageDuration = totalDuration / durations.length;
+		// Calculate average duration
+		const averageDuration = totalDuration / validEvents.length;
 
 		return averageDuration;
 	}
 
-	// Function to calculate bounce rate
-	function calculateBounceRate(events) {
-		let totalVisits = events.length; // Total number of page views
-		let bounceCount = 0;
+// Function to calculate bounce rate
+function calculateBounceRate(events) {
+    let totalVisits = 0; // Total number of page views
+    let bounceCount = 0;
 
-		// Create a map to track user interactions
-		const userInteractions = {};
+    // Create a map to track users by session or unique identifier
+    const userSessions = {};
 
-		// Iterate through events and categorize them
-		for (const event of events) {
-			const { user_agent, url } = event;
+    // Iterate through events and categorize them
+    for (const event of events) {
+        const { user_agent, event_type } = event;
 
-			// If the user has not interacted with a different page
-			if (!userInteractions[user_agent]) {
-				userInteractions[user_agent] = { visited: false };
-			}
+        // Ensure we are using user_agent or user_agent as a unique user identifier
+        if (!userSessions[user_agent]) {
+            userSessions[user_agent] = { pageViews: 0 };
+        }
 
-			// Mark as visited
-			userInteractions[user_agent].visited = true;
+        // Count the pageviews for each user
+        if (event_type === 'pageview') {
+            totalVisits++;
+            userSessions[user_agent].pageViews++;
+        }
 
-			// Check for any page transitions or interactions
-			// For example, if you have an event type that indicates a new page visit
-			if (event.event_type === 'pageview' && userInteractions[user_agent].visited) {
-				// Increment bounce count if this is the only interaction for the user
-				bounceCount++;
-			}
-		}
+        // Mark as bounce if the user only visited a single page and left
+        if (userSessions[user_agent].pageViews === 1 && event_type === 'pageExit') {
+            bounceCount++;
+        }
+    }
 
-		// Bounce rate calculation
-		const bounceRate = (bounceCount / totalVisits) * 100;
+    // Prevent division by zero if no page views
+    const bounceRate = totalVisits === 0 ? 0 : (bounceCount / totalVisits) * 100;
 
-		return {
-			bounceRate: bounceRate.toFixed(2), // Format to two decimal places
-			totalVisits: totalVisits,
-			bounceCount: bounceCount
-		};
-	}
+    return {
+        bounceRate: bounceRate.toFixed(2), // Format to two decimal places
+        totalVisits: totalVisits,
+        bounceCount: bounceCount
+    };
+}
+
 	$: bounces = calculateBounceRate(page_data);
 	$: averageVisitDuration = calculateAverageDuration(page_data);
 	// $: formatDr = formatDuration(parseInt(averageVisitDuration));
@@ -419,8 +424,12 @@
 					<button
 						transition:scale
 						on:click={() => removeFilter(filter)}
-						class="flex w-fit gap-1 rounded-full bg-{$color}-700 dark:bg-{$color}-700  text-gray-100 items-center p-1 px-2"
-						>{filter.type} <span class="bg-{$color}-100 dark:bg-stone-800 text-black dark:text-gray-100 rounded-full px-2">{filter.query}</span>
+						class="flex w-fit gap-1 rounded-full bg-{$color}-700 dark:bg-{$color}-700 items-center p-1 px-2 text-gray-100"
+						>{filter.type}
+						<span
+							class="bg-{$color}-100 rounded-full px-2 text-black dark:bg-stone-800 dark:text-gray-100"
+							>{filter.query}</span
+						>
 						<span><X size={13} /></span></button
 					>
 				{/each}
