@@ -147,9 +147,6 @@
 						- During this 7-day grace period, you can still update your billing details to continue
 						using our service without loss of any analytics data.
 					</p>
-					<p class="mb-2 text-sm text-gray-900 dark:text-gray-200">
-						- Subscripiton is ridiculously cheap, starting at <strong>$7/month</strong>
-					</p>
 				</div>
 			{/if}
 

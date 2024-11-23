@@ -258,14 +258,14 @@
 	const plans = [
 		{
 			name: 'Monthly',
-			priceMonthly: 5.99,
+			priceMonthly: 5,
 			priceYearly: 50,
 			features: [
 				'Full Analytics Suite',
 				'Custom Events',
 				'Geographical data',
 				'Up to 5 Website',
-				'Less than 30k pageview a month',
+				'Less than 100k hits a month',
 				'6 months of data retension',
 				'Support'
 			]
