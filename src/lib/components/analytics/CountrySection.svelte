@@ -331,7 +331,7 @@
 					// });
 					// console.log($ip_cache);
 
-					const country = getCountry(timezone);
+					const country = getCountry(timezone) ?? 'Unknown';
 					if (country) {
 						// console.log(country);
 						if (!uniquePages.has(country)) {
