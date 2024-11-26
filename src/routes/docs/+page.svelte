@@ -1,101 +1,117 @@
 <script>
-	import { onMount } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
-	import Nav from '../nav.svelte';
-	import Footer from '../footer.svelte';
-
-	let isVisible = false;
-	let currentSection = 'getting-started';
-
-	const sections = [
-		{ id: 'getting-started', title: 'Getting Started' },
-		{ id: 'installation', title: 'Installation' },
-		{ id: 'configuration', title: 'Configuration' },
-		{ id: 'api-reference', title: 'API Reference' },
-		{ id: 'faq', title: 'FAQ' }
-	];
-
-	onMount(() => {
-		isVisible = true;
-	});
-
-	function setCurrentSection(sectionId) {
-		currentSection = sectionId;
-	}
+	import { color } from '$lib/colors/mixer.js';
+	import Nav from '$lib/components/generals/insideNav.svelte';
 </script>
 
-<main
-	class="relative min-h-screen bg-gradient-to-bl from-emerald-950 to-black font-sans text-white"
->
-	<div
-		class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMDAwMDAwIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiMyMjIiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=')] opacity-10"
-	></div>
+<div class="container mx-auto max-w-4xl px-4 py-8">
+	<header class="mb-12">
+		<Nav />
+	</header>
 
-	<Nav title="AnalyticsRig Docs" />
+	<nav class="mb-8 rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800">
+		<h2 class="mb-4 text-lg font-semibold text-black dark:text-white">Table of Contents</h2>
+		<ul class="grid gap-2">
+			{#each ['Overview', 'Installation', 'Configuration', 'Custom Events', 'Event Data Captured'] as section}
+				<li>
+					<a
+						href="#{section.toLowerCase().replace(/\s+/g, '-')}"
+						class="text-{$color}-500 hover:text-{$color}-800 dark:text-{$color}-700 dark:hover:text-{$color}-300 transition-colors"
+					>
+						{section}
+					</a>
+				</li>
+			{/each}
+		</ul>
+	</nav>
 
-	<div class="container relative mx-auto flex flex-col md:flex-row">
-		<!-- Sidebar -->
-		<aside class="w-full p-4 md:w-1/4">
-			<nav>
-				<ul>
-					{#each sections as section}
-						<li class="mb-2">
-							<button
-								on:click={() => setCurrentSection(section.id)}
-								class="{currentSection === section.id
-									? 'text-emerald-400'
-									: 'text-gray-300'} transition-colors duration-200 hover:text-emerald-400"
-							>
-								{section.title}
-							</button>
-						</li>
-					{/each}
-				</ul>
-			</nav>
-		</aside>
+	<main class="">
+		<section id="overview" class="mb-12">
+			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Overview</h2>
+			<p class="text-stone-700 dark:text-stone-300">
+				This guide helps you understand everything you need to get started with Littlestats
+			</p>
+		</section>
 
-		<!-- Main content -->
-		<main class="min-h-screen w-full p-4 md:w-3/4">
-			{#if isVisible}
-				<div in:fade={{ duration: 300 }}>
-					{#if currentSection === 'getting-started'}
-						<h1 class="mb-4 text-4xl font-bold">Getting Started</h1>
-						<p class="mb-4 text-gray-300">
-							Welcome to StatRig! This guide will help you get started with our self-hosted
-							analytics solution.
-						</p>
-						<!-- Add more content for the Getting Started section -->
-					{:else if currentSection === 'installation'}
-						<h1 class="mb-4 text-4xl font-bold">Installation</h1>
-						<p class="mb-4 text-gray-300">Follow these steps to install StatRig on your server:</p>
-						<!-- Add installation instructions -->
-					{:else if currentSection === 'configuration'}
-						<h1 class="mb-4 text-4xl font-bold">Configuration</h1>
-						<p class="mb-4 text-gray-300">Learn how to configure StatRig to fit your needs:</p>
-						<!-- Add configuration instructions -->
-					{:else if currentSection === 'api-reference'}
-						<h1 class="mb-4 text-4xl font-bold">API Reference</h1>
-						<p class="mb-4 text-gray-300">Explore the StatRig API endpoints and their usage:</p>
-						<!-- Add API documentation -->
-					{:else if currentSection === 'faq'}
-						<h1 class="mb-4 text-4xl font-bold">Frequently Asked Questions</h1>
-						<p class="mb-4 text-gray-300">Find answers to common questions about StatRig:</p>
-						<!-- Add FAQ content -->
-					{/if}
-				</div>
-			{/if}
-		</main>
-	</div>
+		<!-- <section id="features" class="mb-12">
+			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Features</h2>
+			<ul class="list-inside list-disc space-y-2 text-stone-700 dark:text-stone-300">
+				<li>Automatic page view tracking</li>
+				<li>Custom event tracking</li>
+				<li>Page exit tracking with duration</li>
+				<li>Support for single-page applications (SPAs)</li>
+				<li>Development mode toggle</li>
+				<li>Beacon-based tracking for page exit events</li>
+			</ul>
+		</section> -->
 
-	<Footer />
-</main>
+		<section id="installation" class="mb-12">
+			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Installation</h2>
+			<p class="mb-4 text-stone-700 dark:text-stone-300">
+				Include the script in your HTML file or integrate it into your project's bundled JavaScript:
+			</p>
+			<strong class="text-{$color}-700">Example</strong>
+			<pre class="overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
+					class="text-stone-700 dark:text-stone-300"
+					>&lt;script src="cdn.littlestats.click/embed/domainID"&gt;&lt;/script&gt;</code
+				></pre>
+		</section>
 
-<style>
-	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+		<section id="custom-events" class="mb-12">
+			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Custom Events</h2>
 
-	:global(body) {
-		font-family: 'Inter', sans-serif;
-		background-color: black;
-		color: white;
-	}
-</style>
+			<div class="mb-6">
+				<h3 class="mb-2 text-xl font-semibold text-stone-800 dark:text-stone-200">
+					<code>window.trackEvent(eventName, eventData)</code>
+				</h3>
+				<p class="mb-4 text-stone-700 dark:text-stone-300">
+					Track custom events with additional metadata.
+				</p>
+				<pre class="overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
+						class="text-stone-700 dark:text-stone-300"
+						>{`window.trackEvent('button_click', { 
+  buttonId: 'submit', 
+  location: 'header' 
+});`}</code
+					></pre>
+			</div>
+
+			<div class="mb-6">
+				<h3 class="mb-2 text-xl font-semibold text-stone-800 dark:text-stone-200">
+					<code>window.setAnalyticsDevMode(isDevMode)</code>
+				</h3>
+				<p class="mb-4 text-stone-700 dark:text-stone-300">Manually toggle development mode.</p>
+				<pre class="overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
+						class="text-stone-700 dark:text-stone-300"
+						>window.setAnalyticsDevMode(true); // Enable dev mode</code
+					></pre>
+			</div>
+		</section>
+
+		<section id="event-data" class="mb-12">
+			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Event Data Captured</h2>
+			<ul class="list-inside list-disc space-y-2 text-stone-700 dark:text-stone-300">
+				<li><code>eventType</code>: Type of event (pageview, customEvent, pageExit)</li>
+				<li><code>url</code>: Current page path</li>
+				<li><code>referrer</code>: Previous page URL</li>
+				<li><code>userAgent</code>: Browser and device information</li>
+				<li><code>timestamp</code>: ISO 8601 formatted event time</li>
+				<li><code>host</code>: Current website hostname</li>
+				<li>Custom event-specific data</li>
+			</ul>
+		</section>
+
+		<section id="privacy" class="mb-12">
+			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Privacy Considerations</h2>
+			<ul class="list-inside list-disc space-y-2 text-stone-700 dark:text-stone-300">
+				<li>No personally identifiable information (PII) is automatically collected</li>
+				<li>
+					Customize <code>sendAnalytics</code> function to add privacy-specific logic if needed
+				</li>
+			</ul>
+		</section>
+	</main>
+
+	<footer class="mt-12 border-t pt-8 text-center text-stone-600 dark:text-stone-400">
+		<p>© 2024 Analytics Tracking Library. All rights reserved.</p>
+	</footer>
+</div>

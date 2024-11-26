@@ -2998,7 +2998,7 @@ export function getCountry(timezone) {
 	};
 
 	if (timezone == '' || !timezone) {
-		return false;
+		return "Unknown";
 	}
 
 	const _country = timezones[timezone].c[0];

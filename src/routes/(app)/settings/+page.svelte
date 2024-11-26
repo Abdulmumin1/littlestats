@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { show_toast } from '$lib/toast.js';
-	import { Code, Link, Trash, Loader } from 'lucide-svelte';
+	import { Code, Link, Trash, Loader, ArrowRight } from 'lucide-svelte';
 	import DomainCard from './domainCard.svelte';
 	import UserSetting from './userSetting.svelte';
 	import { enhance } from '$app/forms';
@@ -124,5 +124,10 @@
 				{/each}
 			</div>
 		{/if}
+	</div>
+
+	<div class="mt-12 inline-flex items-center gap-2">
+		<ArrowRight /> Read <a href="/docs" class="text-{$color}-700"> Littlestats docs</a> for interation
+		guide
 	</div>
 </div>

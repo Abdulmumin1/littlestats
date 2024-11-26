@@ -42,6 +42,7 @@ const unprotectedPrefix = [
 	'/sitemap.xml',
 	'/robots.txt'
 ];
+
 export const authorization = async ({ event, resolve }) => {
 	const loggedIn = await event.locals.pb.authStore.model;
 
@@ -60,7 +61,7 @@ export const authorization = async ({ event, resolve }) => {
 		} else if (!loggedIn?.account_activated && !event.url.pathname.startsWith('/setup')) {
 			throw redirect(303, '/setup');
 		} else if (!loggedIn?.sub_id) {
-			const daysLeft = calculateTrialDaysLeft(loggedIn.date_activated)
+			const daysLeft = calculateTrialDaysLeft(loggedIn.date_activated);
 
 			if (!event.url.pathname.startsWith('/billing') && daysLeft <= 0) {
 				throw redirect(303, '/billing');
