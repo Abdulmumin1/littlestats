@@ -15,7 +15,7 @@
 				<li>
 					<a
 						href="#{section.toLowerCase().replace(/\s+/g, '-')}"
-						class="text-{$color}-500 hover:text-{$color}-800 dark:text-{$color}-700 dark:hover:text-{$color}-300 transition-colors"
+						class="text-{$color}-700 hover:text-{$color}-800 dark:text-{$color}-700 dark:hover:text-{$color}-300 transition-colors"
 					>
 						{section}
 					</a>
