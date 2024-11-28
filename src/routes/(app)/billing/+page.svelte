@@ -4,10 +4,10 @@
 	import { Loader, User, ChevronDown, ChevronUp, Lock, Mail, CreditCard } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { invalidateAll, goto } from '$app/navigation';
-	let user = {
+	let user = $state({
 		name: '',
 		email: ''
-	};
+	});
 
 	import { browser } from '$app/environment';
 
@@ -33,11 +33,11 @@
 		});
 	}
 
-	export let data;
+	let { data = $bindable() } = $props();
 
-	let loading = false;
+	let loading = $state(false);
 
-	let message = { text: '', type: '' };
+	let message = $state({ text: '', type: '' });
 
 	function setMessage(text, type) {
 		message = { text, type };
@@ -137,8 +137,8 @@
 						<div>
 							<button
 								disabled={!user.name}
-								class="lemonsqueezy-button flex w-full items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-700"
-								on:click={OpenOverlay}>Enter Billing Details</button
+								class="lemonsqueezy-button flex w-full items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-600 dark:bg-{$color}-700"
+								onclick={OpenOverlay}>Enter Billing Details</button
 							>
 						</div>
 					{/if}
@@ -159,7 +159,7 @@
 					<button
 						type="submit"
 						disabled={loading || !data.user.sub_id}
-						class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-700"
+						class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-600 dark:bg-{$color}-700"
 					>
 						Goto To Account
 						{#if loading}

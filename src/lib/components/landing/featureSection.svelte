@@ -59,7 +59,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 		class="container py-12 max-w-[1000px] mx-auto z-50  mt-12   rounded-2xl  dark:border-none p-4 border-{$color}-300"
 	>
 		<h3
-			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-700 text-white w-fit rounded-full px-3 py-[.15rem]"
+			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-600 dark:bg-{$color}-700 text-white w-fit rounded-full px-3 py-[.15rem]"
 		>
 			<ArrowRight size={20} /> Features
 		</h3>
@@ -67,7 +67,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 			{#each keyFeatures as feature}
 				<div class="rounded-xl  ">
 					<div class="mb-2 flex items-center gap-2">
-						<svelte:component this={feature.icon} size={24} class="text-{$color}-600" />
+						<feature.icon size={24} class="text-{$color}-600" />
 						<h4 class=" text-lg font-semibold">{feature.title}</h4>
 					</div>
 					<p class="text-{$color}-950">{feature.description}</p>

@@ -19,7 +19,7 @@
     ];
 </script>
 
-<div class="bg-{$color}-700 mx-auto">
+<div class="bg-{$color}-600 dark:bg-{$color}-700 mx-auto">
     <div
         id="box"
         class="bg-{$color}-100"

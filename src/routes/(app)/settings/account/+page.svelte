@@ -6,18 +6,18 @@
 	import { color } from '$lib/colors/mixer.js';
 	import { show_toast } from '$lib/toast.js';
 
-	let user = {
+	let user = $state({
 		name: '',
 		email: '',
 		password: '',
 		newPassword: '',
 		confirmPassword: ''
-	};
+	});
 
-	export let data;
+	let { data = $bindable() } = $props();
 
-	let password_slide = false;
-	let loading = false;
+	let password_slide = $state(false);
+	let loading = $state(false);
 	let message = { text: '', type: '' };
 
 	function setMessage(text, type) {
@@ -73,7 +73,7 @@
 						id="name"
 						name="name"
 						bind:value={user.name}
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
+						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-600 dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 					/>
 				</div>
 				<div>
@@ -85,7 +85,7 @@
 						id="email"
 						disabled
 						bind:value={user.email}
-						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
+						class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-600 dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 					/>
 				</div>
 			</div>
@@ -95,7 +95,7 @@
 			<h2 class=" flex items-center text-xl font-semibold">
 				<button
 					type="button"
-					on:click={() => {
+					onclick={() => {
 						password_slide = !password_slide;
 					}}
 					class="flex w-full items-center justify-between"
@@ -119,7 +119,7 @@
 							type="password"
 							id="current-password"
 							name="currentPassword"
-							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-600 dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 						/>
 					</div>
 					<div>
@@ -132,7 +132,7 @@
 							id="new-password"
 							name="newPassword"
 							bind:value={user.newPassword}
-							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-600 dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 						/>
 					</div>
 					<div>
@@ -146,7 +146,7 @@
 							id="confirm-password"
 							name="confirmPassword"
 							bind:value={user.confirmPassword}
-							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
+							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-stone-600 dark:bg-stone-700/50 focus:border-{$color}-500 focus:ring-{$color}-500"
 						/>
 					</div>
 				</div>
@@ -184,7 +184,7 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-700 px-6 py-2 font-bold text-gray-100 hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-600 dark:bg-{$color}-700 px-6 py-2 font-bold text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700"
 			>
 				Save Changes
 				{#if loading}

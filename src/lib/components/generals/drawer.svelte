@@ -1,12 +1,20 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { spring } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 
-	export let side = 'left'; // 'left' or 'right'
-	export let width = 300;
-	export let isOpen = false;
+	/**
+	 * @typedef {Object} Props
+	 * @property {string} [side] - 'left' or 'right'
+	 * @property {number} [width]
+	 * @property {boolean} [isOpen]
+	 */
 
-	let drawerEl;
+	/** @type {Props} */
+	let { side = 'left', width = 300, isOpen = $bindable(false) } = $props();
+
+	let drawerEl = $state();
 	let isDragging = false;
 	let startX;
 	let startY;
@@ -18,9 +26,9 @@
 		easing: cubicOut
 	});
 
-	$: {
+	run(() => {
 		position.set(isOpen ? 0 : -width);
-	}
+	});
 
 	function handleMouseDown(event) {
 		isDragging = true;
@@ -73,20 +81,20 @@
 </script>
 
 <svelte:window
-	on:mousemove={handleMouseMove}
-	on:mouseup={handleMouseUp}
-	on:touchmove={handleTouchMove}
-	on:touchend={handleTouchEnd}
+	onmousemove={handleMouseMove}
+	onmouseup={handleMouseUp}
+	ontouchmove={handleTouchMove}
+	ontouchend={handleTouchEnd}
 />
 
 <div class="drawer-container">
-	<button on:click={toggleDrawer}>Toggle Drawer</button>
+	<button onclick={toggleDrawer}>Toggle Drawer</button>
 	<div
 		class="drawer"
 		style="width: {width}px; {side}: {$position}px;"
 		bind:this={drawerEl}
-		on:mousedown={handleMouseDown}
-		on:touchstart={handleTouchStart}
+		onmousedown={handleMouseDown}
+		ontouchstart={handleTouchStart}
 	>
 		<div class="drawer-content">
 			<h2>Drawer Content</h2>

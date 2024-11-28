@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { LayerCake, Svg } from 'layercake';
 
 	import Line from './Line.svelte';
@@ -10,7 +12,7 @@
 	// import data from './points.js';
 	import { onMount } from 'svelte';
 
-	export let viewRecords;
+	let { viewRecords } = $props();
 
 	const xKey = 'myX';
 	const yKey = 'myY';
@@ -48,8 +50,8 @@
 		}));
 	}
 
-	$: sortedViews = sortViews(viewRecords);
-	$: data = transformViewDataForGraph(sortedViews);
+	let sortedViews = $derived(sortViews(viewRecords));
+	let data = $derived(transformViewDataForGraph(sortedViews));
 	// $: {
 	// 	if (data) {
 	// 		data.forEach((d) => {
@@ -59,7 +61,9 @@
 	// 	}
 	// }
 
-	$: console.log(data);
+	run(() => {
+		console.log(data);
+	});
 
 	onMount(() => {
 		console.log(data);

@@ -1,7 +1,7 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
     
-    export let title
+	let { title, children } = $props();
 
 </script>
 <div class="min-h-[130px] min-w-[230px] flex-1  rounded-md">
@@ -10,5 +10,5 @@
 		<p>Views</p>
 	</div>
 
-<slot></slot>
+{@render children?.()}
 </div>

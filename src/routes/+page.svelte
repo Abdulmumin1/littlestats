@@ -37,15 +37,15 @@
 	<Seo />
 </svelte:head>
 
-<main class="min-h-screen text-black ">
-	<div class=" mx-auto   s sm:py-12  lg:py-16">
+<main class="min-h-screen text-black">
+	<div class=" s mx-auto sm:py-12 lg:py-16">
 		<!-- <Banner /> -->
 		<Nav />
 
-		<Hero/>
+		<Hero />
 		<ImageSection />
 		<FeatureSection />
-		<ReasonSection/>
+		<!-- <ReasonSection/> -->
 		<PricingSection />
 		<!-- <Waitlist /> -->
 	</div>
