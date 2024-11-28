@@ -4,102 +4,9 @@
 	import { onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
 	// import { sortViews, transformViewDataForGraph } from './viewDataUtils.js';
-	import { color } from '$lib/colors/mixer.js';
+	import { color, colorList } from '$lib/colors/mixer.js';
 	import { ChevronDown, ChevronUp } from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
-	const colorList = {
-    stone: {
-        primary: '#44403c',    // stone-700
-        secondary: '#78716c',  // stone-500
-        complement: '#e7e5e4'  // stone-200
-    },
-    red: {
-        primary: '#b91c1c',    // red-700
-        secondary: '#ef4444',  // red-500
-        complement: '#fecaca'  // red-200
-    },
-    orange: {
-        primary: '#c2410c',    // orange-700
-        secondary: '#f97316',  // orange-500
-        complement: '#fed7aa'  // orange-200
-    },
-    amber: {
-        primary: '#b45309',    // amber-700
-        secondary: '#f59e0b',  // amber-500
-        complement: '#fde68a'  // amber-200
-    },
-    yellow: {
-        primary: '#a16207',    // yellow-700
-        secondary: '#eab308',  // yellow-500
-        complement: '#fef08a'  // yellow-200
-    },
-    lime: {
-        primary: '#4d7c0f',    // lime-700
-        secondary: '#84cc16',  // lime-500
-        complement: '#d9f99d'  // lime-200
-    },
-    green: {
-        primary: '#15803d',    // green-700
-        secondary: '#22c55e',  // green-500
-        complement: '#bbf7d0'  // green-200
-    },
-    emerald: {
-        primary: '#047857',    // emerald-700
-        secondary: '#10b981',  // emerald-500
-        complement: '#a7f3d0'  // emerald-200
-    },
-    teal: {
-        primary: '#0f766e',    // teal-700
-        secondary: '#14b8a6',  // teal-500
-        complement: '#99f6e4'  // teal-200
-    },
-    cyan: {
-        primary: '#0e7490',    // cyan-700
-        secondary: '#06b6d4',  // cyan-500
-        complement: '#a5f3fc'  // cyan-200
-    },
-    sky: {
-        primary: '#0369a1',    // sky-700
-        secondary: '#0ea5e9',  // sky-500
-        complement: '#bae6fd'  // sky-200
-    },
-    blue: {
-        primary: '#1d4ed8',    // blue-700
-        secondary: '#3b82f6',  // blue-500
-        complement: '#bfdbfe'  // blue-200
-    },
-    indigo: {
-        primary: '#4338ca',    // indigo-700
-        secondary: '#6366f1',  // indigo-500
-        complement: '#c7d2fe'  // indigo-200
-    },
-    violet: {
-        primary: '#6d28d9',    // violet-700
-        secondary: '#8b5cf6',  // violet-500
-        complement: '#ddd6fe'  // violet-200
-    },
-    purple: {
-        primary: '#7e22ce',    // purple-700
-        secondary: '#a855f7',  // purple-500
-        complement: '#e9d5ff'  // purple-200
-    },
-    fuchsia: {
-        primary: '#a21caf',    // fuchsia-700
-        secondary: '#d946ef',  // fuchsia-500
-        complement: '#f5d0fe'  // fuchsia-200
-    },
-    pink: {
-        primary: '#be185d',    // pink-700
-        secondary: '#ec4899',  // pink-500
-        complement: '#fbcfe8'  // pink-200
-    },
-    rose: {
-        primary: '#be123c',    // rose-700
-        secondary: '#f43f5e',  // rose-500
-        complement: '#fecdd3'  // rose-200
-    }
-};
-
 
 	/**
 	 * @typedef {Object} Props
@@ -110,8 +17,8 @@
 	/** @type {Props} */
 	let { chartD = { data: [], label: 'Views' }, sortInterval = 1 } = $props();
 
-	let chartCanvas = $state();
-	let chart = $state();
+	let chartCanvas = $state(null);
+	let chart = $state(null);
 
 	function sortViewsByHour(viewRecords) {
 		const now = new Date();
@@ -181,7 +88,7 @@
 		const startDate = new Date(now - totalDays * 24 * 60 * 60 * 1000);
 		const intervals = Array.from({ length: totalDays }, (_, i) => totalDays - i);
 		const counts = new Map(intervals.map((day) => [`${day} days ago`, 0]));
-		counts.set('Today', 1);
+		counts.set('Today', 0);
 
 		viewRecords.forEach((record) => {
 			// console.log(counts);
@@ -205,7 +112,7 @@
 				if (counts.has('Today')) {
 					counts.set('Today', counts.get('Today') + 1);
 				} else {
-					counts.set('Today', 1);
+					counts.set('Today', 0);
 				}
 				return;
 			}
@@ -239,7 +146,6 @@
 		}));
 	}
 
-
 	let unsubscribeColor = color.subscribe((c) => {
 		if (chart && chartData) {
 			// console.log(c);
@@ -268,13 +174,13 @@
 					{
 						label: chartD.label,
 						data: chartData.map((d) => d.myY),
-						borderColor:usedColor.primary,
+						borderColor: usedColor.primary,
 						tension: 0.3,
 						fill: 'origin',
 						borderWidth: 2,
 						borderRadius: 5,
 						spacing: 20,
-						...(chartType == 'bar' ? { backgroundColor:usedColor.primary } : {})
+						...(chartType == 'bar' ? { backgroundColor: usedColor.primary } : {})
 					}
 				]
 			},
@@ -296,8 +202,9 @@
 			}
 		});
 	};
+
 	onMount(() => {
-		if (showChart) {
+		if (showChart && chartCanvas) {
 			MountChart();
 		}
 		function handleResize() {
@@ -314,12 +221,8 @@
 		return () => {
 			unsubscribeColor();
 			window.removeEventListener('resize', handleResize);
-			if (chart) {
-				chart.destroy();
-			}
 		};
 	});
-
 
 	let showChart = $state(false);
 	function toggleChart() {
@@ -328,7 +231,6 @@
 			MountChart();
 		}
 	}
-
 
 	function toggleChartType(type) {
 		if (!showChart) {
@@ -339,13 +241,16 @@
 		chart.destroy(); // Destroy current chart instance
 		MountChart(); // Mount the new chart with updated type
 	}
+
 	let usedColor = $derived(colorList[$color] ?? greenColors);
 	let viewRecords = $derived(chartD.data);
-	let chartData = $derived(transformViewDataForGraph(
-		sortInterval <= 1 ? sortViewsByHour(viewRecords) : sortViewsByDays(viewRecords, sortInterval)
-	));
+	let chartData = $derived(
+		transformViewDataForGraph(
+			sortInterval <= 1 ? sortViewsByHour(viewRecords) : sortViewsByDays(viewRecords, sortInterval)
+		)
+	);
 	let c = $derived(chartData.map((d) => d.myX));
-	run(() => {
+	$effect(() => {
 		if (chart && chartData) {
 			chart.data.labels = chartData.map((d) => d.myX);
 			chart.data.datasets[0].data = chartData.map((d) => d.myY);
@@ -353,7 +258,7 @@
 			chart.update();
 		}
 	});
-	run(() => {
+	$effect(() => {
 		if (chartCanvas) {
 			try {
 				MountChart();
@@ -376,14 +281,16 @@
 			<button
 				onclick={() => toggleChartType('line')}
 				class="{chartType == 'line'
-					? `bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-l-full px-2 ">Line</button
+					? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
+					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-l-full px-2"
+				>Line</button
 			>
 			<button
 				onclick={() => toggleChartType('bar')}
 				class=" {chartType == 'bar'
-					? `bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-r-full px-2 ">Bar</button
+					? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
+					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-r-full px-2"
+				>Bar</button
 			>
 		</div>
 	</div>

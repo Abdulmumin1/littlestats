@@ -43,7 +43,7 @@
 			<div class="flex items-center">
 				<a
 					href="/"
-					class="flex flex-shrink-0 items-center rounded-full border border-black bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-700 px-2 py-1"
+					class="flex flex-shrink-0 items-center rounded-full border border-black bg-{$color}-600 dark:bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700 px-2 py-1"
 				>
 					<!-- <ChartBar size={18} class="text-{$color}-950" /> -->
 					<span class="px-2 text-lg font-bold text-gray-100">Littlestats</span>
@@ -52,7 +52,7 @@
 			<div class="flex items-center gap-2">
 				<MixerComp />
 				<div
-					class="hidden items-center rounded-full border border-black px-4 py-2 md:flex bg-{$color}-700 dark:bg-{$color}-700"
+					class="hidden items-center rounded-full border border-black px-4 py-2 md:flex bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700"
 				>
 					<div class=" flex items-center justify-center gap-3 text-gray-100 md:ml-0">
 						<div class="flex">
@@ -63,7 +63,7 @@
 						</a>
 
 						<!-- <button
-							class="rounded-full hover:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:ring-offset-2 focus:ring-offset-{$color}-800"
+							class="rounded-full hover:bg-{$color}-600 dark:bg-{$color}-700 focus:outline-none focus:ring-2 focus:ring-gray-100 focus:ring-offset-2 focus:ring-offset-{$color}-800"
 						>
 							<LogOut size={20} />
 						</button> -->
@@ -124,7 +124,7 @@
 					class:bg-{$color}-800={path === '/reports'}>Reports</a
 				>
 			</div> -->
-			<div class="wavy-line bg-{$color}-700"></div>
+			<div class="wavy-line bg-{$color}-600 dark:bg-{$color}-700"></div>
 			<div class=" bg-gray-50 pb-3 pt-4 dark:bg-gray-300">
 				<!-- <div class="flex items-center px-5">
 					<div class="flex-shrink-0">
@@ -138,12 +138,12 @@
 				<div class="mt-1 space-y-1 px-2">
 					<a
 						href="/sites"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-700 hover:text-gray-100"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
 						>Dashboard</a
 					>
 					<a
 						href="/settings"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-700 hover:text-gray-100"
+						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
 						>Settings</a
 					>
 				</div>

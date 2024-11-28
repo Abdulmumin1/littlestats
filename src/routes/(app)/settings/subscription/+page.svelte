@@ -85,7 +85,7 @@
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-700 px-4 py-2 font-bold text-black dark:text-gray-100 hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 font-bold text-black dark:text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700"
 			>
 				Activate License
 				{#if loading}
@@ -123,7 +123,7 @@
 							<div class="flex gap-2">
 								<a
 									href="https://abdulmuminyqn.lemonsqueezy.com/billing"
-									class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
+									class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-600 dark:bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
 								>
 									<Settings size={20} />
 									Manage Subscripiton

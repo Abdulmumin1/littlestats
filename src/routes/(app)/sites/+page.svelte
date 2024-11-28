@@ -164,7 +164,7 @@
 			</div>
 			<p class="dark:text-gray-100">No domains yet</p>
 
-			<a href="/settings" class="my-4 bg-{$color}-700 rounded-full p-1 px-2 text-white">
+			<a href="/settings" class="my-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full p-1 px-2 text-white">
 				+ Add Domain
 			</a>
 		</div>

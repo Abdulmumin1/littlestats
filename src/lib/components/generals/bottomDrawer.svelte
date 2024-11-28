@@ -123,7 +123,7 @@
 			isOpen = false;
 		}}
 	>
-		<div class="drawer-handle bg-{$color}-700"></div>
+		<div class="drawer-handle bg-{$color}-600 dark:bg-{$color}-700"></div>
 		{@render header?.()}
 
 		<div class="drawer-content cool-scrollbar" bind:this={contentEl}>

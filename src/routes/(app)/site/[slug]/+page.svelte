@@ -1,10 +1,8 @@
 <script>
-
 	import { onMount } from 'svelte';
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
 	import PageItem from '$lib/components/analytics/pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
-
 
 	import { deserialize } from '$app/forms';
 	import PagesSection from '../../../../lib/components/analytics/pagesSection.svelte';
@@ -20,7 +18,7 @@
 	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
 	import Dropdown from '../../../../lib/components/generals/dropdown.svelte';
 	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
-	
+
 	let { data = $bindable() } = $props();
 
 	let page_data = $state(data.records);
@@ -61,44 +59,44 @@
 		return averageDuration;
 	}
 
-// Function to calculate bounce rate
-function calculateBounceRate(events) {
-    let totalVisits = 0; // Total number of page views
-    let bounceCount = 0;
+	// Function to calculate bounce rate
+	function calculateBounceRate(events) {
+		let totalVisits = 0; // Total number of page views
+		let bounceCount = 0;
 
-    // Create a map to track users by session or unique identifier
-    const userSessions = {};
+		// Create a map to track users by session or unique identifier
+		const userSessions = {};
 
-    // Iterate through events and categorize them
-    for (const event of events) {
-        const { user_agent, event_type } = event;
+		// Iterate through events and categorize them
+		for (const event of events) {
+			const { user_agent, event_type } = event;
 
-        // Ensure we are using user_agent or user_agent as a unique user identifier
-        if (!userSessions[user_agent]) {
-            userSessions[user_agent] = { pageViews: 0 };
-        }
+			// Ensure we are using user_agent or user_agent as a unique user identifier
+			if (!userSessions[user_agent]) {
+				userSessions[user_agent] = { pageViews: 0 };
+			}
 
-        // Count the pageviews for each user
-        if (event_type === 'pageview') {
-            totalVisits++;
-            userSessions[user_agent].pageViews++;
-        }
+			// Count the pageviews for each user
+			if (event_type === 'pageview') {
+				totalVisits++;
+				userSessions[user_agent].pageViews++;
+			}
 
-        // Mark as bounce if the user only visited a single page and left
-        if (userSessions[user_agent].pageViews === 1 && event_type === 'pageExit') {
-            bounceCount++;
-        }
-    }
+			// Mark as bounce if the user only visited a single page and left
+			if (userSessions[user_agent].pageViews === 1 && event_type === 'pageExit') {
+				bounceCount++;
+			}
+		}
 
-    // Prevent division by zero if no page views
-    const bounceRate = totalVisits === 0 ? 0 : (bounceCount / totalVisits) * 100;
+		// Prevent division by zero if no page views
+		const bounceRate = totalVisits === 0 ? 0 : (bounceCount / totalVisits) * 100;
 
-    return {
-        bounceRate: bounceRate.toFixed(2), // Format to two decimal places
-        totalVisits: totalVisits,
-        bounceCount: bounceCount
-    };
-}
+		return {
+			bounceRate: bounceRate.toFixed(2), // Format to two decimal places
+			totalVisits: totalVisits,
+			bounceCount: bounceCount
+		};
+	}
 
 	let bounces = $derived(calculateBounceRate(page_data));
 	let averageVisitDuration = $derived(calculateAverageDuration(page_data));
@@ -106,15 +104,14 @@ function calculateBounceRate(events) {
 	let uniqueUserAgents = $derived(getUniqueUserAgents(page_data));
 
 	let backdateRecords = $state([]);
-	
+
 	let backdateViews = $state(0);
-	
+
 	let backdateBounces = $state(0);
-	
+
 	let backdateaverageVisitDuration = $state(0);
-	
+
 	let backdateuniqueUserAgents = $state([]);
-	
 
 	let filters = $state([]);
 
@@ -286,8 +283,9 @@ function calculateBounceRate(events) {
 	}
 
 	let sortInterval = $state(1);
-	
-	let chartD;
+
+	let chartD = $state();
+
 	$effect(() => {
 		chartD = { data: views, label: 'Views' };
 	});
@@ -398,10 +396,10 @@ function calculateBounceRate(events) {
 					options={domain_options}
 				>
 					{#snippet btn()}
-										<div >
+						<div>
 							<a href="/settings">+ add domain</a>
 						</div>
-									{/snippet}
+					{/snippet}
 				</Dropdown>
 
 				<!-- <div class="flex items-center gap-2">
@@ -411,12 +409,12 @@ function calculateBounceRate(events) {
 			</div>
 			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
 				{#snippet btn()}
-								<div >
+					<div>
 						<button onclick={openDatePicker} class="flex items-center gap-1">
 							<Calendar size={16} /> Custom Date
 						</button>
 					</div>
-							{/snippet}
+				{/snippet}
 			</Dropdown>
 
 			<!-- <div class="flex items-center gap-2">
@@ -443,7 +441,7 @@ function calculateBounceRate(events) {
 					<button
 						transition:scale
 						onclick={() => removeFilter(filter)}
-						class="flex w-fit gap-1 rounded-full bg-{$color}-700 dark:bg-{$color}-700 items-center p-1 px-2 text-gray-100"
+						class="flex w-fit gap-1 rounded-full bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700 items-center p-1 px-2 text-gray-100"
 						>{filter.type}
 						<span
 							class="bg-{$color}-100 rounded-full px-2 text-black dark:bg-stone-800 dark:text-gray-100"

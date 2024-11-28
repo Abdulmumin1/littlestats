@@ -154,7 +154,7 @@
 				<button
 					type="submit"
 					disabled={loading || !user.name}
-					class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-700"
+					class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-600 dark:bg-{$color}-700"
 				>
 					Activate Account
 					{#if loading}

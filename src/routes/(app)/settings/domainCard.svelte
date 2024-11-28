@@ -97,13 +97,13 @@
 		<div class="flex items-center justify-end gap-2">
 			<button
 				onclick={() => copyToClipboard(generateScriptUrl(domain))}
-				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-700 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-700"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-600 dark:bg-{$color}-700 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700"
 			>
 				Copy Snippet <Code size={16} />
 			</button>
 			<a
 				href="site/{domain.id}"
-				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-700 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-700"
+				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-600 dark:bg-{$color}-700 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700"
 			>
 				Go to Dashboard <ExternalLink size={16} />
 			</a>

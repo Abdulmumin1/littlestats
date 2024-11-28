@@ -102,7 +102,7 @@
 			<button
 				aria-busy={loading}
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-gray-100 bg-{$color}-700 px-4 py-2 font-bold hover:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 font-bold hover:bg-{$color}-600 dark:bg-{$color}-700"
 			>
 				Add Domain {#if loading}
 					<Loader class="animate-spin" size={16} />

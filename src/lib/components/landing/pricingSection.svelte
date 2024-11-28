@@ -34,14 +34,14 @@
 <div id="pricing"></div>
 <div class="mt-16 sm:mt-20 lg:mt-24">
 	<div
-		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-700 rounded-full dark:text-white"
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600 dark:bg-{$color}-700 rounded-full dark:text-white"
 	></div>
 	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">Super Affordable Pricing</h2>
 	<p
 		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600  sm:mb-8 sm:max-w-2xl sm:text-xl"
 	>
 		Use Littlestats for free for a whole month - <span
-			class="text-{$color}-100 rounded-full px-2 bg-{$color}-700 font-extrabold">30</span
+			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600 dark:bg-{$color}-700 font-extrabold">30</span
 		> day trial
 	</p>
 
@@ -103,7 +103,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
 			>
 				Start for free
 			</a>
@@ -240,7 +240,7 @@
   
 		<a
 		  href="/signup"
-		  class="rounded-full bg-{$color}-700 px-6 py-3 text-center font-semibold text-white transition duration-300 hover:bg-{$color}-400"
+		  class="rounded-full bg-{$color}-600 dark:bg-{$color}-700 px-6 py-3 text-center font-semibold text-white transition duration-300 hover:bg-{$color}-400"
 		>
 		  Start 30-day free trial
 		</a>
@@ -252,7 +252,7 @@
 	</div>
   </div> -->
 
-  <script>
+<script>
 	import { spring } from 'svelte/motion';
 	import { derived } from 'svelte/store';
 	import { color } from '$lib/colors/mixer.js';
@@ -267,14 +267,14 @@
 				'Custom Events',
 				'Geographical data',
 				'Up to 5 Website',
-				'Less than 100k hits a month',
+				'Unlimited hits per month',
 				'6 months of data retension',
 				'Support'
 			]
 		},
 		{
 			name: 'Lifetime',
-			price: 145,
+			price: 165,
 			features: [
 				'Everything in Monthly plan',
 				'Lifetime Updates',
@@ -287,21 +287,20 @@
 		}
 	];
 
-	let isYearly = false;
+	let isYearly = $state(false);
 
-	$: yearlyPrice = isYearly ? plans[0].priceYearly : plans[0].priceMonthly * 12;
-	$: savings = (plans[0].priceMonthly * 12 - yearlyPrice).toFixed(2);
-	
+	let yearlyPrice = $derived(isYearly ? plans[0].priceYearly : plans[0].priceMonthly * 12);
+	let savings = $derived((plans[0].priceMonthly * 12 - yearlyPrice).toFixed(2));
 
 	function calculateDiscountPercentage() {
-  const monthlyPriceTotal = plans[0].priceMonthly * 12; // Total of monthly plan for one year
-  const yearlyPrice = plans[0].priceYearly; // Price of yearly plan
-  
-  const savings = monthlyPriceTotal - yearlyPrice; // Savings amount
-  const discountPercentage = (savings / monthlyPriceTotal) * 100; // Discount percentage calculation
+		const monthlyPriceTotal = plans[0].priceMonthly * 12; // Total of monthly plan for one year
+		const yearlyPrice = plans[0].priceYearly; // Price of yearly plan
 
-  return discountPercentage.toFixed(); // Return the discount percentage rounded to two decimal places
-}
+		const savings = monthlyPriceTotal - yearlyPrice; // Savings amount
+		const discountPercentage = (savings / monthlyPriceTotal) * 100; // Discount percentage calculation
+
+		return discountPercentage.toFixed(); // Return the discount percentage rounded to two decimal places
+	}
 	function toggleSubscription(v) {
 		isYearly = v;
 	}
@@ -310,22 +309,27 @@
 <div id="pricing"></div>
 <div class="mt-16 sm:mt-20 lg:mt-24">
 	<div
-		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-700 rounded-full dark:text-white"
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600 dark:bg-{$color}-700 rounded-full dark:text-white"
 	></div>
-	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">Simple, Affordable Pricing</h2>
+	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">
+		Simple, Affordable Pricing
+	</h2>
 	<p
-		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600  sm:mb-8 sm:max-w-2xl sm:text-xl"
+		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600 sm:mb-8 sm:max-w-2xl sm:text-xl"
 	>
 		Start with a free month - <span
-			class="text-{$color}-100 rounded-full px-2 bg-{$color}-700 font-extrabold">30</span
+			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600 dark:bg-{$color}-700 font-extrabold"
+			>30</span
 		> day trial
 	</p>
 
 	<div class="mb-8 flex justify-center">
-		<div class="flex items-center rounded-full bg-${$color}-300 border-2 dark:border border-{$color}-300">
+		<div
+			class="flex items-center rounded-full bg-${$color}-300 border-2 dark:border border-{$color}-300"
+		>
 			<button
 				class="rounded-l-full px-3 py-2 font-medium {!isYearly
-					? `bg-${$color}-700 text-white`
+					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
 					: `bg-${$color}-50`}"
 				class:text-{$color}-600={isYearly < 0.5}
 				on:click={() => toggleSubscription(false)}>Monthly</button
@@ -333,17 +337,21 @@
 
 			<button
 				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
-					? `bg-${$color}-700 text-white`
+					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
 					: `bg-${$color}-50`}"
 				on:click={() => toggleSubscription(true)}
-				class:text-{$color}-600={isYearly > 0.5}>  Yearly
-				<span class="absolute -top-4 border-2 dark:border border-{$color}-300 left-10  text-gray-100 bg-{$color}-700  rounded-full text-xs p-1 w-16 flex items-center justify-center">{calculateDiscountPercentage()}% off</span>
-				</button
+				class:text-{$color}-600={isYearly > 0.5}
 			>
+				Yearly
+				<span
+					class="absolute -top-4 border-2 dark:border border-{$color}-300 left-10 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 flex w-16 items-center justify-center rounded-full p-1 text-xs"
+					>{calculateDiscountPercentage()}% off</span
+				>
+			</button>
 		</div>
 	</div>
 
-	<div class="flex flex-col md:flex-row justify-center gap-8 px-4">
+	<div class="flex flex-col justify-center gap-8 px-4 md:flex-row">
 		<!-- Monthly/Yearly Plan -->
 		<div
 			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border-4 p-6 shadow-inner border-{$color}-300 shadow-{$color}-700"
@@ -382,7 +390,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
 			>
 				Start for free
 			</a>
@@ -395,7 +403,9 @@
 		<div
 			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border-4 p-6 shadow-inner border-{$color}-300 shadow-{$color}-700 relative"
 		>
-			<div class="absolute top-4 right-4 bg-{$color}-700 text-white px-3 py-1 rounded-full text-sm">
+			<div
+				class="absolute right-4 top-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full px-3 py-1 text-sm text-white"
+			>
 				Best Value
 			</div>
 			<h3 class="mb-4 text-xl font-semibold">{plans[1].name}</h3>
@@ -428,7 +438,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
 			>
 				Get lifetime access
 			</a>
