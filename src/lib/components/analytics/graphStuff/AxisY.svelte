@@ -7,70 +7,88 @@
 
 	const { xRange, yScale, width } = getContext('LayerCake');
 
-	/** @type {Boolean} [tickMarks=false] - Show marks next to the tick label. */
-	export let tickMarks = false;
+	
 
-	/** @type {String} [labelPosition='even'] - Whether the label sits even with its value ('even') or sits on top ('above') the tick mark. Default is 'even'. */
-	export let labelPosition = 'even';
+	
 
-	/** @type {Boolean} [snapBaselineLabel=false] - When labelPosition='even', adjust the lowest label so that it sits above the tick mark. */
-	export let snapBaselineLabel = false;
+	
 
-	/** @type {Boolean} [gridlines=true] - Show gridlines extending into the chart area. */
-	export let gridlines = true;
+	
 
-	/** @type {Number} [tickMarkLength=undefined] - The length of the tick mark. If not set, becomes the length of the widest tick. */
-	export let tickMarkLength = undefined;
+	
 
-	/** @type {Function} [format=d => d] - A function that passes the current tick value and expects a nicely formatted value in return. */
-	export let format = (d) => d;
+	
 
-	/** @type {Number|Array|Function} [ticks=4] - If this is a number, it passes that along to the [d3Scale.ticks](https://github.com/d3/d3-scale) function. If this is an array, hardcodes the ticks to those values. If it's a function, passes along the default tick values and expects an array of tick values in return. */
-	export let ticks = 4;
+	
 
-	/** @type {Number} [tickGutter=0] - The amount of whitespace between the start of the tick and the chart drawing area (the xRange min). */
-	export let tickGutter = 0;
+	
 
-	/** @type {Number} [dx=0] - Any optional value passed to the `dx` attribute on the text label. */
-	export let dx = 0;
+	
 
-	/** @type {Number} [dy=0] - Any optional value passed to the `dy` attribute on the text label. */
-	export let dy = 0;
+	
 
-	/** @type {Number} [charPixelWidth=7.25] - Used to calculate the widest label length to offset labels. Adjust if the automatic tick length doesn't look right because you have a bigger font (or just set `tickMarkLength` to a pixel value). */
-	export let charPixelWidth = 7.25;
+	
+	/**
+	 * @typedef {Object} Props
+	 * @property {Boolean} [tickMarks]
+	 * @property {String} [labelPosition]
+	 * @property {Boolean} [snapBaselineLabel]
+	 * @property {Boolean} [gridlines]
+	 * @property {Number} [tickMarkLength]
+	 * @property {Function} [format]
+	 * @property {Number|Array|Function} [ticks]
+	 * @property {Number} [tickGutter]
+	 * @property {Number} [dx]
+	 * @property {Number} [dy]
+	 * @property {Number} [charPixelWidth]
+	 */
 
-	$: isBandwidth = typeof $yScale.bandwidth === 'function';
+	/** @type {Props} */
+	let {
+		tickMarks = false,
+		labelPosition = 'even',
+		snapBaselineLabel = false,
+		gridlines = true,
+		tickMarkLength = undefined,
+		format = (d) => d,
+		ticks = 4,
+		tickGutter = 0,
+		dx = 0,
+		dy = 0,
+		charPixelWidth = 7.25
+	} = $props();
 
-	$: tickVals = Array.isArray(ticks)
-		? ticks
-		: isBandwidth
-			? $yScale.domain()
-			: typeof ticks === 'function'
-				? ticks($yScale.ticks())
-				: $yScale.ticks(ticks);
+
 
 	function calcStringLength(sum, val) {
 		if (val === ',' || val === '.') return sum + charPixelWidth * 0.5;
 		return sum + charPixelWidth;
 	}
 
-	$: tickLen =
-		tickMarks === true
+
+
+
+	let isBandwidth = $derived(typeof $yScale.bandwidth === 'function');
+	let tickVals = $derived(Array.isArray(ticks)
+		? ticks
+		: isBandwidth
+			? $yScale.domain()
+			: typeof ticks === 'function'
+				? ticks($yScale.ticks())
+				: $yScale.ticks(ticks));
+	let widestTickLen = $derived(Math.max(
+		10,
+		Math.max(...tickVals.map((d) => format(d).toString().split('').reduce(calcStringLength, 0)))
+	));
+	let tickLen =
+		$derived(tickMarks === true
 			? labelPosition === 'above'
 				? (tickMarkLength ?? widestTickLen)
 				: (tickMarkLength ?? 6)
-			: 0;
-
-	$: widestTickLen = Math.max(
-		10,
-		Math.max(...tickVals.map((d) => format(d).toString().split('').reduce(calcStringLength, 0)))
-	);
-
-	$: x1 = -tickGutter - (labelPosition === 'above' ? widestTickLen : tickLen);
-	$: y = isBandwidth ? $yScale.bandwidth() / 2 : 0;
-
-	$: maxTickValPx = Math.max(...tickVals.map($yScale));
+			: 0);
+	let x1 = $derived(-tickGutter - (labelPosition === 'above' ? widestTickLen : tickLen));
+	let y = $derived(isBandwidth ? $yScale.bandwidth() / 2 : 0);
+	let maxTickValPx = $derived(Math.max(...tickVals.map($yScale)));
 </script>
 
 <g class="axis y-axis">

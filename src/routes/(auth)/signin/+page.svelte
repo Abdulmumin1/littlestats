@@ -6,14 +6,14 @@
 	import { color } from '$lib/colors/mixer.js';
 	import Seo from '../../../lib/components/generals/seo.svelte';
 
-	export let form;
+	let { form } = $props();
 
-	let loading = false;
+	let loading = $state(false);
 	let completed = false;
-	let password;
-	let email;
-	let Invalid;
-	let errMessage;
+	let password = $state('');
+	let email = $state('');
+	let Invalid = $state('');
+	let errMessage = $state('');
 
 	function setError(message) {
 		errMessage = message;
@@ -75,14 +75,14 @@
 			placeholder="email@example.com"
 			name="email"
 			bind:value={email}
-			class="rounded-xl border-b-2 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
+			class="rounded-xl border-b-2 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
 		/>
 		<input
 			type="password"
 			placeholder="password"
 			name="password"
 			bind:value={password}
-			class="rounded-xl border-b-2 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
+			class="rounded-xl border-b-2 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
 		/>
 		<button
 			aria-busy={loading}

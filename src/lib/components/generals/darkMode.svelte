@@ -5,8 +5,8 @@
     import { fly, slide } from 'svelte/transition';
     import { color } from '$lib/colors/mixer.js';
   
-    let darkMode = false;
-    let isOpen = false;
+    let darkMode = $state(false);
+    let isOpen = $state(false);
     let clickoutside = false;
   
     function toggleDropdown() {
@@ -50,7 +50,7 @@
   
   <div class="relative">
     <button
-      on:click={toggleDropdown}
+      onclick={toggleDropdown}
       class="flex items-center justify-center rounded-full border-2 p-2 border-{$color}-700 bg-{$color}-50 text-black dark:bg-stone-900  dark:text-gray-100 "
       aria-label="Toggle theme"
     >
@@ -65,26 +65,26 @@
       <div
         transition:fly={{y:10}}
         use:clickOutside
-        on:click_outside={closeDropdown}
+        onclick_outside={closeDropdown}
         class="absolute right-0 mt-2 w-48 rounded-md border border-{$color}-200 bg-white shadow-lg  z-50"
       >
         <div class="py-1">
           <button
-            on:click={() => updateTheme(false)}
+            onclick={() => updateTheme(false)}
             class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-700 hover:text-white"
           >
             <Sun size={16} class="mr-2" />
             Light
           </button>
           <button
-            on:click={() => updateTheme(true)}
+            onclick={() => updateTheme(true)}
             class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-700 hover:text-white"
           >
             <Moon size={16} class="mr-2" />
             Dark (experimental)
           </button>
           <button
-            on:click={setSystemTheme}
+            onclick={setSystemTheme}
             class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-700 hover:text-white"
           >
             <Monitor size={16} class="mr-2" />

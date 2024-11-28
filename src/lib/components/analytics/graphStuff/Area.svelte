@@ -3,6 +3,8 @@
 	Generates an SVG area shape.
  -->
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { getContext } from 'svelte';
 
 	const { data, xGet, yGet, xScale, yScale, extents } = getContext('LayerCake');
@@ -148,22 +150,22 @@
 		emerald: emeraldColors,
 		teal: tealColors
 	};
-	$: usedColor = colorList[$color] ?? greenColors;
+	let usedColor = $derived(colorList[$color] ?? greenColors);
 
 	/**	@type {String} [fill='#ab00d610'] The shape's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
-	$: fill = usedColor?.complement ?? '#ab00d610';
+	let fill = $derived(usedColor?.complement ?? '#ab00d610');
 
-	$: path =
-		'M' +
+	let path =
+		$derived('M' +
 		$data
 			.map((d) => {
 				return $xGet(d) + ',' + $yGet(d);
 			})
-			.join('L');
+			.join('L'));
 
-	let area;
+	let area = $state();
 
-	$: {
+	run(() => {
 		const yRange = $yScale.range();
 		area =
 			path +
@@ -176,7 +178,7 @@
 				',' +
 				yRange[0] +
 				'Z');
-	}
+	});
 </script>
 
 <path class="path-area" d={area} {fill}></path>

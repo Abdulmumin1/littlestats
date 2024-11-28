@@ -6,14 +6,14 @@
 	import { color } from '$lib/colors/mixer.js';
 	import Seo from '../../../lib/components/generals/seo.svelte';
 
-	let loading = false;
+	let loading = $state(false);
 	let completed = false;
-	let password;
-	let password2;
-	let email;
+	let password = $state();
+	let password2 = $state();
+	let email = $state();
 	let Invalid;
-	let errMessage;
-	let successMessage = false;
+	let errMessage = $state();
+	let successMessage = $state(false);
 
 	function setError(message) {
 		errMessage = message;
@@ -86,7 +86,7 @@
 			id="email"
 			name="email"
 			required
-			class="border-b-2 border-{$color}-500 rounded-xl bg-gray-100 px-2 py-3 dark:bg-stone-700/50 dark:text-gray-100"
+			class="border-b-2 border-{$color}-500 rounded-xl bg-gray-100 px-2 py-3 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100"
 		/>
 		<input
 			type="password"
@@ -95,14 +95,14 @@
 			name="password"
 			placeholder="password"
 			required
-			class="rounded-xl border-b-2 border-{$color}-500 dark:broder-b bg-gray-100 px-2 py-3 dark:bg-stone-700/50 dark:text-gray-100"
+			class="rounded-xl border-b-2 border-{$color}-500 dark:broder-b bg-gray-100 px-2 py-3 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100"
 		/>
 		<input
 			type="password"
 			id="password2"
 			bind:value={password2}
 			name="passwordConfirm"
-			class="rounded-xl border-b-2 border-{$color}-500 dark:broder-b bg-gray-100 px-2 py-3 dark:bg-stone-700/50 dark:text-gray-100"
+			class="rounded-xl border-b-2 border-{$color}-500 dark:broder-b bg-gray-100 px-2 py-3 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100"
 			placeholder="confirm password"
 			required
 		/>

@@ -4,11 +4,17 @@
 	import { onMount } from 'svelte';
 	import { color, colorList } from '$lib/colors/mixer.js';
 
-	export let animationDuration = 250;
-	$: usedColor = colorList[$color] ?? 'rgb(59 130 246)';
-	export let height = 4;
+	let usedColor = $derived(colorList[$color] ?? 'rgb(59 130 246)');
+	/**
+	 * @typedef {Object} Props
+	 * @property {number} [animationDuration]
+	 * @property {number} [height]
+	 */
 
-	let currentState = 'waiting';
+	/** @type {Props} */
+	let { animationDuration = 250, height = 4 } = $props();
+
+	let currentState = $state('waiting');
 
 	let resetTimeout = undefined;
 
@@ -42,7 +48,7 @@
 	<div
 		class="navigation-loader-loading-bar {currentState}"
 		style="background-color: {usedColor.primary}; --duration: {animationDuration}ms"
-	/>
+	></div>
 </div>
 
 <style>

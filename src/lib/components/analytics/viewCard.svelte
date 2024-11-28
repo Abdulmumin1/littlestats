@@ -7,13 +7,26 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let name = 'view';
-	export let number = '4.5k';
-	export let backdateData = number;
-	export let percentange = '504%';
-	export let filter_on = false;
-	let increase = 'up';
-	export let type = 'normal';
+	let increase = $state('up');
+	/**
+	 * @typedef {Object} Props
+	 * @property {string} [name]
+	 * @property {string} [number]
+	 * @property {any} [backdateData]
+	 * @property {string} [percentange]
+	 * @property {boolean} [filter_on]
+	 * @property {string} [type]
+	 */
+
+	/** @type {Props} */
+	let {
+		name = 'view',
+		number = '4.5k',
+		backdateData = number,
+		percentange = $bindable('504%'),
+		filter_on = false,
+		type = 'normal'
+	} = $props();
 
 	function sendFilter() {
 		dispatch('chart_filter', {
@@ -51,22 +64,27 @@
 
 	// Percentage increase = [ (Final value - Starting value) / |Starting value| ] * 100.
 	// $: console.log(backdateData == Nan)
-	$: percentange = (number === 0 || isNaN(((number - backdateData) / number) * 100)) ? 0 : ((number - backdateData) / number) * 100;
-	$: {
+	$effect(() => {
+		percentange =
+			number === 0 || isNaN(((number - backdateData) / number) * 100)
+				? 0
+				: ((number - backdateData) / number) * 100;
+	});
+	$effect(() => {
 		if (percentange < 0) {
 			increase = 'down';
 		} else {
 			increase = 'up';
-			if (type == 'percent'){
-				increase = 'down'
+			if (type == 'percent') {
+				increase = 'down';
 			}
 		}
-	}
+	});
 </script>
 
 <div
-	on:click={sendFilter}
-	class="views cursor-pointer bg-{$color}-100 dark:bg-stone-800/50 px-6"
+	onclick={sendFilter}
+	class="views cursor-pointer bg-{$color}-100 px-6 dark:bg-stone-800/50"
 	class:red={increase == 'down'}
 >
 	<p class="text-gray-800 dark:text-white">{name}</p>
@@ -83,11 +101,11 @@
 			title="{percentange}% compare to last x days"
 			class="m-0 flex w-fit items-center gap-1 rounded-md p-0 {type != 'percent'
 				? increase == 'up'
-					? `bg-${$color}-50 dark:bg-stone-900 text-green-700 dark:text-green-500`
-					: `bg-${$color}-50 dark:bg-stone-900 text-red-700 dark:text-red-500`
+					? `bg-${$color}-50 text-green-700 dark:bg-stone-900 dark:text-green-500`
+					: `bg-${$color}-50 text-red-700 dark:bg-stone-900 dark:text-red-500`
 				: increase == 'down'
-					? `bg-${$color}-50 dark:bg-stone-900 text-green-700 dark:text-green-500`
-					: `bg-${$color}-50 dark:bg-stone-900 text-red-700 dark:text-red-500`} px-1 font-bold"
+					? `bg-${$color}-50 text-green-700 dark:bg-stone-900 dark:text-green-500`
+					: `bg-${$color}-50 text-red-700 dark:bg-stone-900 dark:text-red-500`} px-1 font-bold"
 		>
 			{#if increase == 'up'}
 				<ArrowUp size={14} />

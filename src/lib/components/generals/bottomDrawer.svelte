@@ -1,14 +1,32 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { spring } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { color } from '$lib/colors/mixer.js';
 	import { clickOutside } from '$lib/utils';
-	export let height = 520;
-	export let isOpen = false;
-	export let closeThreshold = 0.23; // Percentage of height to trigger close
+	/**
+	 * @typedef {Object} Props
+	 * @property {number} [height]
+	 * @property {boolean} [isOpen]
+	 * @property {number} [closeThreshold] - Percentage of height to trigger close
+	 * @property {import('svelte').Snippet} [handle]
+	 * @property {import('svelte').Snippet} [header]
+	 * @property {import('svelte').Snippet} [content]
+	 */
 
-	let drawerEl;
-	let contentEl;
+	/** @type {Props} */
+	let {
+		height = 520,
+		isOpen = $bindable(false),
+		closeThreshold = 0.23,
+		handle,
+		header,
+		content
+	} = $props();
+
+	let drawerEl = $state();
+	let contentEl = $state();
 	let isDragging = false;
 	let isScrolling = false;
 	let startY;
@@ -20,9 +38,9 @@
 		easing: cubicOut
 	});
 
-	$: {
+	run(() => {
 		position.set(isOpen ? 0 : -height);
-	}
+	});
 
 	function handleMouseDown(event) {
 		if (event.target.closest('.drawer-content') && contentEl.scrollTop > 0) {
@@ -84,33 +102,33 @@
 </script>
 
 <svelte:window
-	on:mousemove={handleMouseMove}
-	on:mouseup={handleMouseUp}
-	on:touchmove={handleTouchMove}
-	on:touchend={handleTouchEnd}
+	onmousemove={handleMouseMove}
+	onmouseup={handleMouseUp}
+	ontouchmove={handleTouchMove}
+	ontouchend={handleTouchEnd}
 />
 
 <div class="drawer-container">
-	<button class="handle z-0 text-black dark:text-gray-100" on:click={toggleDrawer}
-		><slot name="handle" /></button
+	<button class="handle z-0 text-black dark:text-gray-100" onclick={toggleDrawer}
+		>{@render handle?.()}</button
 	>
 	<div
 		class="drawer bg-{$color}-50 mx-auto max-w-7xl dark:bg-stone-900"
 		style="height: {height}px; bottom: {$position}px;"
 		bind:this={drawerEl}
-		on:mousedown={handleMouseDown}
-		on:touchstart={handleTouchStart}
+		onmousedown={handleMouseDown}
+		ontouchstart={handleTouchStart}
 		use:clickOutside
-		on:click_outside={() => {
+		onclick_outside={() => {
 			isOpen = false;
 		}}
 	>
 		<div class="drawer-handle bg-{$color}-700"></div>
-		<slot name="header" />
+		{@render header?.()}
 
 		<div class="drawer-content cool-scrollbar" bind:this={contentEl}>
 			<!-- <p>Drag down to close.</p> -->
-			<slot name="content" />
+			{@render content?.()}
 		</div>
 	</div>
 </div>

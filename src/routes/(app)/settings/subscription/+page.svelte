@@ -7,9 +7,9 @@
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
 	import {calculateTrialDaysLeft} from '$lib/utils.js'
-	let subscriptions = [];
+	let subscriptions = $state([]);
 	let newSubscriptionName = '';
-	let errMessage;
+	let errMessage = $state();
 	let loading = false;
 
 	function setError(message) {
@@ -41,7 +41,7 @@
 		};
 	};
 
-	export let data;
+	let { data } = $props();
 	onMount(() => {
 		// Simulating fetching subscriptions from an API
 		if (!data.user.sub_id) {

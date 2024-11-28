@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	let isVisible = false;
+	let isVisible = $state(false);
 
 	const techStack = [
 		{

@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { Code, Link, Trash, ChevronDown, ChevronUp, ExternalLink, Loader } from 'lucide-svelte';
 	import { show_toast } from '$lib/toast.js';
 	import { slide } from 'svelte/transition';
@@ -21,11 +23,17 @@
 		});
 	}
 
-	export let domain;
-	export let removeDomain;
-	export let hide = true;
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} domain
+	 * @property {any} removeDomain
+	 * @property {boolean} [hide]
+	 */
 
-	let deleteModal;
+	/** @type {Props} */
+	let { domain, removeDomain, hide = $bindable(true) } = $props();
+
+	let deleteModal = $state();
 
 	function showModal() {
 		deleteModal.show();
@@ -34,12 +42,14 @@
 	function closeModal() {
 		deleteModal.close();
 	}
-	$: hide = hide;
+	run(() => {
+		hide = hide;
+	});
 	function toggleDropdown() {
 		hide = !hide;
 	}
 
-	let loading = false;
+	let loading = $state(false);
 	function handleSubmit({ cancel }) {
 		if (!domain) {
 			cancel();
@@ -68,7 +78,10 @@
 	>
 		<Link size={16} />{domain.name}
 	</a>
-	<button on:click={toggleDropdown} class="rounded px-3 py-1 text-sm font-bold text-gray-100">
+	<button
+		onclick={toggleDropdown}
+		class="rounded px-3 py-1 text-sm font-bold text-black dark:text-gray-100"
+	>
 		{#if hide}
 			<ChevronDown />
 		{:else}
@@ -83,7 +96,7 @@
 		</div>
 		<div class="flex items-center justify-end gap-2">
 			<button
-				on:click={() => copyToClipboard(generateScriptUrl(domain))}
+				onclick={() => copyToClipboard(generateScriptUrl(domain))}
 				class="flex items-center gap-1 self-end rounded-md text-white bg-{$color}-700 px-2 py-1 text-xs font-bold text-gray-100 hover:bg-{$color}-700"
 			>
 				Copy Snippet <Code size={16} />
@@ -94,7 +107,7 @@
 			>
 				Go to Dashboard <ExternalLink size={16} />
 			</a>
-			<button on:click={showModal} class="rounded px-3 py-1 text-sm font-bold text-gray-100">
+			<button onclick={showModal} class="rounded px-3 py-1 text-sm font-bold text-gray-100">
 				<Trash class="hover:text-red-500" size={17} />
 			</button>
 		</div>
@@ -112,7 +125,7 @@
 		<input type="text" class="hidden" name="id" value={domain.id} />
 		<p class="bg-{$color}-100 py-2">This action is irreversible! All data collected will be gone</p>
 		<div class="flex justify-end">
-			<button type="button" on:click={closeModal} class="p-2">Cancel</button>
+			<button type="button" onclick={closeModal} class="p-2">Cancel</button>
 			<button
 				aria-busy={loading}
 				disabled={loading}

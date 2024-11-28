@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { show_toast } from '$lib/toast.js';
@@ -9,15 +11,15 @@
 	import { fly, slide } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
 
-	let domains = [];
+	let domains = $state([]);
 
-	let newDomainName = '';
+	let newDomainName = $state('');
 
 	function removeDomain(domainToRemove) {
 		domains = domains.filter((domain) => domain.name !== domainToRemove);
 	}
 
-	let errMessage;
+	let errMessage = $state();
 
 	function setError(message) {
 		errMessage = message;
@@ -26,7 +28,7 @@
 		}, 3000);
 	}
 
-	let loading = false;
+	let loading = $state(false);
 
 	function verifyURL(url) {
 		let c_url = url;
@@ -69,9 +71,13 @@
 		};
 	};
 
-	export let data;
-	$: data = data;
-	$: domains = [...data.records];
+	let { data = $bindable() } = $props();
+	run(() => {
+		data = data;
+	});
+	run(() => {
+		domains = [...data.records];
+	});
 
 	onMount(() => {});
 </script>
@@ -91,7 +97,7 @@
 				placeholder="Enter new domain"
 				required
 				name="name"
-				class="flex-grow rounded-full border border-gray-600 bg-{$color}-50 p-2 text-black md:px-3 md:py-2 dark:bg-stone-700/50 dark:text-gray-100"
+				class="flex-grow rounded-full border border-gray-600 bg-{$color}-50 p-2 text-black md:px-3 md:py-2 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100"
 			/>
 			<button
 				aria-busy={loading}
@@ -126,8 +132,8 @@
 		{/if}
 	</div>
 
-	<div class="mt-12 inline-flex items-center gap-2">
-		<ArrowRight /> Read <a href="/docs" class="text-{$color}-700"> Littlestats docs</a> for interation
-		guide
+	<div class="mt-12 inline-flex items-center gap-2 dark:text-white">
+		<ArrowRight /> Read
+		<a href="/docs" class="text-{$color}-700 dark:bg-gray-50"> Littlestats docs</a> for interation guide
 	</div>
 </div>

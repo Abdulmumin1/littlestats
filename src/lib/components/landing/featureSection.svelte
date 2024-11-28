@@ -67,7 +67,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 			{#each keyFeatures as feature}
 				<div class="rounded-xl  ">
 					<div class="mb-2 flex items-center gap-2">
-						<svelte:component this={feature.icon} size={24} class="text-{$color}-600" />
+						<feature.icon size={24} class="text-{$color}-600" />
 						<h4 class=" text-lg font-semibold">{feature.title}</h4>
 					</div>
 					<p class="text-{$color}-950">{feature.description}</p>

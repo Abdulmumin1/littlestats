@@ -2,13 +2,25 @@
 	import { ChevronDown } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { createEventDispatcher, onMount } from 'svelte';
-	// export let color = 'blue'; // can be passed as prop to match your theme
-	export let value = 0;
-	export let title = '';
-	let isOpen = false;
+	
+	let isOpen = $state(false);
 
 	const dispatch = createEventDispatcher();
-	export let options = [];
+	/**
+	 * @typedef {Object} Props
+	 * @property {number} [value] - export let color = 'blue'; // can be passed as prop to match your theme
+	 * @property {string} [title]
+	 * @property {any} [options]
+	 * @property {import('svelte').Snippet} [btn]
+	 */
+
+	/** @type {Props} */
+	let {
+		value = $bindable(0),
+		title = '',
+		options = [],
+		btn
+	} = $props();
 
 	function handleSelect(newValue) {
 		if (value == newValue) {
@@ -28,14 +40,14 @@
 	}
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window onclick={handleClickOutside} />
 
 <div class="flex items-center gap-2">
 	<label for="custom-select" class="font-medium">{title}</label>
 	<div class="select-container relative">
 		<button
 			id="custom-select"
-			on:click={() => (isOpen = !isOpen)}
+			onclick={() => (isOpen = !isOpen)}
 			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100  bg-{$color}-700  border-{$color}-500 rounded-full  font-bold"
 			type="button"
 			aria-haspopup="listbox"
@@ -55,8 +67,8 @@
 						<li
 							role="option"
 							aria-selected={value === option.value}
-							on:click={() => handleSelect(option.value)}
-							on:keydown={(e) => e.key === 'Enter' && handleSelect(option.value)}
+							onclick={() => handleSelect(option.value)}
+							onkeydown={(e) => e.key === 'Enter' && handleSelect(option.value)}
 							tabindex="0"
 							class="cursor-pointer px-4 py-2 hover:bg-gray-100
                   {value === option.value
@@ -66,7 +78,7 @@
 							{option.label}
 						</li>
 					{/each}
-					<li role="option" class=" px-4 py-2 dark:text-black"><slot name="btn" /></li>
+					<li role="option" class=" px-4 py-2 dark:text-black">{@render btn?.()}</li>
 				</ul>
 			</div>
 		{/if}

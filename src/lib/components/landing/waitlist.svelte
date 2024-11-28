@@ -3,10 +3,10 @@
 	import { Loader } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 
-	let email;
+	let email = $state();
 
-	let loading = false;
-	let completed = false;
+	let loading = $state(false);
+	let completed = $state(false);
 	const handleAdd = ({ cancel }) => {
 		if (!email) {
 			setError('Domain name required');
@@ -65,7 +65,7 @@
 			</button>
 		</form>
 	{:else}
-		<div class="mx-auto" use:confetti />
+		<div class="mx-auto" use:confetti></div>
 		<p>Thank you for joining 🩷! we will reach out soon</p>
 	{/if}
 </div>

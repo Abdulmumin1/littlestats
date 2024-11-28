@@ -1,4 +1,6 @@
 <script>
+	import { run } from 'svelte/legacy';
+
 	import { onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
 	// import { sortViews, transformViewDataForGraph } from './viewDataUtils.js';
@@ -98,14 +100,18 @@
     }
 };
 
-	$: usedColor = colorList[$color] ?? greenColors;
 
-	export let chartD = { data: [], label: 'Views' };
-	$: viewRecords = chartD.data;
-	export let sortInterval = 1;
+	/**
+	 * @typedef {Object} Props
+	 * @property {any} [chartD]
+	 * @property {number} [sortInterval]
+	 */
 
-	let chartCanvas;
-	let chart;
+	/** @type {Props} */
+	let { chartD = { data: [], label: 'Views' }, sortInterval = 1 } = $props();
+
+	let chartCanvas = $state();
+	let chart = $state();
 
 	function sortViewsByHour(viewRecords) {
 		const now = new Date();
@@ -233,9 +239,6 @@
 		}));
 	}
 
-	$: chartData = transformViewDataForGraph(
-		sortInterval <= 1 ? sortViewsByHour(viewRecords) : sortViewsByDays(viewRecords, sortInterval)
-	);
 
 	let unsubscribeColor = color.subscribe((c) => {
 		if (chart && chartData) {
@@ -252,9 +255,8 @@
 			} catch {}
 		}
 	});
-	let chartType = 'line'; // NEW state for chart type
+	let chartType = $state('line'); // NEW state for chart type
 
-	$: c = chartData.map((d) => d.myX);
 	// $: console.log(c);
 	const MountChart = () => {
 		const ctx = chartCanvas.getContext('2d');
@@ -318,14 +320,8 @@
 		};
 	});
 
-	$: if (chart && chartData) {
-		chart.data.labels = chartData.map((d) => d.myX);
-		chart.data.datasets[0].data = chartData.map((d) => d.myY);
-		chart.data.datasets[0].label = chartD.label;
-		chart.update();
-	}
 
-	let showChart = false;
+	let showChart = $state(false);
 	function toggleChart() {
 		showChart = !showChart;
 		if (showChart) {
@@ -333,13 +329,6 @@
 		}
 	}
 
-	$: {
-		if (chartCanvas) {
-			try {
-				MountChart();
-			} catch {}
-		}
-	}
 
 	function toggleChartType(type) {
 		if (!showChart) {
@@ -350,11 +339,32 @@
 		chart.destroy(); // Destroy current chart instance
 		MountChart(); // Mount the new chart with updated type
 	}
+	let usedColor = $derived(colorList[$color] ?? greenColors);
+	let viewRecords = $derived(chartD.data);
+	let chartData = $derived(transformViewDataForGraph(
+		sortInterval <= 1 ? sortViewsByHour(viewRecords) : sortViewsByDays(viewRecords, sortInterval)
+	));
+	let c = $derived(chartData.map((d) => d.myX));
+	run(() => {
+		if (chart && chartData) {
+			chart.data.labels = chartData.map((d) => d.myX);
+			chart.data.datasets[0].data = chartData.map((d) => d.myY);
+			chart.data.datasets[0].label = chartD.label;
+			chart.update();
+		}
+	});
+	run(() => {
+		if (chartCanvas) {
+			try {
+				MountChart();
+			} catch {}
+		}
+	});
 </script>
 
 <div class=" w-full rounded-3xl p-2">
 	<div class="flex items-center">
-		<button class="flex items-center gap-1" on:click={toggleChart}
+		<button class="flex items-center gap-1" onclick={toggleChart}
 			>{#if showChart}
 				<ChevronUp size={16} />
 			{:else}
@@ -364,16 +374,16 @@
 		<!-- Toggle between Line and Bar chart -->
 		<div class="ml-2 flex">
 			<button
-				on:click={() => toggleChartType('line')}
+				onclick={() => toggleChartType('line')}
 				class="{chartType == 'line'
 					? `bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-l-full px-2 ">Line</button
+					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-l-full px-2 ">Line</button
 			>
 			<button
-				on:click={() => toggleChartType('bar')}
+				onclick={() => toggleChartType('bar')}
 				class=" {chartType == 'bar'
 					? `bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-r-full px-2 ">Bar</button
+					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-r-full px-2 ">Bar</button
 			>
 		</div>
 	</div>

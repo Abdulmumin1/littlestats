@@ -1,10 +1,10 @@
 <script>
+
 	import { onMount } from 'svelte';
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
 	import PageItem from '$lib/components/analytics/pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
 
-	export let data;
 
 	import { deserialize } from '$app/forms';
 	import PagesSection from '../../../../lib/components/analytics/pagesSection.svelte';
@@ -20,10 +20,16 @@
 	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
 	import Dropdown from '../../../../lib/components/generals/dropdown.svelte';
 	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
+	
+	let { data = $bindable() } = $props();
 
-	$: page_data = data.records;
+	let page_data = $state(data.records);
 
-	$: views = page_data.filter((e) => e.event_type != 'pageExit');
+	$effect(() => {
+		page_data = data.records;
+	});
+
+	let views = $derived(page_data.filter((e) => e.event_type != 'pageExit'));
 	// Function to get unique user agents
 	function getUniqueUserAgents(events) {
 		const uniqueAgents = new Map();
@@ -94,18 +100,23 @@ function calculateBounceRate(events) {
     };
 }
 
-	$: bounces = calculateBounceRate(page_data);
-	$: averageVisitDuration = calculateAverageDuration(page_data);
+	let bounces = $derived(calculateBounceRate(page_data));
+	let averageVisitDuration = $derived(calculateAverageDuration(page_data));
 	// $: formatDr = formatDuration(parseInt(averageVisitDuration));
-	$: uniqueUserAgents = getUniqueUserAgents(page_data);
+	let uniqueUserAgents = $derived(getUniqueUserAgents(page_data));
 
-	$: backdateRecords = [];
-	$: backdateViews = 0;
-	$: backdateBounces = 0;
-	$: backdateaverageVisitDuration = 0;
-	$: backdateuniqueUserAgents = [];
+	let backdateRecords = $state([]);
+	
+	let backdateViews = $state(0);
+	
+	let backdateBounces = $state(0);
+	
+	let backdateaverageVisitDuration = $state(0);
+	
+	let backdateuniqueUserAgents = $state([]);
+	
 
-	let filters = [];
+	let filters = $state([]);
 
 	function handleAddfilter(filter) {
 		filter = filter.detail;
@@ -181,7 +192,7 @@ function calculateBounceRate(events) {
 	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
 	let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
 	let managed_domains = [...current_domain, ...temp_domain];
-	let loading = false;
+	let loading = $state(false);
 
 	async function fetchFromDefaultDates(date) {
 		loading = true;
@@ -274,8 +285,12 @@ function calculateBounceRate(events) {
 		}, 200);
 	}
 
-	$: sortInterval = 1;
-	$: chartD = { data: views, label: 'Views' };
+	let sortInterval = $state(1);
+	
+	let chartD;
+	$effect(() => {
+		chartD = { data: views, label: 'Views' };
+	});
 
 	let filterlegth = 0;
 
@@ -322,10 +337,10 @@ function calculateBounceRate(events) {
 	});
 	// console.log(domain_options);
 
-	let datePickerModal;
-	let selectedStartDate;
-	let selectedEndDate;
-	let isOpen = false;
+	let datePickerModal = $state(null);
+	let selectedStartDate = $state(new Date());
+	let selectedEndDate = $state(null);
+	let isOpen = $state(false);
 
 	function openDatePicker() {
 		isOpen = !isOpen;
@@ -382,9 +397,11 @@ function calculateBounceRate(events) {
 					value={data.domain_id}
 					options={domain_options}
 				>
-					<div slot="btn">
-						<a href="/settings">+ add domain</a>
-					</div>
+					{#snippet btn()}
+										<div >
+							<a href="/settings">+ add domain</a>
+						</div>
+									{/snippet}
 				</Dropdown>
 
 				<!-- <div class="flex items-center gap-2">
@@ -393,11 +410,13 @@ function calculateBounceRate(events) {
 				</div> -->
 			</div>
 			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
-				<div slot="btn">
-					<button on:click={openDatePicker} class="flex items-center gap-1">
-						<Calendar size={16} /> Custom Date
-					</button>
-				</div>
+				{#snippet btn()}
+								<div >
+						<button onclick={openDatePicker} class="flex items-center gap-1">
+							<Calendar size={16} /> Custom Date
+						</button>
+					</div>
+							{/snippet}
 			</Dropdown>
 
 			<!-- <div class="flex items-center gap-2">
@@ -423,7 +442,7 @@ function calculateBounceRate(events) {
 				{#each filters as filter}
 					<button
 						transition:scale
-						on:click={() => removeFilter(filter)}
+						onclick={() => removeFilter(filter)}
 						class="flex w-fit gap-1 rounded-full bg-{$color}-700 dark:bg-{$color}-700 items-center p-1 px-2 text-gray-100"
 						>{filter.type}
 						<span

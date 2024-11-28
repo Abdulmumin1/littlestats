@@ -151,17 +151,17 @@
 		emerald: emeraldColors,
 		teal: tealColors
 	};
-	$: usedColor = colorList[$color] ?? greenColors;
+	let usedColor = $derived(colorList[$color] ?? greenColors);
 
-	$: stroke = usedColor.primary ?? '#333';
+	let stroke = $derived(usedColor.primary ?? '#333');
 
-	$: path =
-		'M' +
+	let path =
+		$derived('M' +
 		$data
 			.map((d) => {
 				return $xGet(d) + ',' + $yGet(d);
 			})
-			.join('L');
+			.join('L'));
 </script>
 
 <path class="path-line" d={path} {stroke}></path>

@@ -4,7 +4,7 @@
 	import CuteCloud from '../../../lib/components/generals/cuteCloud.svelte';
 	import { formatNumber } from '$lib/slug/helpers.js';
 
-	export let data;
+	let { data } = $props();
 	let domains = data.domains;
 
 	// function last24hours(ob) {

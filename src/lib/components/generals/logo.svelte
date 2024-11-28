@@ -1,8 +1,14 @@
 <script>
-	export let size = 200;
+	import { color } from '$lib/colors/mixer.js';
+	/**
+	 * @typedef {Object} Props
+	 * @property {number} [size]
+	 */
+
+	/** @type {Props} */
+	let { size = 200 } = $props();
 	const height = size / 2;
 	const scaleFactor = size / 200;
-	import { color } from '$lib/colors/mixer.js';
 
 	let greenColors = {
 		primary: '#16a34a',
@@ -144,7 +150,7 @@
 		emerald: emeraldColors,
 		teal: tealColors
 	};
-	$: usedColor = colorList[$color] ?? greenColors;
+	let usedColor = $derived(colorList[$color] ?? greenColors);
 </script>
 
 <svg xmlns="http://www.w3.org/2000/svg" width={size} {height} viewBox="0 0 200 100">

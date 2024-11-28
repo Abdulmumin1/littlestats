@@ -1,3 +1,5 @@
+<!-- @migration-task Error while migrating Svelte code: can't migrate `$: yearlyPrice = isYearly ? plans[0].priceYearly : plans[0].priceMonthly * 12;` to `$derived` because there's a variable named derived.
+     Rename the variable and try again or migrate by hand. -->
 <!-- <script>
 	import { spring } from 'svelte/motion';
 	import { derived } from 'svelte/store';

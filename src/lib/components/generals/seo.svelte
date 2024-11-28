@@ -1,18 +1,39 @@
 <script>
-	export let title = 'Littlestats - Simple, Affordable Analytics for Websites';
-	export let description = 'Littlestats gives you easy, affordable website analytics—simple insights to help your site grow faster.';
-	export let imageUrl = 'https://littlestats.click/littlestats.png';
-	export let url = 'https://littlestats.click';
-	export let jsonLd;
-	export let index = true;
-	export let keywords = '';
-	export let author = 'Littlestats';
-	export let publishedDate = '';
-	export let modifiedDate = '';
-	export let canonicalUrl = '';
-	export let locale = 'en_US';
-	export let siteName = 'Littlestats';
-	export let twitterHandle = '@abdulmuminyqn';
+	/**
+	 * @typedef {Object} Props
+	 * @property {string} [title]
+	 * @property {string} [description]
+	 * @property {string} [imageUrl]
+	 * @property {string} [url]
+	 * @property {any} jsonLd
+	 * @property {boolean} [index]
+	 * @property {string} [keywords]
+	 * @property {string} [author]
+	 * @property {string} [publishedDate]
+	 * @property {string} [modifiedDate]
+	 * @property {string} [canonicalUrl]
+	 * @property {string} [locale]
+	 * @property {string} [siteName]
+	 * @property {string} [twitterHandle]
+	 */
+
+	/** @type {Props} */
+	let {
+		title = 'Littlestats - Simple, Affordable Analytics for Websites',
+		description = 'Littlestats gives you easy, affordable website analytics—simple insights to help your site grow faster.',
+		imageUrl = 'https://littlestats.click/littlestats.png',
+		url = 'https://littlestats.click',
+		jsonLd,
+		index = true,
+		keywords = '',
+		author = 'Littlestats',
+		publishedDate = '',
+		modifiedDate = '',
+		canonicalUrl = '',
+		locale = 'en_US',
+		siteName = 'Littlestats',
+		twitterHandle = '@abdulmuminyqn'
+	} = $props();
 
 
 </script>

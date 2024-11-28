@@ -1,7 +1,13 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
-	export let dismissable = true;
-	let isVisible = true;
+	/**
+	 * @typedef {Object} Props
+	 * @property {boolean} [dismissable]
+	 */
+
+	/** @type {Props} */
+	let { dismissable = true } = $props();
+	let isVisible = $state(true);
 
 	function dismissBanner() {
 		if (dismissable) {
@@ -28,7 +34,7 @@
 
 			{#if dismissable}
 				<button
-					on:click={dismissBanner}
+					onclick={dismissBanner}
 					class="absolute right-4 top-1/2 -translate-y-1/2 transform transition-opacity hover:opacity-75"
 					aria-label="Dismiss banner"
 				>

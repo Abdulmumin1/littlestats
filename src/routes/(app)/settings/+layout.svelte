@@ -2,8 +2,15 @@
 	import { page } from '$app/stores';
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
+	/**
+	 * @typedef {Object} Props
+	 * @property {import('svelte').Snippet} [children]
+	 */
 
-	$: path = $page.url.pathname;
+	/** @type {Props} */
+	let { children } = $props();
+
+	let path = $derived($page.url.pathname);
 </script>
 
 <div class="min-h-screen p-0 text-black  md:p-2">
@@ -31,7 +38,7 @@
 		<div class="wavy-line block md:hidden bg-{$color}-600"></div>
 
 		<div class="w-full px-2">
-			<slot />
+			{@render children?.()}
 		</div>
 	</div>
 </div>

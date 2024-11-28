@@ -141,12 +141,12 @@
 		emerald: emeraldColors,
 		teal: tealColors
 	};
-	$: usedColor = colorList[$color] ?? greenColors;
+	let usedColor = $derived(colorList[$color] ?? greenColors);
 	// Props for customizable colors
-	$: fillWhite = usedColor?.complement ?? 'rgb(255,255,255)';
+	let fillWhite = $derived(usedColor?.complement ?? 'rgb(255,255,255)');
 	let fillTransparent = 'transparent';
 	let fillBrown = 'rgb(211,141,95)';
-	$: strokeGray = usedColor?.primary ?? 'rgb(128,128,128)';
+	let strokeGray = $derived(usedColor?.primary ?? 'rgb(128,128,128)');
 	let fillBlack = 'rgb(0,0,0)';
 </script>
 

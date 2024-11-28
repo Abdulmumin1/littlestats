@@ -11,19 +11,19 @@
 
 	const dispatch = createEventDispatcher();
 
-	$: typeClasses = {
+	let typeClasses = $derived({
 		info: 'bg-blue-500',
-		success: `bg-${$color}-500`,
+		success: `bg-${$color}-700`,
 		warning: 'bg-yellow-500',
 		error: 'bg-red-500'
-	};
+	});
 
-	$: positionClasses = {
+	let positionClasses = $derived({
 		'top-left': 'top-4 left-4',
 		'top-right': 'top-4 right-4',
 		'bottom-left': 'bottom-4 left-4',
 		'bottom-right': 'bottom-4 right-4'
-	};
+	});
 
 	function closeToast() {
 		show_toast.set(null);
@@ -45,7 +45,7 @@
 >
 	<div class="flex items-center justify-between">
 		<p>{message}</p>
-		<button on:click={closeToast} class="ml-4 text-white hover:text-gray-200 focus:outline-none">
+		<button onclick={closeToast} class="ml-4 text-white hover:text-gray-200 focus:outline-none">
 			<svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
 				<path
 					fill-rule="evenodd"
