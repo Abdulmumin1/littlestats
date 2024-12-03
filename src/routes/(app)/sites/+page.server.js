@@ -9,16 +9,16 @@ export async function load({ locals: { pb }, params }) {
 		const domain_recs = await pb.collection('domain').getFullList({
 			sort: '-created'
 		});
-		let domains = [];
-		for (let index = 0; index < domain_recs.length; index++) {
-			let element = domain_recs[index];
-			const records = await pb.collection('events').getFullList({
-				filter: `domain_id = '${element.id}'`
-			});
-			element['expand'] = {};
-			element['expand']['events_via_domain_id'] = records;
-			domains = [...domains, element];
-		}
+		let domains = domain_recs;
+		// for (let index = 0; index < domain_recs.length; index++) {
+		// 	let element = domain_recs[index];
+		// 	const records = await pb.collection('events').getFullList({
+		// 		filter: `domain_id = '${element.id}'`
+		// 	});
+		// 	element['expand'] = {};
+		// 	element['expand']['events_via_domain_id'] = records;
+		// 	domains = [...domains, element];
+		// }
 
 		// console.log(domains);
 		// console.log(records);

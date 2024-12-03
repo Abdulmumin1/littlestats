@@ -87,10 +87,10 @@
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			{#each domains as domain}
 				<div
-					class="w-full rounded-lg dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200"
+					class="w-full py-4 flex items-center justify-between rounded-lg dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200"
 				>
 					<!-- Card Header -->
-					<div class="px-4 pt-4">
+					<div class="px-4 ">
 						<div class="flex items-center justify-between gap-3">
 							<div class="flex items-center gap-2">
 								<Link class="h-4 w-4 text-black dark:text-gray-200" />
@@ -144,9 +144,9 @@
 					{/if}
 
 					<!-- Card Footer -->
-					<div class=" px-4 pb-4">
+					<div class=" px-4">
 						<a href="/site/{domain.id}" class="flex items-center gap-1 text-sm text-{$color}-700">
-							View Details
+							Goto Dashboard
 							<ArrowUpRight class="h-3 w-3" />
 						</a>
 					</div>

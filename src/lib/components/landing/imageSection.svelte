@@ -2,6 +2,7 @@
 	import { color } from '$lib/colors/mixer.js';
 	import { ArrowRight } from 'lucide-svelte';
 	import { fly } from 'svelte/transition';
+	import DemoComponent from './demoComponent.svelte';
 
 	let images = {
 		rose: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728117533/Screenshot_2024-10-05_at_09-25-23_cqlncy.png',
@@ -33,13 +34,15 @@
 			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118085/stone_gqjj5x.png',
 		red: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118085/red_gysz22.png'
 	};
+
+	let { data = $bindable() } = $props();
 </script>
 
-<div class="container mx-auto max-w-[1000px] p-3">
-	<!-- <p class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 dark:text-white sm:mb-8 sm:max-w-2xl sm:text-xl">
-		<span class=" text-{$color}-500"><ArrowRight /></span>Not just cheap though,
-		<span class="bg-{$color}-900 text-{$color}-100 font-extrabold">Super fun to use</span>
-	</p> -->
+<!-- <p class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 dark:text-white sm:mb-8 sm:max-w-2xl sm:text-xl">
+	<span class=" text-{$color}-500"><ArrowRight /></span>Not just cheap though,
+	<span class="bg-{$color}-900 text-{$color}-100 font-extrabold">Super fun to use</span>
+</p> -->
+<!-- <div class="container mx-auto max-w-[1000px] p-3">
 	<h2
 		class="mb-4 mt-20 text-center font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-3xl lg:text-4xl dark:text-white"
 	>
@@ -52,4 +55,16 @@
 			<img in:fly={{ y: 10 }} class="rounded-xl" src={images[$color]} alt="" srcset="" />
 		</div>
 	{/key}
+</div> -->
+<h2
+class="mb-4 mt-20 text-center font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-3xl lg:text-4xl dark:text-white"
+>
+<span class="text-{$color}-600 italic">Demo</span>
+</h2>
+<div class="mx-auto max-w-[1500px] dark:text-gray-100">
+	<p class="flex gap-2 py-2">
+	<span class=" text-{$color}-700"><ArrowRight /></span>Click any entity to filter</p>
+</div>
+<div class="mx-auto mb-12 max-w-[1500px] md:rounded-2xl border-2  px-2 md:px-12 pt-6 border-{$color}-700">
+	<DemoComponent {data} />
 </div>

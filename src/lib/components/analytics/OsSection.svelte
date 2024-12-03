@@ -5,8 +5,9 @@
 	import PageItem from './pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import MiniSectionWrapper from './miniSectionWrapper.svelte';
+	import { Maximize } from 'lucide-svelte';
 
-	let { views, domain } = $props();
+	let { views, domain, jump = true } = $props();
 	let max_page_item_count = 6;
 
 	function parseUserAgent(userAgent) {
@@ -86,7 +87,7 @@
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page (page[0])}
 			<div animate:flip={{ duration: 150 }} class="w-full">
-				<PageItem on:filter type="os" path={page[0]} views={page[1]} />
+				<PageItem {jump} on:filter type="os" path={page[0]} views={page[1]} />
 			</div>
 		{:else}
 			<EmptyValues />
@@ -96,8 +97,8 @@
 			<BottomDrawer>
 				{#snippet handle()}
 								<div >
-						<button class="no-bg text-right">more &rarr;</button>
-					</div>
+									<button class="no-bg text-right mx-auto flex gap-2 items-center justify-center">more <Maximize size={15}/></button>
+								</div>
 							{/snippet}
 				{#snippet header()}
 								<div
@@ -112,7 +113,7 @@
 				{#snippet content()}
 								<div  class="relative flex flex-col gap-1 overflow-y-auto">
 						{#each fetchPages(views) as page}
-							<PageItem on:filter type="os" path={page[0]} views={page[1]} />
+							<PageItem {jump} on:filter type="os" path={page[0]} views={page[1]} />
 						{:else}
 							<p>Nothing yet!</p>
 						{/each}

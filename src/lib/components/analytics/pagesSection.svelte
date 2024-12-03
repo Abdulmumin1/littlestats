@@ -5,8 +5,9 @@
 	import PageItem from './pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import SectionWrapper from './sectionWrapper.svelte';
+	import { Expand, Maximize } from 'lucide-svelte';
 
-	let { views } = $props();
+	let { views, jump=true } = $props();
 	let max_page_item_count = 10;
 
 	function fetchPages(events) {
@@ -56,7 +57,7 @@
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page (page[0])}
 			<div animate:flip={{ duration: 150 }} class="min-w-full">
-				<PageItem type="page" on:filter path={page[0]} views={page[1]} />
+				<PageItem jump={jump} type="page" on:filter path={page[0]} views={page[1]} />
 			</div>
 		{:else}
 			<EmptyValues />
@@ -66,7 +67,7 @@
 			<BottomDrawer>
 				{#snippet handle()}
 								<div >
-						<button class="no-bg text-right">more &rarr;</button>
+						<button class="no-bg text-right mx-auto flex gap-2 items-center justify-center">more <Maximize size={15}/></button>
 					</div>
 							{/snippet}
 				{#snippet header()}
@@ -82,7 +83,7 @@
 				{#snippet content()}
 								<div  class="relative flex flex-col gap-1 overflow-y-auto">
 						{#each fetchPages(views) as page}
-							<PageItem on:filter type="page" path={page[0]} views={page[1]} />
+							<PageItem jump={jump} on:filter type="page" path={page[0]} views={page[1]} />
 						{:else}
 							<p>Nothing yet!</p>
 						{/each}

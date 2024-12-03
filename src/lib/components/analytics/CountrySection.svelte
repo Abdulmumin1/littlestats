@@ -3,14 +3,14 @@
 	import BottomDrawer from '../generals/bottomDrawer.svelte';
 	import EmptyValues from './emptyValues.svelte';
 	import PageItem from './pageItem.svelte';
-	import { LoaderPinwheel } from 'lucide-svelte';
+	import { LoaderPinwheel, Maximize } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { ip_cache } from '$lib/cache/ips.js';
 	import { flip } from 'svelte/animate';
 	import { getCountry } from '$lib/slug/helpers.js';
 	import MiniSectionWrapper from './miniSectionWrapper.svelte';
 
-	let { views, domain } = $props();
+	let { views, domain, jump=true } = $props();
 	let max_page_item_count = 6;
 
 	// Function using IP geolocation service
@@ -299,62 +299,49 @@
 	let loading = false;
 	let loading_indicator = [1];
 
+	
 	function fetchPages(events) {
-		// console.log('re-run', events);
-		let uniquePages = new Map();
-		loading_indicator = [1];
+    let uniquePages = new Map();
+    let loading_indicator = [1]; // Consider updating or removing this if it's unnecessary
 
-		// loading = true;
+    // Loop through all events
+    for (let index = 0; index < events.length; index++) {
+        const event = events[index];
+        const timezone = event.timezone;
 
-		for (let index = 0; index < events.length; index++) {
-			const event = events[index];
+        // Check if the timezone exists and is not empty
+        let country = 'United States of America'; // Default fallback
 
-			let timezone = event.timezone;
-			// console.log(event);
-			if (timezone) {
-				// console.log(ip);
-				try {
-					// let country_code = null;
-					// if ($ip_cache[ip]) {
-					// 	country_code = $ip_cache[ip];
-					// } else {
-					// 	country_code = await getCountryFromIP(ip);
-					// }
-					// if (country_code) {
-					// if (loading_indicator.length <= 5) {
-					// 	loading_indicator = [...loading_indicator, crypto.randomUUID()];
-					// }
-					// ip_cache.update((cur) => {
-					// 	const ob = {};
-					// 	ob[ip] = country_code;
-					// 	return { ...cur, ...ob };
-					// });
-					// console.log($ip_cache);
+        if (timezone && timezone.trim() !== '') {
+            try {
+                country = getCountry(timezone) || 'Unknown'; // Fallback if getCountry returns falsy
+                // Update the uniquePages Map
+                if (!uniquePages.has(country)) {
+                    uniquePages.set(country, 1);
+                } else {
+                    uniquePages.set(country, uniquePages.get(country) + 1);
+                }
+            } catch (error) {
+				if (!uniquePages.has(country)) {
+                uniquePages.set(country, 1);
+            } else {
+                uniquePages.set(country, uniquePages.get(country) + 1);
+            }
+            }
+        } else {
+            // If no timezone, set country as 'Unknown'
+            if (!uniquePages.has(country)) {
+                uniquePages.set(country, 1);
+            } else {
+                uniquePages.set(country, uniquePages.get(country) + 1);
+            }
+        }
+    }
 
-					const country = getCountry(timezone) ?? 'Unknown';
-					if (country) {
-						// console.log(country);
-						if (!uniquePages.has(country)) {
-							uniquePages.set(country, 1);
-							// pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
-						} else {
-							uniquePages.set(country, uniquePages.get(country) + 1);
-							// pages = Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
-						}
-					}
-					// }
-				} catch (error) {}
-			}
-		}
-		// loading = false;
-		// events.forEach((event) => {
-		// console.log(event);
+    // Sort the uniquePages Map by frequency (highest to lowest)
+    return Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
+}
 
-		// });
-
-		// console.log(uniquePages);
-		return Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
-	}
 
 	let pages = $derived(fetchPages(views));
 
@@ -391,7 +378,7 @@
 	<div class="w-ful flex h-full flex-col gap-1">
 		{#each trunaced_pages as page (page[0])}
 			<div animate:flip={{ duration: 150 }} class="min-w-full">
-				<PageItem on:filter type="country" path={page[0]} views={page[1]} />
+				<PageItem {jump} on:filter type="country" path={page[0]} views={page[1]} />
 			</div>
 		{:else}
 			<EmptyValues />
@@ -401,8 +388,8 @@
 			<BottomDrawer>
 				{#snippet handle()}
 								<div  class="z-0">
-						<button class="no-bg z-0 text-right">more &rarr;</button>
-					</div>
+									<button class="no-bg text-right mx-auto flex gap-2 items-center justify-center">more <Maximize size={15}/></button>
+								</div>
 							{/snippet}
 				{#snippet header()}
 								<div
@@ -417,7 +404,7 @@
 				{#snippet content()}
 								<div  class="relative flex flex-col gap-1 overflow-y-auto">
 						{#each fetchPages(views) as page}
-							<PageItem on:filter type="country" path={page[0]} views={page[1]} />
+							<PageItem {jump} on:filter type="country" path={page[0]} views={page[1]} />
 						{:else}
 							<p>Nothing yet!</p>
 						{/each}

@@ -260,8 +260,8 @@
 	const plans = [
 		{
 			name: 'Monthly',
-			priceMonthly: 5,
-			priceYearly: 50,
+			priceMonthly: 4,
+			priceYearly: 40,
 			features: [
 				'Full Analytics Suite',
 				'Custom Events',
@@ -274,7 +274,7 @@
 		},
 		{
 			name: 'Lifetime',
-			price: 165,
+			price: 125,
 			features: [
 				'Everything in Monthly plan',
 				'Lifetime Updates',

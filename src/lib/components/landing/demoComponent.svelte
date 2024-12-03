@@ -5,19 +5,19 @@
 	import { color } from '$lib/colors/mixer.js';
 
 	import { deserialize } from '$app/forms';
-	import PagesSection from '../../../../lib/components/analytics/pagesSection.svelte';
-	import ChartJsGraph from '../../../../lib/components/analytics/graphStuff/chartJsGraph.svelte';
-	import Seo from '../../../../lib/components/generals/seo.svelte';
-	import ReferrerSection from '../../../../lib/components/analytics/referrerSection.svelte';
-	import BrowserSection from '../../../../lib/components/analytics/browserSection.svelte';
-	import OsSection from '../../../../lib/components/analytics/OsSection.svelte';
-	import LoadingState from '../../../../lib/components/analytics/graphStuff/loadingState.svelte';
-	import { X, Calendar } from 'lucide-svelte';
+	import PagesSection from '$lib/components/analytics/pagesSection.svelte';
+	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
+	import Seo from '$lib/components/generals/seo.svelte';
+	import ReferrerSection from '$lib/components/analytics/referrerSection.svelte';
+	import BrowserSection from '$lib/components/analytics/browserSection.svelte';
+	import OsSection from '$lib/components/analytics/OsSection.svelte';
+	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
+	import { X, Calendar, Dot } from 'lucide-svelte';
 	import { scale, slide } from 'svelte/transition';
 	import { isOsInUserAgent, isBrowserInUserAgent, getCountry } from '$lib/slug/helpers.js';
-	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
-	import Dropdown from '../../../../lib/components/generals/dropdown.svelte';
-	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
+	import CountrySection from '$lib/components/analytics/CountrySection.svelte';
+	import Dropdown from '$lib/components/generals/dropdown.svelte';
+	import PickDate from '$lib/components/generals/pickDate.svelte';
 
 	let { data = $bindable() } = $props();
 
@@ -186,9 +186,7 @@
 		// console.log(mock_page.length, data.records.length);
 	}
 
-	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
-	let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
-	let managed_domains = [...current_domain, ...temp_domain];
+	let current_domain_domain  = 'yaqeen.me'
 	let loading = $state(false);
 
 	async function fetchFromDefaultDates(date) {
@@ -277,12 +275,10 @@
 				backdateuniqueUserAgents = local_result.data.results.record.visitors;
 			}
 		}
-		
-			loading = false;
-		
+		loading = false;
 	}
 
-	let sortInterval = $state(1);
+	let sortInterval = $state(14);
 
 	let chartD = $state();
 
@@ -330,9 +326,8 @@
 		{ value: 21, label: 'Last 21 days' },
 		{ value: 30, label: 'Last 30 days' }
 	];
-	let domain_options = Array.from(managed_domains).map((e) => {
-		return { value: e.id, label: e.name };
-	});
+	
+    
 	// console.log(domain_options);
 
 	let datePickerModal = $state(null);
@@ -350,11 +345,9 @@
 	}
 </script>
 
-<svelte:head>
-	<Seo title={`${current_domain[0].name} Analytics - littlestats`} />
-</svelte:head>
 
-<div class="min-h-screen p-2 text-black">
+
+<div class="min-h-screen p-2 text-black ">
 	<!-- <div>devcanvas.art</div> -->
 	<PickDate
 		bind:this={datePickerModal}
@@ -387,27 +380,17 @@
 					{/each}
 					<button>Add domain</button>
 				</select> -->
-				<Dropdown
-					on:change={(e) => {
-						window.location.href = `/site/${e.detail.value}`;
-					}}
-					title=""
-					value={data.domain_id}
-					options={domain_options}
-				>
-					{#snippet btn()}
-						<div>
-							<a href="/settings">+ add domain</a>
-						</div>
-					{/snippet}
-				</Dropdown>
+				<div class="px-2 flex items-center gap-2">
+					<div class="h-3 w-3 rounded-full bg-{$color}-600 dark:bg-{$color}-700"></div>
+                    
+                    {current_domain_domain}</div>
 
 				<!-- <div class="flex items-center gap-2">
 					<div class="h-3 w-3 rounded-full bg-{$color}-400"></div>
 					0 current visitors
 				</div> -->
 			</div>
-			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
+			<Dropdown on:change={handleDateChange} value={optis[2].value} title="Filter" options={optis}>
 				{#snippet btn()}
 					<div>
 						<button onclick={openDatePicker} class="flex items-center gap-1">
@@ -500,15 +483,15 @@
 		<!-- <GrapthView viewRecords={views} /> -->
 		<!-- <MdGraphStuff /> -->
 		<!-- <AnotherChart viewRecords={views} {sortInterval} /> -->
-		<ChartJsGraph {chartD} {sortInterval} />
+		<ChartJsGraph {chartD} {sortInterval} showChart={true} />
 		<div class="mt-6 flex flex-wrap gap-6">
-			<PagesSection {views} on:filter={handleAddfilter} />
-			<ReferrerSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<PagesSection jump={false} {views} on:filter={handleAddfilter} />
+			<ReferrerSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
-			<BrowserSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
-			<CountrySection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
-			<OsSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<BrowserSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
+			<CountrySection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
+			<OsSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
 		</div>
 	</div>
 </div>

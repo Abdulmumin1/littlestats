@@ -111,7 +111,7 @@
 		</section>
 	</main>
 
-	<footer class="mt-12 border-t pt-8 text-center text-stone-600 dark:text-stone-400">
+	<!-- <footer class="mt-12 border-t pt-8 text-center text-stone-600 dark:text-stone-400">
 		<p>© 2024 Analytics Tracking Library. All rights reserved.</p>
-	</footer>
+	</footer> -->
 </div>

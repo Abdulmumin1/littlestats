@@ -31,6 +31,8 @@
 			]
 		}
 	];
+	let { data = $bindable() } = $props();
+	// console.log(data)
 </script>
 
 <svelte:head>
@@ -43,7 +45,7 @@
 		<Nav />
 
 		<Hero />
-		<ImageSection />
+		<ImageSection {data}/>
 		<FeatureSection />
 		<!-- <ReasonSection/> -->
 		<PricingSection />

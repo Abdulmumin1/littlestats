@@ -15,7 +15,7 @@
 	 */
 
 	/** @type {Props} */
-	let { chartD = { data: [], label: 'Views' }, sortInterval = 1 } = $props();
+	let { chartD = { data: [], label: 'Views' }, showChart = false, sortInterval = 1 } = $props();
 
 	let chartCanvas = $state(null);
 	let chart = $state(null);
@@ -224,7 +224,7 @@
 		};
 	});
 
-	let showChart = $state(false);
+	
 	function toggleChart() {
 		showChart = !showChart;
 		if (showChart) {

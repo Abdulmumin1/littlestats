@@ -3,17 +3,18 @@
 	import { formatNumber } from '$lib/slug/helpers.js';
 
 	import { createEventDispatcher } from 'svelte';
-	let { path, views, type } = $props();
+	let { path, views, type, jump = true } = $props();
 	// import { fade } from 'svelte/transition';
 
 	const dispatch = createEventDispatcher();
+
 
 	function sendFilter() {
 		dispatch('filter', {
 			type,
 			query: path
 		});
-		window.scrollTo({ top: 0, behavior: 'smooth' });
+		jump && window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 </script>
 
