@@ -57,14 +57,19 @@
 	{/key}
 </div> -->
 <h2
-class="mb-4 mt-20 text-center font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-3xl lg:text-4xl dark:text-white"
+	class="mb-4 mt-20 text-center font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-3xl lg:text-4xl dark:text-white"
 >
-<span class="text-{$color}-600 italic">Demo</span>
+	<span class="text-{$color}-600 italic">Demo</span>
 </h2>
-<div class="mx-auto max-w-[1500px] dark:text-gray-100">
-	<p class="flex gap-2 py-2">
-	<span class=" text-{$color}-700"><ArrowRight /></span>Click any entity to filter</p>
-</div>
-<div class="mx-auto mb-12 max-w-[1500px] md:rounded-2xl border-2  px-2 md:px-12 pt-6 border-{$color}-700">
-	<DemoComponent {data} />
+<div class="md:mx-6">
+	<div class="mx-auto max-w-[1500px] dark:text-gray-100">
+		<p class="flex gap-2 py-2">
+			<span class=" text-{$color}-700"><ArrowRight /></span>Click any entity to filter
+		</p>
+	</div>
+	<div
+		class="mx-auto mb-12 max-w-[1500px] border-2 px-2 pt-6 md:rounded-2xl md:px-12 border-{$color}-700"
+	>
+		<DemoComponent {data} />
+	</div>
 </div>

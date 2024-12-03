@@ -102,18 +102,22 @@
 	});
 </script>
 
-<div class="" style="max-width:486px; padding:20px; margin-inline:auto;">
+<div class="" style="max-width:1200px; padding:20px; margin-inline:auto;">
 	<div class=" flex flex-1 flex-col gap-6">
-		<h1 class="px-2 text-2xl font-bold">Free trial expired! Update your Billing details</h1>
+		<h1 class="px-2 text-2xl font-bold dark:text-gray-100">
+			Free trial expired! Update your Billing details
+		</h1>
 
 		<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
-			<div class="rounded-md bg-{$color}-200 p-4">
-				<h2 class="mb-4 flex items-center text-xl font-semibold">
-					<User class="mr-2" /> Account
+			<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50">
+				<h2 class="mb-4 flex items-center text-xl font-semibold dark:text-gray-100">
+					<User class="mr-2 " /> Account
 				</h2>
 				<div class="space-y-4">
 					<div>
-						<label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+						<label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-100"
+							>Name</label
+						>
 						<input
 							type="text"
 							id="name"
@@ -123,7 +127,9 @@
 						/>
 					</div>
 					<div>
-						<label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+						<label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-100"
+							>Email</label
+						>
 						<input
 							type="email"
 							id="email"
@@ -137,6 +143,7 @@
 						<div>
 							<button
 								disabled={!user.name}
+								type="button"
 								class="lemonsqueezy-button flex w-full items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-600 dark:bg-{$color}-700"
 								onclick={OpenOverlay}>Enter Billing Details</button
 							>
@@ -146,12 +153,14 @@
 			</div>
 
 			{#if data.user.sub_id}
-				<div class="rounded-md bg-{$color}-200 p-4">
-					<h2 class="mb-4 flex items-center text-xl font-semibold">
+				<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50">
+					<h2 class="mb-4 flex items-center text-xl font-semibold dark:text-gray-100">
 						<CreditCard class="mr-2" /> Subscripiton Information
 					</h2>
-					<p class="mb-2 text-sm text-gray-600">Currenly on <strong>Free Trial</strong></p>
-					<p class="mb-2 text-sm text-gray-600">
+					<p class="mb-2 text-sm text-gray-600 dark:text-gray-100">
+						Currenly on <strong>Free Trial</strong>
+					</p>
+					<p class="mb-2 text-sm text-gray-600 dark:text-gray-100">
 						Choosen plan: <strong>{data.user.variant_name}</strong>
 					</p>
 				</div>
@@ -168,11 +177,11 @@
 					</button>
 				</div>
 			{:else}
-				<div class="rounded-md bg-{$color}-200 p-4">
-					<h2 class="mb-4 flex items-center text-xl font-semibold">
+				<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50">
+					<h2 class="mb-4 flex items-center text-xl font-semibold dark:text-gray-100">
 						<CreditCard class="mr-2" /> Information
 					</h2>
-					<p class="mb-2 text-sm text-gray-600">
+					<p class="mb-2 text-sm text-gray-600 dark:text-gray-100">
 						No worries, you will be on <strong>Free Trial</strong>. Your card will not be charged!
 					</p>
 				</div>

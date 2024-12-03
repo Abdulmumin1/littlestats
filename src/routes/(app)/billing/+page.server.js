@@ -8,14 +8,14 @@ import { calculateTrialDaysLeft } from '../../../lib/utils';
 export async function load({ locals: { pb }, url }) {
 	const user = pb.authStore.model;
 
-	const daysLeft = calculateTrialDaysLeft(user.date_activated)
+	const daysLeft = calculateTrialDaysLeft(user.date_activated);
 
-	if (daysLeft > 0) {
-		throw redirect(303, '/sites');
-	}
-	if (user.setup_complete) {
-		throw redirect(303, '/sites');
-	}
+	// if (daysLeft > 0) {
+	// 	throw redirect(303, '/sites');
+	// }
+	// if (user.setup_complete) {
+	// 	throw redirect(303, '/sites');
+	// }
 	if (!user) {
 		throw redirect(303, '/signup');
 	}

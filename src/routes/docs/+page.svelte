@@ -47,7 +47,7 @@
 		<section id="installation" class="mb-12">
 			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Installation</h2>
 			<p class="mb-4 text-stone-700 dark:text-stone-300">
-				Include the script in your HTML file or integrate it into your project's bundled JavaScript:
+				Include the script provided in your HTML file
 			</p>
 			<strong class="text-{$color}-700">Example</strong>
 			<pre class="overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
