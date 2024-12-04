@@ -8,7 +8,7 @@ importers:
 
   .:
     dependencies:
-      '@clickhouse/client':
+      '@clickhouse/client-web':
         specifier: ^1.9.0
         version: 1.9.0
       '@lemonsqueezy/lemonsqueezy.js':
@@ -107,9 +107,8 @@ packages:
   '@clickhouse/client-common@1.9.0':
     resolution: {integrity: sha512-F3v2c5YmpR28frZUPrPTAfDGbL7sKlq/OwaKC+4OzTr7fvDPxC8bb3LoZTunIvfkpiPugqSiBTL6MEahKWTOvA==}
 
-  '@clickhouse/client@1.9.0':
-    resolution: {integrity: sha512-DwBNISAU3By+WXwR7zjga4HNK7iC6QgYmpbS1hXbL0GUbKpog2kTGyjal3WnpltmlP77YM1AbkRgDWTiTsdv8Q==}
-    engines: {node: '>=16'}
+  '@clickhouse/client-web@1.9.0':
+    resolution: {integrity: sha512-wJl7rQVp/UhC8fYf/+r7QOQZtJ59OxOBZS4TRXcei7cW/vp50uO8KQI0vGXmQIf5HCCMStVzmM8nOQWq9MxreA==}
 
   '@cloudflare/kv-asset-handler@0.3.4':
     resolution: {integrity: sha512-YLPHc8yASwjNkmcDMQMY35yiWjoKAKnhUbPRszBRS0YgH+IXtsMp61j+yTcnCE3oO2DgP0U3iejLC8FTtKDC8Q==}
@@ -1903,7 +1902,7 @@ snapshots:
 
   '@clickhouse/client-common@1.9.0': {}
 
-  '@clickhouse/client@1.9.0':
+  '@clickhouse/client-web@1.9.0':
     dependencies:
       '@clickhouse/client-common': 1.9.0
 

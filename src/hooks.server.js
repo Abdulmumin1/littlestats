@@ -3,7 +3,7 @@ import { env } from '$env/dynamic/private';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { calculateTrialDaysLeft } from './lib/utils';
-import { createClient } from '@clickhouse/client'
+import { createClient } from '@clickhouse/client-web'
 
 
 export const authentication = async ({ event, resolve }) => {
