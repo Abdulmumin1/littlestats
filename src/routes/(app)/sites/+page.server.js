@@ -1,5 +1,5 @@
 /** @type {import('./$types').PageLoad} */
-export async function load({ locals: { pb }, params }) {
+export async function load({ locals: { pb, ch }, params }) {
 	try {
 		// you can also fetch all records at once via getFullList
 		// const domains = await pb.collection('domain').getFullList({
@@ -9,16 +9,23 @@ export async function load({ locals: { pb }, params }) {
 		const domain_recs = await pb.collection('domain').getFullList({
 			sort: '-created'
 		});
-		let domains = domain_recs;
-		// for (let index = 0; index < domain_recs.length; index++) {
-		// 	let element = domain_recs[index];
-		// 	const records = await pb.collection('events').getFullList({
-		// 		filter: `domain_id = '${element.id}'`
-		// 	});
-		// 	element['expand'] = {};
-		// 	element['expand']['events_via_domain_id'] = records;
-		// 	domains = [...domains, element];
-		// }
+		let domains = [];
+
+		for (let index = 0; index < domain_recs.length; index++) {
+			let element = domain_recs[index];
+			const query = `
+			SELECT *
+			FROM events
+			WHERE domain_id = '${element.id}'`
+			const resultSet =  await ch.query({
+				query:query,
+				format: 'JSONEachRow',
+			})
+			const dataset = await resultSet.json()
+			element['expand'] = {};
+			element['expand']['events_via_domain_id'] = dataset;
+			domains = [...domains, element];
+		}
 
 		// console.log(domains);
 		// console.log(records);
@@ -31,7 +38,7 @@ export async function load({ locals: { pb }, params }) {
 		// 	sort: '-created',
 		// 	filter: `domain_id = '${params.slug}'`
 		// });
-		// console.log(domains);
+		console.log(domains.length, domain_recs.length);
 		return { domains };
 	} catch (error) {
 		console.error(error);

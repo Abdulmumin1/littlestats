@@ -59,7 +59,7 @@ async function fetchCache(pb, date, domain_id) {
 }
 /** @type {import('./$types').Actions} */
 export const actions = {
-	fetchDate: async ({ locals: { pb }, request }) => {
+	fetchDate: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();
 		let defaultRange = data.get('defaultRange');
 		if (!defaultRange) {
@@ -69,11 +69,11 @@ export const actions = {
 		const domain_id = data.get('domain_id');
 		try {
 			const now = new Date();
-			const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-			const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-			const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
-			const last21Days = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000).toISOString();
-			const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+			const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+			const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+			const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+			const last21Days = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000);
+			const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
 			let filterToUse = last24Hours;
 
@@ -89,33 +89,45 @@ export const actions = {
 				filterToUse = last24Hours;
 			}
 			// you can also fetch all records at once via getFullList
-			const records = await pb.collection('events').getFullList({
-				sort: '-created',
-				filter: `domain_id = '${domain_id}' && timestamp >= '${filterToUse}'`
-			});
-			// console.log(records);
-			const results = records.map((record) => {
-				return {
-					id: record.id,
-					domain_id: record.domain_id,
-					event_type: record.event_type,
-					url: record.url,
-					referrer: record.referrer,
-					user_agent: record.user_agent,
-					timestamp: record.timestamp,
-					ip: record.ip,
-					timezone: record.timezone,
-					...{ duration: record.duration }
-				};
-			});
+			// const records = await pb.collection('events').getFullList({
+			// 	sort: '-created',
+			// 	filter: `domain_id = '${domain_id}' && timestamp >= '${filterToUse.toISOString().slice(0, 19).replace('T', ' ')}'`
+			// });
+		
+			const query = `
+			SELECT *
+			FROM events
+			WHERE domain_id = '${domain_id}' AND timestamp >= '${filterToUse.toISOString().slice(0, 19).replace('T', ' ')}'
+			`
+			const resultSet =  await ch.query({
+				query:query,
+				format: 'JSONEachRow',
+			})
+			const dataset = await resultSet.json();
+			// console.log(dataset)
+			// // console.log(records);
+			// const results = records.map((record) => {
+			// 	return {
+			// 		id: record.id,
+			// 		domain_id: record.domain_id,
+			// 		event_type: record.event_type,
+			// 		url: record.url,
+			// 		referrer: record.referrer,
+			// 		user_agent: record.user_agent,
+			// 		timestamp: record.timestamp,
+			// 		ip: record.ip,
+			// 		timezone: record.timezone,
+			// 		...{ duration: record.duration }
+			// 	};
+			// });
 			// console.log(results);
-			return results;
+			return [...dataset];
 		} catch (error) {
 			console.error(error);
 			return fail(400, { fail: true, message: error?.data?.message });
 		}
 	},
-	fetchSpikes: async ({ locals: { pb }, request }) => {
+	fetchSpikes: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();
 		let defaultRange = data.get('defaultRange');
 		if (!defaultRange) {
@@ -133,12 +145,12 @@ export const actions = {
 		}
 		try {
 			const now = new Date();
-			const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-			const last48Hours = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
-			const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-			const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
-			const last21Days = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000).toISOString();
-			const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+			const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+			const last48Hours = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+			const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+			const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+			const last21Days = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000);
+			const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
 			let endDate = last24Hours;
 			let startDate = last48Hours;
@@ -161,26 +173,36 @@ export const actions = {
 			}
 			// console.log(startDate, endDate);
 			// you can also fetch all records at once via getFullList
-			const records = await pb.collection('events').getFullList({
-				filter: `domain_id = '${domain_id}' && timestamp >= '${startDate}' && timestamp < '${endDate}'`
-			});
-			// console.log(records);
-			const results = records.map((record) => {
-				return {
-					id: record.id,
-					domain_id: record.domain_id,
-					event_type: record.event_type,
-					url: record.url,
-					referrer: record.referrer,
-					user_agent: record.user_agent,
-					timestamp: record.timestamp,
-					timezone: record.timezone,
+			// const records = await pb.collection('events').getFullList({
+			// 	filter: `domain_id = '${domain_id}' && timestamp >= '${startDate}' && timestamp < '${endDate}'`
+			// });
+			// // console.log(records);
+			// const results = records.map((record) => {
+			// 	return {
+			// 		id: record.id,
+			// 		domain_id: record.domain_id,
+			// 		event_type: record.event_type,
+			// 		url: record.url,
+			// 		referrer: record.referrer,
+			// 		user_agent: record.user_agent,
+			// 		timestamp: record.timestamp,
+			// 		timezone: record.timezone,
 
-					...{ duration: record.duration }
-				};
-			});
-			// console.log(results);
-			return { results, cache: false };
+			// 		...{ duration: record.duration }
+			// 	};
+			// });
+
+			const query = `
+			SELECT *
+			FROM events
+			WHERE domain_id = '${domain_id}' AND timestamp >= '${startDate.toISOString().slice(0, 19).replace('T', ' ')}' AND timestamp < '${endDate.toISOString().slice(0, 19).replace('T', ' ')}'
+			`
+			const resultSet =  await ch.query({
+				query:query,
+				format: 'JSONEachRow',
+			})
+			const dataset = await resultSet.json();
+			return { results:dataset, cache: false };
 		} catch (error) {
 			console.error(error);
 			return fail(400, { fail: true, message: error?.data?.message });
@@ -216,20 +238,31 @@ export const actions = {
 };
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ locals: { pb } }) {
+export async function load({ locals: { pb, ch } }) {
 	try {
 		const now = new Date();
-		const last24Hours = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
-		let test = 'boza4r5wbk3mh9q';
-		const domain_id = test || 'ilei2nc1shxp58w';
-		const records = await pb.collection('events').getFullList({
-			sort: '-created',
-			filter: `domain_id = '${domain_id}' && timestamp >= '${last24Hours}'`
-		});
-		// console.log(records);
-		return { records, domain_id };
+		const last24Hours = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+		let test = 'mwn1qyxs2n8ha58';
+		const domain_id = 'ilei2nc1shxp58w';
+		// const records = await pb.collection('events').getFullList({
+		// 	sort: '-created',
+		// 	filter: `domain_id = '${domain_id}' && timestamp >= '${last24Hours}'`
+		// });
+		const formattedLast24Hours = last24Hours.toISOString().slice(0, 19).replace('T', ' ');
+
+		const query = `
+		SELECT *
+		FROM events
+		WHERE domain_id = '${domain_id}' AND timestamp >= '${formattedLast24Hours}'
+		`
+		const resultSet =  await ch.query({
+			query:query,
+			format: 'JSONEachRow',
+		  })
+		const dataset = await resultSet.json()
+		return { records:dataset, domain_id };
 	} catch (error) {
-		// console.error(error);
-		return fail(404, { message: "page you're looking for is not found" });
+		console.error(error);
+		return {fail:true};
 	}
 }

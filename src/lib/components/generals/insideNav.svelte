@@ -125,7 +125,7 @@
 				>
 			</div> -->
 			<div class="wavy-line bg-{$color}-600 dark:bg-{$color}-700"></div>
-			<div class=" bg-gray-50 pb-3 pt-4 dark:bg-gray-300">
+			<div class=" bg-inherit pb-3 pt-4 ">
 				<!-- <div class="flex items-center px-5">
 					<div class="flex-shrink-0">
 						<User size={40} class="rounded-full" />
@@ -138,12 +138,12 @@
 				<div class="mt-1 space-y-1 px-2">
 					<a
 						href="/sites"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
+						class="block rounded-full dark:text-gray-100 px-3 py-2 text-base font-medium hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
 						>Dashboard</a
 					>
 					<a
 						href="/settings"
-						class="block rounded-md px-3 py-2 text-base font-medium hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
+						class="block rounded-full dark:text-gray-100 px-3 py-2 text-base font-medium hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
 						>Settings</a
 					>
 				</div>

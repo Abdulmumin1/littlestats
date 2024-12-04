@@ -87,7 +87,7 @@
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			{#each domains as domain}
 				<div
-					class="w-full py-4 flex items-center justify-between rounded-lg dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200"
+					class="w-full py-4  items-center justify-between rounded-lg dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200"
 				>
 					<!-- Card Header -->
 					<div class="px-4 ">

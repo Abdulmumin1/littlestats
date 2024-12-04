@@ -206,6 +206,7 @@
 			let local_records = local_result.data;
 			page_data = local_records;
 			data.records = page_data;
+			loading = false;
 			// console.log(local_records);
 		}
 	}
@@ -275,7 +276,6 @@
 				backdateuniqueUserAgents = local_result.data.results.record.visitors;
 			}
 		}
-		loading = false;
 	}
 
 	let sortInterval = $state(14);
