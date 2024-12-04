@@ -14,7 +14,7 @@ export const authentication = async ({ event, resolve }) => {
 		password: env.CLICKHOUSE_PASSWORD
 	  })
 	event.locals.ch = client
-	// console.log(event.locals.pb);
+	// console.log(event.locals.pb);/
 
 	// load the store data from the request cookie string
 	event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
