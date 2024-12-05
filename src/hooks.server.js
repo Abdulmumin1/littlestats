@@ -3,8 +3,7 @@ import { env } from '$env/dynamic/private';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { calculateTrialDaysLeft } from './lib/utils';
-import { createClient } from '@clickhouse/client-web'
-
+import { createClient } from '@clickhouse/client-web';
 
 export const authentication = async ({ event, resolve }) => {
 	event.locals.pb = new PocketBase(env.PB_URL);
@@ -12,8 +11,8 @@ export const authentication = async ({ event, resolve }) => {
 		url: env.CLICKHOUSE_HOST ?? 'http://localhost:8123',
 		username: env.CLICKHOUSE_USER ?? 'default',
 		password: env.CLICKHOUSE_PASSWORD
-	  })
-	event.locals.ch = client
+	});
+	event.locals.ch = client;
 	// console.log(event.locals.pb);/
 
 	// load the store data from the request cookie string

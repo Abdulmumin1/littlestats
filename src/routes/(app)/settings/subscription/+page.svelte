@@ -6,7 +6,7 @@
 	import { enhance } from '$app/forms';
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
-	import {calculateTrialDaysLeft} from '$lib/utils.js'
+	import { calculateTrialDaysLeft } from '$lib/utils.js';
 	let subscriptions = $state([]);
 	let newSubscriptionName = '';
 	let errMessage = $state();
@@ -45,7 +45,6 @@
 	onMount(() => {
 		// Simulating fetching subscriptions from an API
 		if (!data.user.sub_id) {
-			
 			subscriptions = [
 				{
 					name: 'Free Trial',
@@ -104,7 +103,7 @@
 				{#each subscriptions as subscription (subscription.name)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-100 dark:bg-stone-800/50 p-3 dark:text-gray-100"
+						class="flex flex-col rounded-md bg-{$color}-100 p-3 dark:bg-stone-800/50 dark:text-gray-100"
 					>
 						<h2 class="mb-4 flex items-center text-xl font-semibold">
 							<CreditCard class="mr-2" /> Subscripiton Information
@@ -122,17 +121,17 @@
 						{#if data.user.sub_id}
 							<div class="flex gap-2">
 								<a
-									href="https://abdulmuminyqn.lemonsqueezy.com/billing"
-									class="mt-2 flex gap-2 self-end rounded-full border border-black bg-{$color}-600 dark:bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
+									href="/"
+									class="mt-2 flex gap-2 self-end rounded-2xl border border-black bg-{$color}-600 dark:bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
 								>
 									<Settings size={20} />
 									Manage Subscripiton
 								</a>
-								<button
+								<!-- <button
 									class="mt-2 self-end rounded-full bg-{$color}-50 p-2 text-sm text-{$color}-600 hover:text-{$color}-800"
 								>
 									Change Plan
-								</button>
+								</button> -->
 							</div>
 						{/if}
 						<!-- <div class="text-sm text-gray-600">Renewal: {subscription.renewalDate}</div> -->
