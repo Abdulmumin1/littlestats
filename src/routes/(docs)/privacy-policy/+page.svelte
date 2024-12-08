@@ -4,7 +4,7 @@
 
 <section class="mb-16">
 	<Header>Privacy Policy</Header>
-	<div class="prose dark:text-white max-w-none">
+	<div class="prose max-w-none dark:text-white">
 		<!-- <p class="mb-4 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p> -->
 
 		<div class="space-y-6">
@@ -25,7 +25,7 @@
 					<li>Page URLs (paths only)</li>
 					<li>Referrer domains</li>
 					<li>Browser type</li>
-					<li>Country (from IP, immediately discarded)</li>
+					<li>Country (from Timezone, IP fallback)</li>
 				</ul>
 			</div>
 

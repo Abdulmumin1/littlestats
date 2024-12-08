@@ -22,6 +22,7 @@
 				<h2 class="mb-3 text-xl font-semibold dark:text-white">2. Prohibited Use</h2>
 				<p>You may not:</p>
 				<ul class="mt-2 list-disc pl-6">
+					<li>Use Littlestats in the following websites (Gambling, P*rnographic, and the likes)</li>
 					<li>Modify our script to collect additional data</li>
 					<li>Attempt to identify individual users</li>
 					<li>Combine our data with personal information</li>
