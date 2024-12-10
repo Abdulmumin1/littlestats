@@ -309,13 +309,13 @@
 		// console.log(e.detail);
 		// return;
 		await fetchFromDefaultDates(e.detail.value);
-		await fetchSpikes(e.detail.value);
-
 		sortInterval = parseInt(e.detail.value);
 
 		if (filters.length > 0) {
 			applyfilter(filters);
 		}
+		await fetchSpikes(e.detail.value);
+
 	}
 
 	onMount(async () => {
