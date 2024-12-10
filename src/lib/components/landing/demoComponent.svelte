@@ -305,13 +305,13 @@
 		// console.log(e.detail);
 		// return;
 		await fetchFromDefaultDates(e.detail.value);
-		await fetchSpikes(e.detail.value);
-
 		sortInterval = parseInt(e.detail.value);
 
 		if (filters.length > 0) {
 			applyfilter(filters);
 		}
+		await fetchSpikes(e.detail.value);
+
 	}
 
 	onMount(async () => {
@@ -489,9 +489,9 @@
 			<ReferrerSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
-			<BrowserSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
 			<CountrySection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
 			<OsSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
+			<BrowserSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
 		</div>
 	</div>
 </div>

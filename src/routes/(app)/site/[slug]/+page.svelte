@@ -506,9 +506,9 @@
 			<ReferrerSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
-			<BrowserSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 			<CountrySection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 			<OsSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<BrowserSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 		</div>
 	</div>
 </div>

@@ -7,7 +7,7 @@
 	import SectionWrapper from './sectionWrapper.svelte';
 	import { Expand, Maximize } from 'lucide-svelte';
 
-	let { views, jump=true } = $props();
+	let { views, jump = true } = $props();
 	let max_page_item_count = 10;
 
 	function fetchPages(events) {
@@ -25,11 +25,22 @@
 		return Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
 	}
 	let pages = $derived(fetchPages(views));
-	let trunaced_pages = $derived(pages.splice(0, max_page_item_count));
-</script>
-<SectionWrapper title="Pages">
+	let fullPages = $state([...pages])
+	let trunaced_pages = $derived([...pages].splice(0, max_page_item_count));
 
-	
+	let trottle;
+	function searchQuery(event) {
+		clearTimeout(trottle)
+		trottle = setTimeout(()=>{
+			let query = event.target.value
+				
+			fullPages = pages.filter((e) => e[0].search(query) !== -1);
+			// console.log(fullPages)
+		})
+	}
+</script>
+
+<SectionWrapper title="Pages">
 	<!-- <div class="flex flex-col gap-1 *:rounded-md *:bg-{$color}-200 *:px-[9px] *:py-[3px]">
         <div class="flex justify-between">
             <p>/</p>
@@ -57,39 +68,44 @@
 	<div class="flex h-full flex-col gap-1">
 		{#each trunaced_pages as page (page[0])}
 			<div animate:flip={{ duration: 150 }} class="min-w-full">
-				<PageItem jump={jump} type="page" on:filter path={page[0]} views={page[1]} />
+				<PageItem {jump} type="page" on:filter path={page[0]} views={page[1]} />
 			</div>
 		{:else}
 			<EmptyValues />
 		{/each}
-			<!-- {trunaced_pages.length}={ fetchPages(views).length}={pages.length} -->
+		<!-- {trunaced_pages.length}={ fetchPages(views).length}={pages.length} -->
 		{#if trunaced_pages.length < fetchPages(views).length}
-			<BottomDrawer>
+			<BottomDrawer {searchQuery}>
 				{#snippet handle()}
-								<div >
-						<button class="no-bg text-right mx-auto flex gap-2 items-center justify-center">more <Maximize size={15}/></button>
+					<div>
+						<button class="no-bg mx-auto flex items-center justify-center gap-2 text-right"
+							>more <Maximize size={15} /></button
+						>
 					</div>
-							{/snippet}
+				{/snippet}
 				{#snippet header()}
-								<div
-						
+					<div
 						style="padding: 0 20px;"
 						class="sticky top-0 mb-3 flex justify-between text-gray-950 dark:text-gray-100"
 					>
 						<p>Pages</p>
 						<p>Views</p>
 					</div>
-							{/snippet}
+				{/snippet}
 				{#snippet content()}
-								<div  class="relative flex flex-col gap-1 overflow-y-auto">
-						{#each fetchPages(views) as page}
-							<PageItem jump={jump} on:filter type="page" path={page[0]} views={page[1]} />
+					<div class="relative flex flex-col gap-1 px-[20px] py-2 overflow-y-auto no-scrollbar">
+						{#each fullPages as page (page[0])}
+							<div animate:flip={{duration:100}}>
+
+								<PageItem {jump} on:filter type="page" path={page[0]} views={page[1]} />
+							</div>
 						{:else}
-							<p>Nothing yet!</p>
+							<p>Nothing!</p>
 						{/each}
 					</div>
-							{/snippet}
+				{/snippet}
 			</BottomDrawer>
 		{/if}
 	</div>
 </SectionWrapper>
+

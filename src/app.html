@@ -90,6 +90,15 @@
 				border-radius: 24px;
 				box-shadow: 4px 0px 0px 4px var(--scroll-bg, #c0c0c086) inset;
 			}
+
+			.no-scrollbar {
+				overflow: auto;
+				scrollbar-width: none; /* For Firefox */
+			}
+
+			.no-scrollbar::-webkit-scrollbar {
+				display: none; /* For Chrome, Safari, and Edge */
+			}
 		</style>
 		<script>
 			let greenColors = {

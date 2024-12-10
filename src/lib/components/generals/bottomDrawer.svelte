@@ -11,7 +11,8 @@
 	  closeThreshold = 0.23,
 	  handle,
 	  header,
-	  content
+	  content,
+	  searchQuery
 	} = $props();
   
 	let drawerEl = $state();
@@ -94,7 +95,12 @@
 	  startSearching = !startSearching;
 	}
   
-	function searchQuery() {}
+
+	$effect(()=>{
+		if (isOpen){
+			searchQuery({target:{value:""}})
+		}
+	})
   
   </script>
   
@@ -118,43 +124,49 @@
 	</button>
   
 	<div
-	  class="drawer bg-{$color}-50 mx-auto max-w-7xl dark:bg-stone-900"
-	  style="height: {height}px; bottom: {$position}px;"
-	  class:shadow-custom-light={isOpen}
-	  bind:this={drawerEl}
-	  onmousedown={handleMouseDown}
-	  ontouchstart={handleTouchStart}
-	  use:clickOutside
-	  onclick_outside={() => {
-		isOpen = false;
-	  }}
-	  id="drawer"
-	  role="region"
-	  aria-labelledby="drawer-toggle"
-	  tabindex="-1"
-	  aria-hidden={isOpen ? 'false' : 'true'}
+	 class="drawer bg-{$color}-50 mx-auto max-w-7xl dark:bg-stone-900"
+	style="height: {height}px; bottom: {$position}px;"
+	use:clickOutside
+	onclick_outside={() => {
+	  isOpen = false;
+	}}
 	>
-	  <div class="drawer-handle bg-{$color}-600 dark:bg-{$color}-700"></div>
-	  {@render header?.()}
-  
-	  <!-- <div class="flex gap-2 px-4 py-2">
-		<input
-		  type="text"
-		  placeholder="Search"
-		  autofocus
-		  oninput={searchQuery}
-		  class="w-full rounded-lg bg-inherit p-1 z-50"
-		  aria-label="Search"
-		/>
-  
-		<button
-		  onclick={toggleSearching}
-		  class="rounded-full px-2 py-1 hover:bg-white dark:hover:bg-stone-700/50"
-		  aria-label="Start Searching"
+
+		<div
+		 
+		  class:shadow-custom-light={isOpen}
+		  bind:this={drawerEl}
+		  onmousedown={handleMouseDown}
+		  ontouchstart={handleTouchStart}
+		 
+		  id="drawer"
+		  role="region"
+		  aria-labelledby="drawer-toggle"
+		  tabindex="-1"
+		  aria-hidden={isOpen ? 'false' : 'true'}
 		>
-		  <Search />
-		</button>
-	  </div> -->
+		  <div class="drawer-handle bg-{$color}-600 dark:bg-{$color}-700"></div>
+		  {@render header?.()}
+	  
+		
+		  </div>
+		  <div class="flex gap-2 px-4 py-2 relative">
+			<input
+			  type="text"
+			  placeholder="Search"
+			  oninput={searchQuery}
+			  class="w-full rounded-lg bg-inherit p-1 z-50"
+			  style="z-index: 1000 !important;"
+			/>
+	  
+			<div
+			  
+			  class="rounded-full px-2 py-1 hover:bg-white dark:hover:bg-stone-700/50"
+			  aria-label="Start Searching"
+			>
+			  <Search />
+		  </div>
+	</div>
 	  <!-- {#if isOpen} -->
 		
 	  <div class:hidden={!isOpen} class="drawer-content cool-scrollbar" bind:this={contentEl}>
@@ -190,7 +202,7 @@
 	}
   
 	.drawer-content {
-	  padding: 0 20px 20px;
+	  /* padding: 0 20px 20px; */
 	  overflow-y: auto;
 	  flex-grow: 1;
 	  z-index: 9999 !important;
