@@ -15,7 +15,7 @@
 	 */
 
 	/** @type {Props} */
-	let { chartD = { data: [], label: 'Views' }, showChart = false, sortInterval = 1 } = $props();
+	let { chartD = { data: [], label: 'Views' }, showChart = false, sortInterval = 30 } = $props();
 
 	let chartCanvas = $state(null);
 	let chart = $state(null);
@@ -161,7 +161,7 @@
 			} catch {}
 		}
 	});
-	let chartType = $state('bar'); // NEW state for chart type
+	let chartType = $state('line'); // NEW state for chart type
 
 	// $: console.log(c);
 	const MountChart = () => {
@@ -172,28 +172,38 @@
 				labels: chartData.map((d) => d.myX),
 				datasets: [
 					{
-						label: chartD.label,
 						data: chartData.map((d) => d.myY),
 						borderColor: usedColor.primary,
-						tension: 0.05,
+						tension: 0.0,
+                        pointRadius: 0, // Removes the circle markers
+
 						fill: 'origin',
 						borderWidth: 2,
 						borderRadius: 5,
 						spacing: 20,
 						...(chartType == 'bar' ? { backgroundColor: usedColor.primary } : {}),
-						// pointRadius: 0 // Removes the circle markers
+						legend: {
+							display: false
+						}
 					}
 				]
 			},
 			options: {
+                plugins: {
+        legend: {
+            display: false
+        },
+        // tooltip: {
+        //     enabled: false // Disables tooltips completely
+        // }
+    },
 				responsive: true,
+				
 				scales: {
 					x: {
 						ticks: {
-							display: false,
-							grid: {
-								display: false
-							},
+							stepSize: 1000,
+							display: false
 						},
 						grid: {
 							display: false
@@ -203,9 +213,7 @@
 						beginAtZero: true,
 						ticks: {
 							stepSize: 1000,
-							grid: {
-								display: false
-							}
+							display: false
 						},
 						grid: {
 							display: false
@@ -266,7 +274,7 @@
 		if (chart && chartData) {
 			chart.data.labels = chartData.map((d) => d.myX);
 			chart.data.datasets[0].data = chartData.map((d) => d.myY);
-			chart.data.datasets[0].label = chartD.label;
+			// chart.data.datasets[0].label = chartD.label;
 			chart.update();
 		}
 	});
@@ -279,45 +287,10 @@
 	});
 </script>
 
-<div class=" w-full rounded-3xl p-2">
-	<div class="flex items-center">
-		<button class="flex items-center gap-1" onclick={toggleChart}
-			>{#if showChart}
-				<ChevronUp size={16} />
-			{:else}
-				<ChevronDown size={16} />
-			{/if} Chart</button
-		>
-		<!-- Toggle between Line and Bar chart -->
-		<div class="ml-2 flex">
-			<button
-				onclick={() => toggleChartType('line')}
-				class="{chartType == 'line'
-					? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-l-full px-2"
-				>Line</button
-			>
-			<button
-				onclick={() => toggleChartType('bar')}
-				class=" {chartType == 'bar'
-					? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-r-full px-2"
-				>Bar</button
-			>
-		</div>
-	</div>
+<canvas bind:this={chartCanvas} class="max-h-[50px] w-full pr-2 max-w-[350px] "></canvas>
 
-	{#if showChart}
-		<div class="mt-6 flex flex-col items-center justify-center rounded-xl">
-			<canvas bind:this={chartCanvas} class="max-h-[300px]"></canvas>
-			<div class="flex w-full justify-between text-xs">
-				<span>
-					{c[0]}
-				</span>
-				<span>
-					{c[c.length - 1]}
-				</span>
-			</div>
-		</div>
-	{/if}
-</div>
+<style>
+	/* canvas {
+   background-color: rgba(47, 152, 208, 0.1);
+} */
+</style>
