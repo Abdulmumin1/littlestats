@@ -121,7 +121,7 @@
 						{#if data.user.sub_id}
 							<div class="flex gap-2">
 								<a
-									href="/"
+									href="https://polar.sh/purchases/subscriptions/{data.user.sub_id}"
 									class="mt-2 flex gap-2 self-end rounded-2xl border border-black bg-{$color}-600 dark:bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
 								>
 									<Settings size={20} />

@@ -17,7 +17,7 @@
 	<div class="container mx-auto flex flex-col gap-4 pt-2 md:flex-row md:pt-6">
 		<div class="flex w-full flex-col gap-1 px-0 md:w-[300px] md:px-4">
 			<a
-				class="rounded-2xl text-white {(path.endsWith('/settings') || path.endsWith('/settings/'))
+				class="rounded-2xl {(path.endsWith('/settings') || path.endsWith('/settings/'))
 					? `border-${$color}-800 bg-${$color}-600 dark:bg-${$color}-700 border-2 text-white`
 					: `bg-${$color}-100 dark:bg-stone-800/50 dark:text-gray-100`}} px-4 py-2"
 				href="/settings">Manage Domain</a
