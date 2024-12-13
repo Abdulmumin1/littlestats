@@ -4,9 +4,9 @@
 	import MiniChart from '../../../lib/components/analytics/graphStuff/miniChart.svelte';
 	import { Link, Activity, Clock, Eye, ArrowUpRight } from 'lucide-svelte';
 
-    let {domain = {}} = $props();
+	let { domain = {} } = $props();
 
-    function last24hours(events) {
+	function last24hours(events) {
 		if (!events || !Array.isArray(events)) return 0;
 
 		// Filter out pageExit events first
@@ -56,33 +56,32 @@
 		return Math.round(recentEvents.length / timeSpanHours);
 	}
 
-	let views = filterView(domain.expand.events_via_domain_id)
-	let viewCount = formatNumber(views.length)
-
+	// let views = filterView(domain.expand.events_via_domain_id)
+	// let viewCount = formatNumber(views.length)
 </script>
 
 <a
-href="/site/{domain.id}" 
-class="w-full py-4  flex items-center justify-between  rounded-lg dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200"
+	href="/site/{domain.id}"
+	class="flex w-full items-center justify-between rounded-lg py-4 dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200"
 >
-<!-- Card Header -->
-<div class="px-4 ">
-    <div class="flex  items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-            <Link class="h-4 w-4 text-black dark:text-gray-200" />
-            <h3 class="text-lg font-semibold text-black dark:text-black dark:text-gray-200">
-                {domain.name}
-            </h3>
-        </div>
-        <!-- <div
+	<!-- Card Header -->
+	<div class="px-4">
+		<div class="flex items-center justify-between gap-3">
+			<div class="flex items-center gap-2">
+				<Link class="h-4 w-4 text-black dark:text-gray-200" />
+				<h3 class="text-lg font-semibold text-black dark:text-black dark:text-gray-200">
+					{domain.name}
+				</h3>
+			</div>
+			<!-- <div
         class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-100 text-black dark:text-gray-200"
     >
         ID: {domain.id}
     </div> -->
-    </div>
-</div>
+		</div>
+	</div>
 
-<!-- {#if domain?.expand}
+	<!-- {#if domain?.expand}
     <div class="p-4">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="flex items-center gap-2">
@@ -117,13 +116,13 @@ class="w-full py-4  flex items-center justify-between  rounded-lg dark:border-no
         </div>
     </div>
 {/if} -->
-<div class="flex gap-2 items-end pr-3 md:pr-5">
+	<!-- <div class="flex gap-2 items-end pr-3 md:pr-5">
 
     <MiniChart chartD={{data:views, label:"label"}} sortInterval={30}/>
     {viewCount}
-</div>
-<!-- Card Footer -->
-<!-- <div class=" px-4">
+</div> -->
+	<!-- Card Footer -->
+	<!-- <div class=" px-4">
     <a href="/site/{domain.id}" class="flex items-center gap-1 text-sm text-{$color}-700">
         Goto Dashboard
         <ArrowUpRight class="h-3 w-3" />

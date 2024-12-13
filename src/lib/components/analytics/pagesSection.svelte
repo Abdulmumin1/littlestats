@@ -25,18 +25,18 @@
 		return Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
 	}
 	let pages = $derived(fetchPages(views));
-	let fullPages = $state([...pages])
+	let fullPages = $state([...pages]);
 	let trunaced_pages = $derived([...pages].splice(0, max_page_item_count));
 
 	let trottle;
 	function searchQuery(event) {
-		clearTimeout(trottle)
-		trottle = setTimeout(()=>{
-			let query = event.target.value
-				
+		clearTimeout(trottle);
+		trottle = setTimeout(() => {
+			let query = event.target.value;
+
 			fullPages = pages.filter((e) => e[0].search(query) !== -1);
 			// console.log(fullPages)
-		})
+		});
 	}
 </script>
 
@@ -93,10 +93,9 @@
 					</div>
 				{/snippet}
 				{#snippet content()}
-					<div class="relative flex flex-col gap-1 px-[20px] py-2 overflow-y-auto no-scrollbar">
+					<div class="no-scrollbar relative flex flex-col gap-1 overflow-y-auto px-[20px] py-2">
 						{#each fullPages as page (page[0])}
-							<div animate:flip={{duration:100}}>
-
+							<div animate:flip={{ duration: 100 }}>
 								<PageItem {jump} on:filter type="page" path={page[0]} views={page[1]} />
 							</div>
 						{:else}
@@ -108,4 +107,3 @@
 		{/if}
 	</div>
 </SectionWrapper>
-

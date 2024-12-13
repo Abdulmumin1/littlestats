@@ -5,11 +5,9 @@ export default {
 
 	theme: {
 		extend: {
-			
-				boxShadow: {
-				  'custom-light': '0 -10px 100px rgba(0, 0, 0, 0.089)',
-				},
-			  
+			boxShadow: {
+				'custom-light': '0 -10px 100px rgba(0, 0, 0, 0.089)'
+			}
 		}
 	},
 

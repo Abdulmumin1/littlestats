@@ -155,13 +155,14 @@
 	/**	@type {String} [fill='#ab00d610'] The shape's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	let fill = $derived(usedColor?.complement ?? '#ab00d610');
 
-	let path =
-		$derived('M' +
-		$data
-			.map((d) => {
-				return $xGet(d) + ',' + $yGet(d);
-			})
-			.join('L'));
+	let path = $derived(
+		'M' +
+			$data
+				.map((d) => {
+					return $xGet(d) + ',' + $yGet(d);
+				})
+				.join('L')
+	);
 
 	let area = $state();
 

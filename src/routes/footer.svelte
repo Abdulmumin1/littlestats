@@ -19,7 +19,9 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 			<!-- Company Info -->
 			<div class="space-y-4">
 				<h3 class="text-lg font-bold text-black dark:text-black">Littlestats</h3>
-				<p class="text-sm text-black dark:text-black">Your analytics needs without the premium price tag</p>
+				<p class="text-sm text-black dark:text-black">
+					Your analytics needs without the premium price tag
+				</p>
 				<div class="flex space-x-4">
 					<a
 						href="https://twitter.com/abdulmuminyqn"
@@ -49,7 +51,8 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 						>
 					</li>
 					<li>
-						<a href="/#pricing" class="text-sm text-black hover:text-black dark:text-black">Pricing</a
+						<a href="/#pricing" class="text-sm text-black hover:text-black dark:text-black"
+							>Pricing</a
 						>
 					</li>
 

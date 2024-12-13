@@ -155,13 +155,14 @@
 
 	let stroke = $derived(usedColor.primary ?? '#333');
 
-	let path =
-		$derived('M' +
-		$data
-			.map((d) => {
-				return $xGet(d) + ',' + $yGet(d);
-			})
-			.join('L'));
+	let path = $derived(
+		'M' +
+			$data
+				.map((d) => {
+					return $xGet(d) + ',' + $yGet(d);
+				})
+				.join('L')
+	);
 </script>
 
 <path class="path-line" d={path} {stroke}></path>

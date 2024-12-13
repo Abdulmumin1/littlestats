@@ -27,7 +27,11 @@
 	 */
 
 	/** @type {Props} */
-	let { startDate = $bindable(getDateFromToday(29)), endDate = $bindable(today), isOpen = $bindable(false) } = $props();
+	let {
+		startDate = $bindable(getDateFromToday(29)),
+		endDate = $bindable(today),
+		isOpen = $bindable(false)
+	} = $props();
 
 	const onClearDates = () => {
 		startDate = '';

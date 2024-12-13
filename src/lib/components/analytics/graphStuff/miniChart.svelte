@@ -175,7 +175,7 @@
 						data: chartData.map((d) => d.myY),
 						borderColor: usedColor.primary,
 						tension: 0.0,
-                        pointRadius: 0, // Removes the circle markers
+						pointRadius: 0, // Removes the circle markers
 
 						fill: 'origin',
 						borderWidth: 2,
@@ -189,16 +189,16 @@
 				]
 			},
 			options: {
-                plugins: {
-        legend: {
-            display: false
-        },
-        // tooltip: {
-        //     enabled: false // Disables tooltips completely
-        // }
-    },
+				plugins: {
+					legend: {
+						display: false
+					}
+					// tooltip: {
+					//     enabled: false // Disables tooltips completely
+					// }
+				},
 				responsive: true,
-				
+
 				scales: {
 					x: {
 						ticks: {
@@ -287,7 +287,7 @@
 	});
 </script>
 
-<canvas bind:this={chartCanvas} class="max-h-[50px] w-full pr-2 max-w-[350px] "></canvas>
+<canvas bind:this={chartCanvas} class="max-h-[50px] w-full max-w-[350px] pr-2"></canvas>
 
 <style>
 	/* canvas {

@@ -279,7 +279,6 @@
 				backdateuniqueUserAgents = local_result.data.results.record.visitors;
 			}
 		}
-				
 	}
 
 	let sortInterval = $state(1);
@@ -315,7 +314,6 @@
 			applyfilter(filters);
 		}
 		await fetchSpikes(e.detail.value);
-
 	}
 
 	onMount(async () => {
@@ -507,8 +505,8 @@
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
 			<CountrySection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
-			<OsSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 			<BrowserSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<OsSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
 		</div>
 	</div>
 </div>

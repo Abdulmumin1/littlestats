@@ -220,13 +220,13 @@ export async function load({ locals: { pb }, params }) {
 	try {
 		const now = new Date();
 		const last24Hours = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        const domain_id = 'ilei2nc1shxp58w'
+		const domain_id = 'ilei2nc1shxp58w';
 		const records = await pb.collection('events').getFullList({
 			sort: '-created',
 			filter: `domain_id = '${domain_id}' && timestamp >= '${last24Hours}'`
 		});
 		// console.log(records);
-		return { records , domain_id };
+		return { records, domain_id };
 	} catch (error) {
 		// console.error(error);
 		return fail(404, { message: "page you're looking for is not found" });

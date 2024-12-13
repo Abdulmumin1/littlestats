@@ -34,8 +34,6 @@
 		siteName = 'Littlestats',
 		twitterHandle = '@abdulmuminyqn'
 	} = $props();
-
-
 </script>
 
 <!-- Basic Meta Tags -->

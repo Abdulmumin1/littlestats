@@ -315,7 +315,7 @@
 		Simple, Affordable Pricing
 	</h2>
 	<p
-		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600 sm:mb-8 sm:max-w-2xl sm:text-xl"
+		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-black/70 dark:text-white/80 sm:mb-8 sm:max-w-2xl sm:text-xl"
 	>
 		Start with a free month - <span
 			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600 dark:bg-{$color}-700 font-extrabold"
@@ -325,12 +325,12 @@
 
 	<div class="mb-8 flex justify-center">
 		<div
-			class="flex items-center rounded-full bg-${$color}-300 border-2 dark:border border-{$color}-300"
+			class="flex items-center rounded-full bg-${$color}-300  border-{$color}-300"
 		>
 			<button
 				class="rounded-l-full px-3 py-2 font-medium {!isYearly
 					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
-					: `bg-${$color}-50`}"
+					: `bg-white`}"
 				class:text-{$color}-600={isYearly < 0.5}
 				on:click={() => toggleSubscription(false)}>Monthly</button
 			>
@@ -338,13 +338,13 @@
 			<button
 				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
 					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
-					: `bg-${$color}-50`}"
+					: `bg-white`}"
 				on:click={() => toggleSubscription(true)}
 				class:text-{$color}-600={isYearly > 0.5}
 			>
 				Yearly
 				<span
-					class="absolute -top-4 border-2 dark:border border-{$color}-300 left-10 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 flex w-16 items-center justify-center rounded-full p-1 text-xs"
+					class="absolute -top-4 border-{$color}-300 left-10 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 flex w-16 items-center justify-center rounded-full p-1 text-xs"
 					>{calculateDiscountPercentage()}% off</span
 				>
 			</button>
@@ -354,7 +354,7 @@
 	<div class="flex flex-col justify-center gap-8 px-4 md:flex-row">
 		<!-- Monthly/Yearly Plan -->
 		<div
-			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border-4 p-6 shadow-inner border-{$color}-300 shadow-{$color}-700"
+			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border p-6 shadow-inner border-{$color}-300 shadow-{$color}-700"
 		>
 			<h3 class="mb-4 text-xl font-semibold">{isYearly ? 'Yearly' : 'Monthly'}</h3>
 			<div class="mb-4 text-4xl font-bold">
@@ -401,7 +401,7 @@
 
 		<!-- Lifetime Plan -->
 		<div
-			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border-4 p-6 shadow-inner border-{$color}-300 shadow-{$color}-700 relative"
+			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border p-6 shadow-inner border-{$color}-300 shadow-{$color}-700 relative"
 		>
 			<div
 				class="absolute right-4 top-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full px-3 py-1 text-sm text-white"

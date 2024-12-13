@@ -45,27 +45,25 @@
 	];
 </script>
 
-
-
 <div class=" px-4 md:px-0 bg-{$color}-100 dark:bg-{$color}-100 rounded">
 	<div
-	id="box"
-	class="bg-{$color}-50 dark:bg-stone-900 "
-	style="--mask: radial-gradient(14.14px at 50% calc(100% - 20px),#000 99%,#0000 101%) calc(50% - 20px) 0/40px 100%,
+		id="box"
+		class="bg-{$color}-50 dark:bg-stone-900"
+		style="--mask: radial-gradient(14.14px at 50% calc(100% - 20px),#000 99%,#0000 101%) calc(50% - 20px) 0/40px 100%,
 radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(100% - 10px)/40px 100% repeat-x;"
-></div>
-<div
+	></div>
+	<div
 		id="features"
-		class="container py-12 max-w-[1000px] mx-auto z-50  mt-12   rounded-2xl  dark:border-none p-4 border-{$color}-300"
+		class="container z-50 mx-auto mt-12 max-w-[1000px] rounded-2xl p-4 py-12 dark:border-none border-{$color}-300"
 	>
 		<h3
-			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-600 dark:bg-{$color}-700 text-white w-fit rounded-full px-3 py-[.15rem]"
+			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-600 dark:bg-{$color}-700 w-fit rounded-full px-3 py-[.15rem] text-white"
 		>
 			<ArrowRight size={20} /> Features
 		</h3>
-		<div class="grid grid-cols-1 gap-12 mt-8 md:grid-cols-2">
+		<div class="mt-8 grid grid-cols-1 gap-12 md:grid-cols-2">
 			{#each keyFeatures as feature}
-				<div class="rounded-xl  ">
+				<div class="rounded-xl">
 					<div class="mb-2 flex items-center gap-2">
 						<feature.icon size={24} class="text-{$color}-600" />
 						<h4 class=" text-lg font-semibold">{feature.title}</h4>
@@ -77,6 +75,9 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 	</div>
 </div>
 
+<!-- <style> -->
+<!-- </style> -->
+
 <style>
 	/* .skewed {
   position: absolute;
@@ -87,11 +88,8 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
   transform: skewY(2deg);
   transform-origin: top right;
 } */
-#box {
-	height: 40px;
-	mask: var(--mask);
-}
+	#box {
+		height: 40px;
+		mask: var(--mask);
+	}
 </style>
-
-<!-- <style> -->
-<!-- </style> -->

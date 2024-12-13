@@ -19,7 +19,7 @@ export async function load({ locals: { pb }, url }) {
 /** @type {import('./$types').Actions} */
 export const actions = {
 	updateUser: async ({ locals: { pb }, request }) => {
-		if (pb.authStore.model?.account_activated) return {success:true}
+		if (pb.authStore.model?.account_activated) return { success: true };
 		const formdata = await request.formData();
 		const name = formdata.get('name');
 

@@ -2,9 +2,9 @@
 	import Header from '../header.svelte';
 </script>
 
-<section class="mb-16 ">
+<section class="mb-16">
 	<Header>Terms of Service</Header>
-	<div class="prose dark:text-white max-w-none">
+	<div class="prose max-w-none dark:text-white">
 		<div class="space-y-6">
 			<div>
 				<h2 class="mb-3 text-xl font-semibold dark:text-white">1. Our Commitment to Privacy</h2>

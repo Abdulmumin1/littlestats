@@ -93,16 +93,16 @@ export const actions = {
 			// 	sort: '-created',
 			// 	filter: `domain_id = '${domain_id}' && timestamp >= '${filterToUse.toISOString().slice(0, 19).replace('T', ' ')}'`
 			// });
-		
+
 			const query = `
 			SELECT *
 			FROM events
 			WHERE domain_id = '${domain_id}' AND timestamp >= '${filterToUse.toISOString().slice(0, 19).replace('T', ' ')}'
-			`
-			const resultSet =  await ch.query({
-				query:query,
-				format: 'JSONEachRow',
-			})
+			`;
+			const resultSet = await ch.query({
+				query: query,
+				format: 'JSONEachRow'
+			});
 			const dataset = await resultSet.json();
 			// console.log(dataset)
 			// // console.log(records);
@@ -196,13 +196,13 @@ export const actions = {
 			SELECT *
 			FROM events
 			WHERE domain_id = '${domain_id}' AND timestamp >= '${startDate.toISOString().slice(0, 19).replace('T', ' ')}' AND timestamp < '${endDate.toISOString().slice(0, 19).replace('T', ' ')}'
-			`
-			const resultSet =  await ch.query({
-				query:query,
-				format: 'JSONEachRow',
-			})
+			`;
+			const resultSet = await ch.query({
+				query: query,
+				format: 'JSONEachRow'
+			});
 			const dataset = await resultSet.json();
-			return { results:dataset, cache: false };
+			return { results: dataset, cache: false };
 		} catch (error) {
 			console.error(error);
 			return fail(400, { fail: true, message: error?.data?.message });
@@ -254,15 +254,15 @@ export async function load({ locals: { pb, ch } }) {
 		SELECT *
 		FROM events
 		WHERE domain_id = '${domain_id}' AND timestamp >= '${formattedLast24Hours}'
-		`
-		const resultSet =  await ch.query({
-			query:query,
-			format: 'JSONEachRow',
-		  })
-		const dataset = await resultSet.json()
-		return { records:dataset, domain_id };
+		`;
+		const resultSet = await ch.query({
+			query: query,
+			format: 'JSONEachRow'
+		});
+		const dataset = await resultSet.json();
+		return { records: dataset, domain_id };
 	} catch (error) {
 		console.error(error);
-		return {fail:true};
+		return { fail: true };
 	}
 }

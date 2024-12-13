@@ -45,7 +45,7 @@
 		<Nav />
 
 		<Hero />
-		<ImageSection {data}/>
+		<ImageSection {data} />
 		<FeatureSection />
 		<!-- <ReasonSection/> -->
 		<PricingSection />

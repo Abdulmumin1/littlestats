@@ -2,7 +2,7 @@
 	import { ChevronDown } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { createEventDispatcher, onMount } from 'svelte';
-	
+
 	let isOpen = $state(false);
 
 	const dispatch = createEventDispatcher();
@@ -15,12 +15,7 @@
 	 */
 
 	/** @type {Props} */
-	let {
-		value = $bindable(0),
-		title = '',
-		options = [],
-		btn
-	} = $props();
+	let { value = $bindable(0), title = '', options = [], btn } = $props();
 
 	function handleSelect(newValue) {
 		if (value == newValue) {
@@ -48,7 +43,7 @@
 		<button
 			id="custom-select"
 			onclick={() => (isOpen = !isOpen)}
-			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100  bg-{$color}-600 dark:bg-{$color}-700  border-{$color}-500 rounded-full  font-bold"
+			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 border-{$color}-500 rounded-full font-bold"
 			type="button"
 			aria-haspopup="listbox"
 			aria-expanded={isOpen}

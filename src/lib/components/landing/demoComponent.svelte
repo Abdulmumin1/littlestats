@@ -186,7 +186,7 @@
 		// console.log(mock_page.length, data.records.length);
 	}
 
-	let current_domain_domain  = 'yaqeen.me'
+	let current_domain_domain = 'yaqeen.me';
 	let loading = $state(false);
 
 	async function fetchFromDefaultDates(date) {
@@ -311,7 +311,6 @@
 			applyfilter(filters);
 		}
 		await fetchSpikes(e.detail.value);
-
 	}
 
 	onMount(async () => {
@@ -326,8 +325,7 @@
 		{ value: 21, label: 'Last 21 days' },
 		{ value: 30, label: 'Last 30 days' }
 	];
-	
-    
+
 	// console.log(domain_options);
 
 	let datePickerModal = $state(null);
@@ -345,9 +343,7 @@
 	}
 </script>
 
-
-
-<div class="min-h-screen p-2 text-black ">
+<div class="min-h-screen p-2 text-black">
 	<!-- <div>devcanvas.art</div> -->
 	<PickDate
 		bind:this={datePickerModal}
@@ -380,10 +376,11 @@
 					{/each}
 					<button>Add domain</button>
 				</select> -->
-				<div class="px-2 flex items-center gap-2">
+				<div class="flex items-center gap-2 px-2">
 					<div class="h-3 w-3 rounded-full bg-{$color}-600 dark:bg-{$color}-700"></div>
-                    
-                    {current_domain_domain}</div>
+
+					{current_domain_domain}
+				</div>
 
 				<!-- <div class="flex items-center gap-2">
 					<div class="h-3 w-3 rounded-full bg-{$color}-400"></div>
@@ -486,12 +483,27 @@
 		<ChartJsGraph {chartD} {sortInterval} showChart={true} />
 		<div class="mt-6 flex flex-wrap gap-6">
 			<PagesSection jump={false} {views} on:filter={handleAddfilter} />
-			<ReferrerSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
+			<ReferrerSection
+				jump={false}
+				{views}
+				on:filter={handleAddfilter}
+				domain={current_domain_domain}
+			/>
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
-			<CountrySection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
+			<CountrySection
+				jump={false}
+				{views}
+				on:filter={handleAddfilter}
+				domain={current_domain_domain}
+			/>
+			<BrowserSection
+				jump={false}
+				{views}
+				on:filter={handleAddfilter}
+				domain={current_domain_domain}
+			/>
 			<OsSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
-			<BrowserSection jump={false} {views} on:filter={handleAddfilter} domain={current_domain_domain} />
 		</div>
 	</div>
 </div>

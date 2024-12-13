@@ -6,7 +6,7 @@
 	let pickerOpen = $state(false);
 
 	function togglePicker() {
-		console.log('click')
+		console.log('click');
 		pickerOpen = !pickerOpen;
 	}
 
@@ -51,7 +51,7 @@
 <div class="relative">
 	<button
 		onclick={togglePicker}
-		class="flex gap-1 border-2 border-{$color}-700 bg-{$color}-50 dark:bg-stone-800 dark:text-white items-center rounded-full {hide
+		class="flex gap-1 border-2 border-{$color}-700 bg-{$color}-50 items-center rounded-full dark:bg-stone-800 dark:text-white {hide
 			? 'p-1'
 			: ' px-2 py-1'}"
 		>{#if !hide}

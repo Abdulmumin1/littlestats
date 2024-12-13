@@ -25,7 +25,7 @@
 		backdateData = number,
 		percentange = $bindable('504%'),
 		filter_on = false,
-		type = 'normal',
+		type = 'normal'
 	} = $props();
 
 	function sendFilter() {

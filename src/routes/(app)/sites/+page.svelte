@@ -27,8 +27,6 @@
 	// function getActivityRate(events) {
 	// 	return Math.round(last24hours(events) / 24);
 	// }
-
-	
 </script>
 
 <div class="container mx-auto p-6">
@@ -40,7 +38,7 @@
 	{#if domains.length > 0}
 		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 			{#each domains as domain}
-				<Sitecard domain={domain} />
+				<Sitecard {domain} />
 			{/each}
 		</div>
 	{:else}
@@ -54,7 +52,10 @@
 			</div>
 			<p class="dark:text-gray-100">No domains yet</p>
 
-			<a href="/settings" class="my-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full p-1 px-2 text-white">
+			<a
+				href="/settings"
+				class="my-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full p-1 px-2 text-white"
+			>
 				+ Add Domain
 			</a>
 		</div>

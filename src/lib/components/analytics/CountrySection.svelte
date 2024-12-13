@@ -411,12 +411,11 @@
 					</div>
 				{/snippet}
 				{#snippet content()}
-					<div class="relative flex flex-col gap-1 overflow-y-auto px-[20px] py-2 no-scrollbar">
+					<div class="no-scrollbar relative flex flex-col gap-1 overflow-y-auto px-[20px] py-2">
 						{#each fullPages as page (page[0])}
-						<div animate:flip={{duration:100}}>
-
-							<PageItem {jump} on:filter type="country" path={page[0]} views={page[1]} />
-						</div>
+							<div animate:flip={{ duration: 100 }}>
+								<PageItem {jump} on:filter type="country" path={page[0]} views={page[1]} />
+							</div>
 						{:else}
 							<p>Nothing yet!</p>
 						{/each}

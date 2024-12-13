@@ -9,7 +9,7 @@
 	let { children } = $props();
 </script>
 
-<div class="rounded-xl mt-6 bg-{$color}-100">
+<div class="mt-6 rounded-xl bg-{$color}-100">
 	<div
 		id="box"
 		class="bg-{$color}-50 dark:bg-stone-900"
@@ -17,7 +17,9 @@
 radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(100% - 10px)/40px 100% repeat-x;"
 	></div>
 
-	<h1 class="mb-2 mt-4 px-5 text-3xl font-bold text-{$color}-600 dark:text-black">{@render children?.()}</h1>
+	<h1 class="mb-2 mt-4 px-5 text-3xl font-bold text-{$color}-600 dark:text-black">
+		{@render children?.()}
+	</h1>
 	<p class="mb-4 px-5 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
 
 	<div

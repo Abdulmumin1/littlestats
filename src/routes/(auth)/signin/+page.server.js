@@ -52,11 +52,11 @@ export const actions = {
 
 		cookies.set('oauth_state', state, {
 			path: '/oauth',
-			httpOnly: true,
+			httpOnly: true
 		});
 		cookies.set('oauth_verifier', codeVerifier, {
 			path: '/oauth',
-			httpOnly: true,
+			httpOnly: true
 		});
 
 		throw redirect(302, authProviderRedirect);

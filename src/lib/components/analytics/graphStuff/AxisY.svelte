@@ -7,27 +7,6 @@
 
 	const { xRange, yScale, width } = getContext('LayerCake');
 
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
-
-	
 	/**
 	 * @typedef {Object} Props
 	 * @property {Boolean} [tickMarks]
@@ -58,34 +37,34 @@
 		charPixelWidth = 7.25
 	} = $props();
 
-
-
 	function calcStringLength(sum, val) {
 		if (val === ',' || val === '.') return sum + charPixelWidth * 0.5;
 		return sum + charPixelWidth;
 	}
 
-
-
-
 	let isBandwidth = $derived(typeof $yScale.bandwidth === 'function');
-	let tickVals = $derived(Array.isArray(ticks)
-		? ticks
-		: isBandwidth
-			? $yScale.domain()
-			: typeof ticks === 'function'
-				? ticks($yScale.ticks())
-				: $yScale.ticks(ticks));
-	let widestTickLen = $derived(Math.max(
-		10,
-		Math.max(...tickVals.map((d) => format(d).toString().split('').reduce(calcStringLength, 0)))
-	));
-	let tickLen =
-		$derived(tickMarks === true
+	let tickVals = $derived(
+		Array.isArray(ticks)
+			? ticks
+			: isBandwidth
+				? $yScale.domain()
+				: typeof ticks === 'function'
+					? ticks($yScale.ticks())
+					: $yScale.ticks(ticks)
+	);
+	let widestTickLen = $derived(
+		Math.max(
+			10,
+			Math.max(...tickVals.map((d) => format(d).toString().split('').reduce(calcStringLength, 0)))
+		)
+	);
+	let tickLen = $derived(
+		tickMarks === true
 			? labelPosition === 'above'
 				? (tickMarkLength ?? widestTickLen)
 				: (tickMarkLength ?? 6)
-			: 0);
+			: 0
+	);
 	let x1 = $derived(-tickGutter - (labelPosition === 'above' ? widestTickLen : tickLen));
 	let y = $derived(isBandwidth ? $yScale.bandwidth() / 2 : 0);
 	let maxTickValPx = $derived(Math.max(...tickVals.map($yScale)));
