@@ -43,7 +43,7 @@
 			<div class="flex items-center">
 				<a
 					href="/"
-					class="flex flex-shrink-0 items-center rounded-full border border-black bg-{$color}-600 dark:bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700 px-2 py-1"
+					class="flex flex-shrink-0 items-center rounded-2xl border border-black bg-{$color}-600 dark:bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700 px-2 py-1"
 				>
 					<!-- <ChartBar size={18} class="text-{$color}-950" /> -->
 					<span class="px-2 text-lg font-bold text-gray-100">Littlestats</span>
@@ -52,7 +52,7 @@
 			<div class="flex items-center gap-2">
 				<MixerComp />
 				<div
-					class="hidden items-center rounded-full border border-black px-4 py-2 md:flex bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700"
+					class="hidden items-center rounded-2xl border border-black px-4 py-2 md:flex bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700"
 				>
 					<div class=" flex items-center justify-center gap-3 text-gray-100 md:ml-0">
 						<div class="flex">

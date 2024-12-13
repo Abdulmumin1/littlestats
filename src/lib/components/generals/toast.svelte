@@ -12,7 +12,7 @@
 	const dispatch = createEventDispatcher();
 
 	let typeClasses = $derived({
-		info: 'bg-blue-500',
+		info: `bg-${$color}-500`,
 		success: `bg-${$color}-700`,
 		warning: 'bg-yellow-500',
 		error: 'bg-red-500'

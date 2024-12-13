@@ -91,7 +91,7 @@
 			</div>
 		</div>
 
-		<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
+		<!-- <div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class=" flex items-center text-xl font-semibold">
 				<button
 					type="button"
@@ -151,7 +151,7 @@
 					</div>
 				</div>
 			{/if}
-		</div>
+		</div> -->
 
 		<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">

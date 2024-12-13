@@ -57,7 +57,7 @@
 				{
 					name: data.user?.variant_name,
 					status: data.user.sub_status,
-					renewalDate: '2024-11-01'
+					renewalDate: data.user.renews_at
 				}
 			];
 		}
