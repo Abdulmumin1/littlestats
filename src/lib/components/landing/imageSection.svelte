@@ -57,7 +57,7 @@
 	{/key}
 </div> -->
 <h2
-	class="mb-4 mt-20 text-center font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-3xl lg:text-4xl dark:text-white"
+	class="mb-4 mt-20 text-center text-3xl font-extrabold leading-tight text-black sm:mb-6 md:text-4xl lg:text-5xl dark:text-white"
 >
 	<span class="text-{$color}-600 italic">Demo</span>
 </h2>
