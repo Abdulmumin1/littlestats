@@ -349,7 +349,7 @@
 </script>
 
 <svelte:head>
-	<Seo title={`${current_domain[0].name} Analytics - littlestats`} />
+	<Seo title={`${current_domain[0].name} - littlestats`} />
 </svelte:head>
 
 <div class="min-h-screen p-2 text-black">

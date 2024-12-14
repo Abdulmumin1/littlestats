@@ -10,6 +10,7 @@
 	import { enhance } from '$app/forms';
 	import { fly, slide } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
+	import Seo from '../../../lib/components/generals/seo.svelte';
 
 	let domains = $state([]);
 
@@ -82,6 +83,9 @@
 	onMount(() => {});
 </script>
 
+<svelte:head>
+	<Seo title="Domain Setting - Littlestats" />
+</svelte:head>
 <div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-4">
 	<div class=" rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 		<h2 class="mb-4 text-xl font-semibold">Add New Domain</h2>

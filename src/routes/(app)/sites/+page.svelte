@@ -5,6 +5,7 @@
 	import { formatNumber } from '$lib/slug/helpers.js';
 	import MiniChart from '../../../lib/components/analytics/graphStuff/miniChart.svelte';
 	import Sitecard from './sitecard.svelte';
+	import Seo from '../../../lib/components/generals/seo.svelte';
 
 	let { data } = $props();
 	let domains = data.domains;
@@ -29,6 +30,9 @@
 	// }
 </script>
 
+<svelte:head>
+	<Seo title="Dashboard - Littlestats" />
+</svelte:head>
 <div class="container mx-auto p-6">
 	<div class="mb-6 flex items-center justify-between dark:text-black dark:text-gray-200">
 		<h1 class="text-2xl font-bold">Sites</h1>
@@ -43,7 +47,7 @@
 		</div>
 	{:else}
 		<div
-			class="mx-auto h-56 w-full flex-col rounded-xl border-2 border-dashed border-{$color}-700 flex items-center justify-center"
+			class="mx-auto h-64 w-full flex-col rounded-xl border-2 border-dashed border-{$color}-700 flex items-center justify-center"
 		>
 			<div class="flex h-28 items-center justify-center">
 				<div class="scale-50 opacity-20">
@@ -54,7 +58,7 @@
 
 			<a
 				href="/settings"
-				class="my-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full p-1 px-2 text-white"
+				class="my-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-2xl p-2 px-3 text-white"
 			>
 				+ Add Domain
 			</a>

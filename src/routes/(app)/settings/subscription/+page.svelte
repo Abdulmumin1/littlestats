@@ -7,6 +7,7 @@
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
 	import { calculateTrialDaysLeft } from '$lib/utils.js';
+	import Seo from '../../../../lib/components/generals/seo.svelte';
 	let subscriptions = $state([]);
 	let newSubscriptionName = '';
 	let errMessage = $state();
@@ -63,6 +64,10 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	<Seo title="Subscription Settings - Littlestats" />
+</svelte:head>
 
 <div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-4">
 	<!-- <div class="rounded-md">

@@ -1,3 +1,5 @@
+import { fail } from '@sveltejs/kit';
+
 /** @type {import('./$types').PageLoad} */
 export async function load({ locals: { pb } }) {
 	const user = pb.authStore.model;
@@ -7,8 +9,9 @@ export async function load({ locals: { pb } }) {
 /** @type {import('./$types').Actions} */
 export const actions = {
 	updateUser: async ({ locals: { pb }, request }) => {
-		const data = await request.formData();
-		const name = data.get('name');
+		const data = Object.fromEntries(await request.formData());
+		const name = data['name'];
+		const weekly_report_setting = data['weekly'] ? true : false;
 
 		if (!name) {
 			return fail(400, { namerequired: name == null, message: 'Entries incomplete' });
@@ -17,8 +20,10 @@ export const actions = {
 		try {
 			// console.log(pb.collections);
 			let dt = {
-				name: name
+				name: name,
+				weekly_report_setting: weekly_report_setting
 			};
+			console.log(dt);
 			await pb.collection('users').update(userId, dt);
 		} catch (error) {
 			console.error(error);

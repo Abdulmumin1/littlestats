@@ -1,7 +1,12 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
 	import Nav from '$lib/components/generals/insideNav.svelte';
+	import Seo from '../../lib/components/generals/seo.svelte';
 </script>
+
+<svelte:head>
+	<Seo title="Docs - Littlestats" />
+</svelte:head>
 
 <div class="container mx-auto max-w-4xl px-4 py-8">
 	<header class="mb-12">
@@ -50,7 +55,7 @@
 				Include the script provided in your HTML file
 			</p>
 			<strong class="text-{$color}-700">Example</strong>
-			<pre class="overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
+			<pre class="mt-4 overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
 					class="text-stone-700 dark:text-stone-300"
 					>&lt;script src="cdn.littlestats.click/embed/domainID"&gt;&lt;/script&gt;</code
 				></pre>

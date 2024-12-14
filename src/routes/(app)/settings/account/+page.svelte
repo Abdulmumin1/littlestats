@@ -5,6 +5,7 @@
 	import { Loader, User, ChevronDown, ChevronUp, Lock, Mail, CreditCard } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { show_toast } from '$lib/toast.js';
+	import Seo from '../../../../lib/components/generals/seo.svelte';
 
 	let user = $state({
 		name: '',
@@ -53,7 +54,13 @@
 			confirmPassword: ''
 		};
 	});
+
+	let weekNotification = $state(false);
 </script>
+
+<svelte:head>
+	<Seo title="Account Settings - Littlestats" />
+</svelte:head>
 
 <div in:fly={{ y: 13, duration: 100 }} class=" flex flex-1 flex-col gap-6">
 	<h1 class="mb-4 text-2xl font-bold dark:text-white">Account Management</h1>
@@ -157,14 +164,28 @@
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<Mail class="mr-2" /> Notification Preferences
 			</h2>
-			<div class="space-y-2">
-				<label class="flex items-center">
-					<input type="checkbox" class="form-checkbox text-{$color}-600" />
-					<span class="ml-2">Receive email notifications</span>
-				</label>
-				<label class="flex items-center">
-					<input type="checkbox" class="form-checkbox text-{$color}-600" />
-					<span class="ml-2">Receive promotional emails</span>
+			<div class="space-y-4">
+				<label class="flex cursor-pointer select-none items-center gap-4">
+					<span class="text-gray-700 dark:text-gray-300">Receive Weekly Reports</span>
+					<div class="relative">
+						<input
+							type="checkbox"
+							name="weekly"
+							id="weekly"
+							class="sr-only"
+							bind:checked={weekNotification}
+						/>
+						<div
+							class="h-6 w-12 rounded-full bg-gray-400 shadow-inner
+							transition duration-300 ease-in-out
+							{weekNotification ? `bg-${$color}-600 dark:bg-${$color}-700` : 'bg-gray-400'}"
+						></div>
+						<div
+							class="dot absolute top-[0.04rem] h-6 w-6 transform rounded-full
+							bg-white shadow-md transition-transform duration-300
+							{weekNotification ? 'translate-x-full' : 'translate-x-0'}"
+						></div>
+					</div>
 				</label>
 			</div>
 		</div>
@@ -184,7 +205,7 @@
 			<button
 				type="submit"
 				disabled={loading}
-				class="flex items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-600 dark:bg-{$color}-700 px-6 py-2 font-bold text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700"
+				class="flex items-center justify-center gap-1 rounded-2xl border-2 border-black text-white bg-{$color}-600 dark:bg-{$color}-700 px-6 py-2 font-bold text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700"
 			>
 				Save Changes
 				{#if loading}
@@ -207,5 +228,9 @@
 <style>
 	input {
 		padding: 0.4rem;
+	}
+
+	.dot {
+		left: -0.1px;
 	}
 </style>
