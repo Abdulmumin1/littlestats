@@ -74,7 +74,7 @@
 	<a
 		href="https://{domain.name}"
 		target="_blank"
-		class="flex items-center gap-1 font-semibold text-{$color}-600"
+		class="flex items-center gap-1 font-semibold text-{$color}-50"
 	>
 		<Link size={16} />{domain.name}
 	</a>
