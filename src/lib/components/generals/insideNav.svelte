@@ -35,7 +35,7 @@
 </script>
 
 <nav
-	class="container mb-4 text-black bg-{$color}-100 mx-4 max-w-[1230px] rounded-full py-1 md:mx-auto md:py-3 dark:bg-stone-800/50"
+	class="mb-4 text-black bg-{$color}-100 mx-4 max-w-[1230px] rounded-full py-1 md:mx-auto md:py-3 dark:bg-stone-800/50"
 	style="margin-top:40px;"
 >
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -102,56 +102,58 @@
 		</div>
 	</div>
 
-	{#if isMenuOpen}
-		<div transition:slide use:clickOutside onclick_outside={closeMenu} class="md:hidden">
-			<!-- <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-				<a
-					href="/"
-					on:click={closeMenu}
-					class="block rounded-md px-3 py-2 text-base font-medium"
-					class:bg-{$color}-800={path === '/'}>Dashboard</a
-				>
-				<a
-					href="/domains"
-					on:click={closeMenu}
-					class="block rounded-md px-3 py-2 text-base font-medium"
-					class:bg-{$color}-800={path === '/domains'}>Domains</a
-				>
-				<a
-					href="/reports"
-					on:click={closeMenu}
-					class="block rounded-md px-3 py-2 text-base font-medium"
-					class:bg-{$color}-800={path === '/reports'}>Reports</a
-				>
-			</div> -->
-			<div class="wavy-line bg-{$color}-600 dark:bg-{$color}-700"></div>
-			<div class=" bg-inherit pb-3 pt-4">
-				<!-- <div class="flex items-center px-5">
-					<div class="flex-shrink-0">
-						<User size={40} class="rounded-full" />
-					</div>
-					<div class="ml-3">
-						<div class="text-base font-medium leading-none">John Doe</div>
-						<div class="text-sm font-medium leading-none text-gray-400">john@example.com</div>
-					</div>
-				</div> -->
-				<div class="mt-1 space-y-1 px-2">
-					<a
-						href="/sites"
-						class="block rounded-full px-3 py-2 text-base font-medium dark:text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
-						>Dashboard</a
-					>
-					<a
-						href="/settings"
-						class="block rounded-full px-3 py-2 text-base font-medium dark:text-gray-100 hover:bg-{$color}-600 dark:bg-{$color}-700 hover:text-gray-100"
-						>Settings</a
-					>
-				</div>
-			</div>
-		</div>
-	{/if}
 	<!-- <div class="wavy-line bg-{$color}-600"></div> -->
 </nav>
+{#if isMenuOpen}
+	<div transition:slide use:clickOutside onclick_outside={closeMenu} class="md:hidden">
+		<!-- <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+		<a
+			href="/"
+			on:click={closeMenu}
+			class="block rounded-md px-3 py-2 text-base font-medium"
+			class:bg-{$color}-800={path === '/'}>Dashboard</a
+		>
+		<a
+			href="/domains"
+			on:click={closeMenu}
+			class="block rounded-md px-3 py-2 text-base font-medium"
+			class:bg-{$color}-800={path === '/domains'}>Domains</a
+		>
+		<a
+			href="/reports"
+			on:click={closeMenu}
+			class="block rounded-md px-3 py-2 text-base font-medium"
+			class:bg-{$color}-800={path === '/reports'}>Reports</a
+		>
+	</div> -->
+		<!-- <div class="wavy-line bg-{$color}-600 dark:bg-{$color}-700"></div> -->
+		<div class=" bg-inherit pb-3">
+			<!-- <div class="flex items-center px-5">
+			<div class="flex-shrink-0">
+				<User size={40} class="rounded-full" />
+			</div>
+			<div class="ml-3">
+				<div class="text-base font-medium leading-none">John Doe</div>
+				<div class="text-sm font-medium leading-none text-gray-400">john@example.com</div>
+			</div>
+		</div> -->
+			<div class="mt-1 flex items-center justify-center gap-2">
+				<a
+					href="/sites"
+					onclick={closeMenu}
+					class="block rounded-2xl px-3 py-2 text-base font-medium dark:text-gray-100 hover:bg-{$color}-600 hover:text-gray-100 dark:bg-stone-800/50"
+					>Dashboard</a
+				>
+				<a
+					href="/settings"
+					onclick={closeMenu}
+					class="block rounded-2xl px-3 py-2 text-base font-medium dark:text-gray-100 hover:bg-{$color}-600 hover:text-gray-100 dark:bg-stone-800/50"
+					>Settings</a
+				>
+			</div>
+		</div>
+	</div>
+{/if}
 
 <style>
 	.wavy-line {

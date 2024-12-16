@@ -11,11 +11,17 @@
 	let { children } = $props();
 
 	let path = $derived($page.url.pathname);
+
+	let innerWidth = $state();
 </script>
+
+<svelte:window bind:innerWidth />
 
 <div class="min-h-screen p-0 text-black md:p-2">
 	<div class="container mx-auto flex flex-col gap-4 pt-2 md:flex-row md:pt-6">
-		<div class="flex w-full flex-col gap-1 px-0 md:w-[300px] md:px-4">
+		<div
+			class="flex w-full flex-row justify-center gap-1 px-2 md:w-[300px] md:flex-col md:justify-start md:px-4"
+		>
 			<a
 				class={`rounded-2xl ${
 					path.endsWith('/settings') || path.endsWith('/settings/')

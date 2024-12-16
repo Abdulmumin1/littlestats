@@ -315,7 +315,7 @@
 		Simple, Affordable Pricing
 	</h2>
 	<p
-		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-black/70 dark:text-white/80 sm:mb-8 sm:max-w-2xl sm:text-xl"
+		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-black/70 sm:mb-8 sm:max-w-2xl sm:text-xl dark:text-white/80"
 	>
 		Start with a free month - <span
 			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600 dark:bg-{$color}-700 font-extrabold"
@@ -324,22 +324,20 @@
 	</p>
 
 	<div class="mb-8 flex justify-center">
-		<div
-			class="flex items-center rounded-full bg-${$color}-300  border-{$color}-300"
-		>
+		<div class="flex items-center rounded-full bg-${$color}-300 border-{$color}-300">
 			<button
 				class="rounded-l-full px-3 py-2 font-medium {!isYearly
 					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
 					: `bg-white`}"
 				class:text-{$color}-600={isYearly < 0.5}
-				on:click={() => toggleSubscription(false)}>Monthly</button
+				onclick={() => toggleSubscription(false)}>Monthly</button
 			>
 
 			<button
 				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
 					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
 					: `bg-white`}"
-				on:click={() => toggleSubscription(true)}
+				onclick={() => toggleSubscription(true)}
 				class:text-{$color}-600={isYearly > 0.5}
 			>
 				Yearly

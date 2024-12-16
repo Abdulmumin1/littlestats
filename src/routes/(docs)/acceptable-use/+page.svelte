@@ -1,6 +1,14 @@
 <script>
+	import Seo from '../../../lib/components/generals/seo.svelte';
 	import Header from '../header.svelte';
 </script>
+
+<svelte:head>
+	<Seo
+		title="Acceptable Use Policy"
+		description="You may use littlestats for: Page view analytics, Traffic source analysis, Browser statistics, Country-level location data"
+	/>
+</svelte:head>
 
 <section class="mb-16">
 	<Header>Acceptable Use Policy</Header>

@@ -1,6 +1,14 @@
 <script>
+	import Seo from '../../../lib/components/generals/seo.svelte';
 	import Header from '../header.svelte';
 </script>
+
+<svelte:head>
+	<Seo
+		title="Privacy Policy"
+		description="Core Privacy Principles: No personal data collection, No user tracking, No data sharing, 6 months data retention only"
+	/>
+</svelte:head>
 
 <section class="mb-16">
 	<Header>Privacy Policy</Header>
@@ -14,7 +22,7 @@
 					<li>No personal data collection</li>
 					<li>No user tracking</li>
 					<li>No data sharing</li>
-					<li>30-day data retention only</li>
+					<li>6 months data retention only</li>
 				</ul>
 			</div>
 

@@ -1,7 +1,16 @@
 <script>
+	import Seo from '../../../lib/components/generals/seo.svelte';
 	import Header from '../header.svelte';
 </script>
 
+<svelte:head>
+	<Seo
+		title="Terms of Service"
+		description="littlestats is built on the principle of minimal data collection. We only collect the bare
+					minimum analytics data required to provide meaningful insights. We do not track individual
+					users, collect personal information, or store any data that could identify specific users."
+	/>
+</svelte:head>
 <section class="mb-16">
 	<Header>Terms of Service</Header>
 	<div class="prose max-w-none dark:text-white">
@@ -56,7 +65,7 @@
 				<ul class="mt-2 list-disc pl-6">
 					<li>Only used for generating anonymous analytics</li>
 					<li>Never sold or shared with third parties</li>
-					<li>Automatically deleted after 150 days</li>
+					<li>Automatically deleted after 6 months</li>
 					<li>Stored in encrypted format</li>
 				</ul>
 			</div>

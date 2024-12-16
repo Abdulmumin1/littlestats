@@ -55,7 +55,7 @@
 		};
 	});
 
-	let weekNotification = $state(false);
+	let weekNotification = $state(data.user.weekly_report_setting);
 </script>
 
 <svelte:head>

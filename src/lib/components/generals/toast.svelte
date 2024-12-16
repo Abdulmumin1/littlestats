@@ -13,7 +13,7 @@
 
 	let typeClasses = $derived({
 		info: `bg-${$color}-500`,
-		success: `bg-${$color}-700`,
+		success: `bg-${$color}-600`,
 		warning: 'bg-yellow-500',
 		error: 'bg-red-500'
 	});
