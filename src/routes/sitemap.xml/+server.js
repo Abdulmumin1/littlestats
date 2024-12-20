@@ -1,37 +1,36 @@
-export async function GET({url}) {
+export async function GET({ url }) {
+	const urls = [
+		'/',
+		'/signin',
+		'/signup',
+		'/terms',
+		'/privacy-policy',
+		'/acceptable-use',
+	];
+
 	const xml = `
-    <?xml version="1.0" encoding="UTF-8" ?>
-    <urlset
-        xmlns="https://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="https://www.w3.org/1999/xhtml"
-        xmlns:mobile="https://www.google.com/schemas/sitemap-mobile/1.0"
-        xmlns:news="https://www.google.com/schemas/sitemap-news/0.9"
-        xmlns:image="https://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:video="https://www.google.com/schemas/sitemap-video/1.1"
-    >
-    <url>
-        <loc>${url.origin}</loc>
-    </url>
-    <url>
-        <loc>${url.origin}/signin</loc>
-    </url>
-    <url>
-        <loc>${url.origin}/signup</loc>
-    </url>
-    <url>
-        <loc>${url.origin}/terms</loc>
-    </url>
-    <url>
-        <loc>${url.origin}/privacy-policy</loc>
-    </url>
-    <url>
-        <loc>${url.origin}/acceptable-use</loc>
-    </url>
-    </urlset>`.trim();
+		<?xml version="1.0" encoding="UTF-8"?>
+		<urlset
+			xmlns="https://www.sitemaps.org/schemas/sitemap/0.9"
+			xmlns:xhtml="https://www.w3.org/1999/xhtml"
+			xmlns:mobile="https://www.google.com/schemas/sitemap-mobile/1.0"
+			xmlns:news="https://www.google.com/schemas/sitemap-news/0.9"
+			xmlns:image="https://www.google.com/schemas/sitemap-image/1.1"
+			xmlns:video="https://www.google.com/schemas/sitemap-video/1.1"
+		>
+			${urls
+				.map(
+					(path) => `
+				<url>
+					<loc>${url.origin}${path}</loc>
+				</url>`
+				)
+				.join('')}
+		</urlset>`.trim();
 
 	return new Response(xml, {
 		headers: {
-			'Content-Type': 'application/xml'
-		}
+			'content-type': 'application/xml',
+		},
 	});
 }
