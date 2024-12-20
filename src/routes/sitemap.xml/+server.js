@@ -1,4 +1,4 @@
-export async function GET() {
+export async function GET({url}) {
 	const xml = `
     <?xml version="1.0" encoding="UTF-8" ?>
     <urlset
@@ -10,22 +10,22 @@ export async function GET() {
         xmlns:video="https://www.google.com/schemas/sitemap-video/1.1"
     >
     <url>
-        <loc>https://littlestats.click</loc>
+        <loc>${url.origin}</loc>
     </url>
     <url>
-        <loc>https://littlestats.click/signin</loc>
+        <loc>${url.origin}/signin</loc>
     </url>
     <url>
-        <loc>https://littlestats.click/signup</loc>
+        <loc>${url.origin}/signup</loc>
     </url>
     <url>
-        <loc>https://littlestats.click/terms</loc>
+        <loc>${url.origin}/terms</loc>
     </url>
     <url>
-        <loc>https://littlestats.click/privacy-policy</loc>
+        <loc>${url.origin}/privacy-policy</loc>
     </url>
     <url>
-        <loc>https://littlestats.click/acceptable-use</loc>
+        <loc>${url.origin}/acceptable-use</loc>
     </url>
     </urlset>`.trim();
 
