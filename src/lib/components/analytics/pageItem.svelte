@@ -22,7 +22,7 @@
 <button
 	title="Click to filter"
 	onclick={sendFilter}
-	class="flex w-full justify-between group rounded-md text-left bg-{$color}-100 dark:border-x-[13px] border-{$color}-700 px-[9px] py-[3px] dark:bg-stone-800/50 dark:text-gray-100"
+	class="flex w-full justify-between group rounded-md text-left bg-{$color}-100/50 dark:border-x-[13px] border-{$color}-700 px-[9px] py-[3px] dark:bg-stone-800/50 dark:text-gray-100"
 >
 	<p class="max-w-[420px] truncate">{path}</p>
 	<div class="flex gap-1">

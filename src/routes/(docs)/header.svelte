@@ -9,7 +9,7 @@
 	let { children } = $props();
 </script>
 
-<div class="mt-6 rounded-xl bg-{$color}-100">
+<div class="mt-6 rounded-xl bg-{$color}-100/50">
 	<div
 		id="box"
 		class="bg-{$color}-50 dark:bg-stone-900"

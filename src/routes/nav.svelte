@@ -13,7 +13,7 @@
 </script>
 
 <nav
-	class="relative border-stone-800 text-black dark:border-b dark:bg-stone-900 bg-{$color}-100 mx-4 mt-4 max-w-[1100px] rounded-full py-1 md:mx-auto md:py-1 dark:bg-stone-800/50"
+	class="relative border-stone-800 text-black dark:border-b dark:bg-stone-900 bg-{$color}-100/50 mx-4 mt-4 max-w-[1100px] rounded-full py-1 md:mx-auto md:py-1 dark:bg-stone-800/50"
 >
 	<!-- Ambient Glow Effects -->
 
@@ -41,7 +41,7 @@
 				<!-- Main Navigation -->
 				<div
 					bind:this={navContainer}
-					class="relative items-center gap-1 rounded-full border-stone-800 py-2 dark:border bg-{$color}-100 p-1 text-black backdrop-blur-sm dark:bg-stone-800/50"
+					class="relative items-center gap-1 rounded-full border-stone-800 py-2 dark:border bg-{$color}-100/50 p-1 text-black backdrop-blur-sm dark:bg-stone-800/50"
 				>
 					{#each navItems as item}
 						<a

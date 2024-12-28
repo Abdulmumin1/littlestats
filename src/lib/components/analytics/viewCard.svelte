@@ -84,7 +84,7 @@
 
 <div
 	onclick={sendFilter}
-	class="views cursor-pointer bg-{$color}-100 px-6 dark:bg-stone-800/50"
+	class="views cursor-pointer bg-{$color}-100/50 px-6 dark:bg-stone-800/50"
 	class:red={increase == 'down'}
 >
 	<p class="text-gray-800 dark:text-white">{name}</p>

@@ -102,7 +102,7 @@
 
 		<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
 			{#if data.user.sub_id}
-				<div class="rounded-xl bg-{$color}-100 p-4 dark:bg-stone-800/50">
+				<div class="rounded-xl bg-{$color}-100/50 p-4 dark:bg-stone-800/50">
 					<h2 class="mb-4 flex items-center text-xl font-semibold dark:text-gray-100">
 						<CreditCard class="mr-2" /> Subscripiton Information
 					</h2>
@@ -126,7 +126,7 @@
 
 		{#if message.text}
 			<div
-				class={`rounded-md p-4 ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-{$color}-100 text-{$color}-700'}`}
+				class={`rounded-md p-4 ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-{$color}-100/50 text-{$color}-700'}`}
 				role="alert"
 			>
 				<p class="font-medium">{message.text}</p>

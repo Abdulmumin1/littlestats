@@ -108,7 +108,7 @@
 				{#each subscriptions as subscription (subscription.name)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-100 p-3 dark:bg-stone-800/50 dark:text-gray-100"
+						class="flex flex-col rounded-md bg-{$color}-100/50 p-3 dark:bg-stone-800/50 dark:text-gray-100"
 					>
 						<h2 class="mb-4 flex items-center text-xl font-semibold">
 							<CreditCard class="mr-2" /> Subscripiton Information

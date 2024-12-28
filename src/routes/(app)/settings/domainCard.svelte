@@ -123,7 +123,7 @@
 	>
 		<p>Remove domain - {domain.name}</p>
 		<input type="text" class="hidden" name="id" value={domain.id} />
-		<p class="bg-{$color}-100 py-2">This action is irreversible! All data collected will be gone</p>
+		<p class="bg-{$color}-100/50 py-2">This action is irreversible! All data collected will be gone</p>
 		<div class="flex justify-end">
 			<button type="button" onclick={closeModal} class="p-2">Cancel</button>
 			<button

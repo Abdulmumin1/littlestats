@@ -57,7 +57,7 @@
 	<form action="?/oauth" method="post" class="w-fit max-w-[28rem]">
 		<button
 			type="submit"
-			class="flex w-full items-center justify-center gap-2 bg-{$color}-100 rounded-xl p-2 dark:bg-stone-800/50 dark:text-gray-100 border-{$color}-500"
+			class="flex w-full items-center justify-center gap-2 bg-{$color}-100/50 rounded-xl p-2 dark:bg-stone-800/50 dark:text-gray-100 border-{$color}-500"
 		>
 			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
 		</button>
@@ -67,7 +67,7 @@
 		method="post"
 		use:enhance={handleSubmit}
 		action="?/login"
-		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100 p-2 px-3 md:p-5 dark:bg-stone-800/50"
+		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100/50 p-2 px-3 md:p-5 dark:bg-stone-800/50"
 	>
 		<p class=" mb-3 mt-2 text-3xl font-semibold text-gray-800 dark:text-gray-100">Welcome Back</p>
 		<input

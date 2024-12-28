@@ -62,7 +62,7 @@
 
 <a
 	href="/site/{domain.id}"
-	class="flex w-full flex-col  justify-between rounded-lg py-4 p-6  bg-{$color}-100 dark:bg-stone-800/50  dark:text-gray-200"
+	class="flex w-full flex-col  justify-between rounded-lg py-4 p-6  bg-{$color}-100/50 dark:bg-stone-800/50  dark:text-gray-200"
 >
 	<!-- Card Header -->
 	<div class="">

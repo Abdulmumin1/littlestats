@@ -13,7 +13,7 @@
 		<Nav />
 	</header>
 
-	<nav class="mb-8 rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800">
+	<nav class="mb-8 rounded-lg bg-{$color}-100/50 p-4 dark:bg-stone-800">
 		<h2 class="mb-4 text-lg font-semibold text-black dark:text-white">Table of Contents</h2>
 		<ul class="grid gap-2">
 			{#each ['Overview', 'Installation', 'Configuration', 'Custom Events', 'Event Data Captured'] as section}
@@ -55,7 +55,7 @@
 				Include the script provided in your HTML file
 			</p>
 			<strong class="text-{$color}-700">Example</strong>
-			<pre class="mt-4 overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
+			<pre class="mt-4 overflow-x-auto rounded-lg bg-{$color}-100/50 p-4 dark:bg-stone-800"><code
 					class="text-stone-700 dark:text-stone-300"
 					>&lt;script src="cdn.littlestats.click/embed/domainID"&gt;&lt;/script&gt;</code
 				></pre>
@@ -71,7 +71,7 @@
 				<p class="mb-4 text-stone-700 dark:text-stone-300">
 					Track custom events with additional metadata.
 				</p>
-				<pre class="overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
+				<pre class="overflow-x-auto rounded-lg bg-{$color}-100/50 p-4 dark:bg-stone-800"><code
 						class="text-stone-700 dark:text-stone-300"
 						>{`window.trackEvent('button_click', { 
   buttonId: 'submit', 
@@ -85,7 +85,7 @@
 					<code>window.setAnalyticsDevMode(isDevMode)</code>
 				</h3>
 				<p class="mb-4 text-stone-700 dark:text-stone-300">Manually toggle development mode.</p>
-				<pre class="overflow-x-auto rounded-lg bg-{$color}-100 p-4 dark:bg-stone-800"><code
+				<pre class="overflow-x-auto rounded-lg bg-{$color}-100/50 p-4 dark:bg-stone-800"><code
 						class="text-stone-700 dark:text-stone-300"
 						>window.setAnalyticsDevMode(true); // Enable dev mode</code
 					></pre>

@@ -1407,7 +1407,8 @@
 		'dark:bg-teal-600',
 		'dark:bg-teal-600 dark:bg-teal-700',
 		'dark:bg-teal-800',
-		'dark:bg-teal-900'
+		'dark:bg-teal-900',
+		'bg-stone-100/50', 'bg-red-100/50', 'bg-orange-100/50', 'bg-amber-100/50', 'bg-yellow-100/50', 'bg-lime-100/50', 'bg-green-100/50', 'bg-cyan-100/50', 'bg-sky-100/50', 'bg-blue-100/50', 'bg-indigo-100/50', 'bg-violet-100/50', 'bg-purple-100/50', 'bg-fuchsia-100/50', 'bg-pink-100/50', 'bg-rose-100/50', 'bg-emerald-100/50', 'bg-teal-100/50'
 	];
 
 	// onMount(() => {

@@ -5,7 +5,7 @@
 	const currentYear = new Date().getFullYear();
 </script>
 
-<footer class="bg-{$color}-100 dark:bg-{$color}-100">
+<footer class="bg-{$color}-100/50 dark:bg-{$color}-100">
 	<!-- <div class="wavy-line bg-{$color}-600"></div> -->
 
 	<div

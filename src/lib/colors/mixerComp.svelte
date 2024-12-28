@@ -57,7 +57,7 @@
 		>{#if !hide}
 			Change Theme
 		{/if}
-		<Palette class="text-{$color}-800 dark:text-white" />
+		<Palette class="text-black dark:text-white" />
 
 		<!-- <div class="h-5 w-5 bg-{$color}-500 rounded-full"></div> -->
 	</button>
@@ -67,7 +67,7 @@
 			use:clickOutside
 			onclick_outside={closePicker}
 			transition:fly={{ y: 10 }}
-			class="glass-effect bg-{$color}-50 absolute z-50 border-{$color}-300 mt-1 grid w-[210px] grid-cols-6 gap-4 border bg-{$color}-100 left-[50%] translate-x-[-50%] rounded-xl p-4"
+			class="glass-effect bg-{$color}-50 absolute z-50 border-{$color}-300 mt-1 grid w-[210px] grid-cols-6 gap-4 border bg-{$color}-100/50 left-[50%] translate-x-[-50%] rounded-xl p-4"
 		>
 			{#each tailwindColors.reverse() as c}
 				<button

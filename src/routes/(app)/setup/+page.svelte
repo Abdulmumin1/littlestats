@@ -131,7 +131,7 @@
 					</p>
 				</div>
 			{:else}
-				<div class="rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50">
+				<div class="rounded-md bg-{$color}-100/50 p-4 dark:bg-stone-800/50">
 					<h2 class="mb-4 flex items-center text-xl font-semibold dark:text-gray-100">
 						<Info class="mr-2" /> About Trial
 					</h2>
@@ -166,7 +166,7 @@
 
 		{#if message.text}
 			<div
-				class={`rounded-md p-4 ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-{$color}-100 text-{$color}-700'}`}
+				class={`rounded-md p-4 ${message.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-{$color}-100/50 text-{$color}-700'}`}
 				role="alert"
 			>
 				<p class="font-medium">{message.text}</p>

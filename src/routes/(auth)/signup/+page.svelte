@@ -66,7 +66,7 @@
 	<form action="?/oauth" method="post" class="w-fit max-w-[28rem]">
 		<button
 			type="submit"
-			class="flex w-full items-center justify-center gap-2 bg-{$color}-100 rounded-xl p-2 dark:bg-stone-800/50 dark:text-gray-100 border-{$color}-500"
+			class="flex w-full items-center justify-center gap-2 bg-{$color}-100/50 rounded-xl p-2 dark:bg-stone-800/50 dark:text-gray-100 border-{$color}-500"
 		>
 			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
 		</button>
@@ -76,7 +76,7 @@
 		use:enhance={handleSubmit}
 		method="post"
 		action="?/register"
-		class="container m-2 flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100 p-2 px-3 md:p-5 dark:bg-stone-800/50"
+		class="container m-2 flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100/50 p-2 px-3 md:p-5 dark:bg-stone-800/50"
 	>
 		<p class=" mb-3 text-3xl font-semibold text-gray-800 dark:text-gray-100">Sign Up</p>
 		<input
@@ -128,7 +128,7 @@
 	{#if successMessage}
 		<p
 			transition:slide
-			class="w-full max-w-[30rem] rounded bg-{$color}-100 p-6 dark:bg-stone-800/50 text-{$color}-800"
+			class="w-full max-w-[30rem] rounded bg-{$color}-100/50 p-6 dark:bg-stone-800/50 text-{$color}-800"
 		>
 			{successMessage}
 		</p>

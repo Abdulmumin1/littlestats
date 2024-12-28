@@ -45,7 +45,7 @@
 	];
 </script>
 
-<div class=" px-4 md:px-0 bg-{$color}-100 dark:bg-{$color}-100 rounded">
+<div class=" px-4 md:px-0 bg-{$color}-100/50 dark:bg-{$color}-100 rounded">
 	<div
 		id="box"
 		class="bg-{$color}-50 dark:bg-stone-900"

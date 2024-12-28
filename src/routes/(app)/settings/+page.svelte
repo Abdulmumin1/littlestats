@@ -87,7 +87,7 @@
 	<Seo title="Domain Setting - Littlestats" />
 </svelte:head>
 <div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-4">
-	<div class=" rounded-md bg-{$color}-100 p-4 dark:bg-stone-800/50 dark:text-gray-100">
+	<div class=" rounded-md bg-{$color}-100/50 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 		<h2 class="mb-4 text-xl font-semibold">Add New Domain</h2>
 		<form
 			use:enhance={handleAdd}
@@ -127,7 +127,7 @@
 				{#each domains as domain (domain)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-100 p-3 dark:bg-stone-800/50 dark:text-gray-100"
+						class="flex flex-col rounded-md bg-{$color}-100/50 p-3 dark:bg-stone-800/50 dark:text-gray-100"
 					>
 						<DomainCard {domain} hide={domain?.hide ?? true} {removeDomain} />
 					</div>
