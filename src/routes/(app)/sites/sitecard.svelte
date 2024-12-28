@@ -56,20 +56,20 @@
 		return Math.round(recentEvents.length / timeSpanHours);
 	}
 
-	// let views = filterView(domain.expand.events_via_domain_id)
-	// let viewCount = formatNumber(views.length)
+	let views = filterView(domain.expand.events_via_domain_id);
+	let viewCount = formatNumber(views.length);
 </script>
 
 <a
 	href="/site/{domain.id}"
-	class="flex w-full items-center justify-between rounded-lg py-4 dark:border-none border-{$color}-400 bg-{$color}-100 dark:bg-stone-800/50 dark:text-black dark:text-gray-200"
+	class="flex w-full flex-col  justify-between rounded-lg py-4 p-6  bg-{$color}-100 dark:bg-stone-800/50  dark:text-gray-200"
 >
 	<!-- Card Header -->
-	<div class="px-4">
-		<div class="flex items-center justify-between gap-3">
+	<div class="">
+		<div class="flex items-center justify-between gap-3 pb-4">
 			<div class="flex items-center gap-2">
 				<Link class="h-4 w-4 text-black dark:text-gray-200" />
-				<h3 class="text-lg font-semibold text-black dark:text-black dark:text-gray-200">
+				<h3 class="text-lg font-semibold text-black dark:text-gray-200">
 					{domain.name}
 				</h3>
 			</div>
@@ -116,11 +116,13 @@
         </div>
     </div>
 {/if} -->
-	<!-- <div class="flex gap-2 items-end pr-3 md:pr-5">
+	<div class="flex flex-col gap-2 pr-3 md:pr-5">
+		<MiniChart chartD={{ data: views, label: 'label' }} sortInterval={30} />
+		<p>
 
-    <MiniChart chartD={{data:views, label:"label"}} sortInterval={30}/>
-    {viewCount}
-</div> -->
+			Last 30 days: <span class="font-bold text-{$color}-500">{viewCount}</span> views
+		</p>
+	</div>
 	<!-- Card Footer -->
 	<!-- <div class=" px-4">
     <a href="/site/{domain.id}" class="flex items-center gap-1 text-sm text-{$color}-700">
