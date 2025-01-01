@@ -287,7 +287,7 @@
 	});
 </script>
 
-<canvas bind:this={chartCanvas} class="max-h-[90px] w-full max-w-full pr-2"></canvas>
+<canvas bind:this={chartCanvas} class="max-h-[50px] md:max-h-[90px] w-full max-w-full pr-2"></canvas>
 
 <style>
 	/* canvas {
