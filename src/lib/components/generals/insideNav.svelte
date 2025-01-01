@@ -35,7 +35,7 @@
 </script>
 
 <nav
-	class="mb-4 text-black bg-{$color}-100/50 mx-4 max-w-[1230px] rounded-full py-1 md:mx-auto md:py-3 dark:bg-stone-800/50"
+	class="mb-4 text-black bg-{$color}-100/50 mx-4  max-w-7xl rounded-full py-1 md:mx-auto md:py-3 dark:bg-stone-800/50"
 	style="margin-top:40px;"
 >
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

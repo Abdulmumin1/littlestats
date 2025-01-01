@@ -328,7 +328,7 @@
 			<button
 				class="rounded-l-full px-3 py-2 font-medium {!isYearly
 					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
-					: `bg-white`}"
+					: `bg-${$color}-100/50 dark:bg-${$color}-100`}"
 				class:text-{$color}-600={isYearly < 0.5}
 				onclick={() => toggleSubscription(false)}>Monthly</button
 			>
@@ -336,7 +336,7 @@
 			<button
 				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
 					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
-					: `bg-white`}"
+					: `bg-${$color}-100/50 dark:bg-${$color}-100`}"
 				onclick={() => toggleSubscription(true)}
 				class:text-{$color}-600={isYearly > 0.5}
 			>

@@ -43,7 +43,7 @@
 		<button
 			id="custom-select"
 			onclick={() => (isOpen = !isOpen)}
-			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 border-{$color}-500 rounded-2xl font-bold"
+			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 border border-stone-800 rounded-2xl font-bold"
 			type="button"
 			aria-haspopup="listbox"
 			aria-expanded={isOpen}

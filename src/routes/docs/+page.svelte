@@ -49,6 +49,14 @@
 			</ul>
 		</section> -->
 
+		<div>
+			
+			<video controls class="mb-5">
+				<source  src="/docs.webm"/>
+				<track kind="captions" />
+			</video>
+		</div>
+
 		<section id="installation" class="mb-12">
 			<h2 class="mb-4 text-{$color}-700 pb-2 text-3xl font-semibold">Installation</h2>
 			<p class="mb-4 text-stone-700 dark:text-stone-300">

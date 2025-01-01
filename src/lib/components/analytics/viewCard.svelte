@@ -99,7 +99,7 @@
 		<p
 			transition:slide={{ duration: 100 }}
 			title="{percentange}% compare to last x days"
-			class="m-0 flex w-fit items-center gap-1 rounded-md p-0 {type != 'percent'
+			class="m-0 text-sm flex w-fit items-center gap-1 rounded-md p-0 {type != 'percent'
 				? increase == 'up'
 					? `bg-${$color}-50 text-green-700 dark:bg-stone-900 dark:text-green-500`
 					: `bg-${$color}-50 text-red-700 dark:bg-stone-900 dark:text-red-500`

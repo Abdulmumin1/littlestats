@@ -17,7 +17,7 @@
 >
 	<!-- Ambient Glow Effects -->
 
-	<div class=" relative mx-auto max-w-[1000px] px-4 py-4">
+	<div class=" relative mx-auto max-w-[1000px]  px-4 py-4">
 		<div class="flex flex-col items-center justify-between md:flex-row">
 			<!-- Logo -->
 			<a

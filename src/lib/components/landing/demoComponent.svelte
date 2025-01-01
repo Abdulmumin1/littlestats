@@ -33,8 +33,8 @@
 		const uniqueAgents = new Map();
 
 		events.forEach((event) => {
-			if (!uniqueAgents.has(event.user_agent)) {
-				uniqueAgents.set(event.user_agent, event);
+			if (!uniqueAgents.has(event.ip)) {
+				uniqueAgents.set(event.ip, event);
 			}
 		});
 
@@ -69,21 +69,21 @@
 
 		// Iterate through events and categorize them
 		for (const event of events) {
-			const { user_agent, event_type } = event;
+			const { ip, event_type } = event;
 
 			// Ensure we are using user_agent or user_agent as a unique user identifier
-			if (!userSessions[user_agent]) {
-				userSessions[user_agent] = { pageViews: 0 };
+			if (!userSessions[ip]) {
+				userSessions[ip] = { pageViews: 0 };
 			}
 
 			// Count the pageviews for each user
 			if (event_type === 'pageview') {
 				totalVisits++;
-				userSessions[user_agent].pageViews++;
+				userSessions[ip].pageViews++;
 			}
 
 			// Mark as bounce if the user only visited a single page and left
-			if (userSessions[user_agent].pageViews === 1 && event_type === 'pageExit') {
+			if (userSessions[ip].pageViews === 1 && event_type === 'pageExit') {
 				bounceCount++;
 			}
 		}
