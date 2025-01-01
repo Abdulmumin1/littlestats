@@ -8,13 +8,8 @@
 	import DarkMode from './darkMode.svelte';
 
 	let isMenuOpen = $state(false);
-	let clickoutside = false;
+	
 	function toggleMenu() {
-		console.log(clickoutside);
-		if (clickoutside) {
-			clickoutside = false;
-			return;
-		}
 		// console.log(isMenuOpen);
 		if (isMenuOpen) {
 			closeMenu();
@@ -27,7 +22,6 @@
 		isMenuOpen = true;
 	}
 	function closeMenu() {
-		clickoutside = true;
 		isMenuOpen = false;
 	}
 

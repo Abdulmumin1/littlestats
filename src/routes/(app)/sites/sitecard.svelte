@@ -56,7 +56,7 @@
 		return Math.round(recentEvents.length / timeSpanHours);
 	}
 
-	let views = filterView(domain.expand.events_via_domain_id);
+	let views = domain.expand.events_via_domain_id;
 	let viewCount = formatNumber(views.length);
 </script>
 

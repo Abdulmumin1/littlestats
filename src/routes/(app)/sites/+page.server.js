@@ -22,7 +22,7 @@ export async function load({ locals: { pb, ch }, params }) {
 			const query = `
 			SELECT *
 			FROM events
-			WHERE domain_id = '${element.id}' AND timestamp >= '${formattedLast24Hours}'`;
+			WHERE domain_id = '${element.id}' AND timestamp >= '${formattedLast24Hours}' AND event_type = 'pageview'`;
 			const resultSet = await ch.query({
 				query: query,
 				format: 'JSONEachRow'
