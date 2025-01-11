@@ -6,6 +6,7 @@
 	import MiniChart from '../../../lib/components/analytics/graphStuff/miniChart.svelte';
 	import Sitecard from './sitecard.svelte';
 	import Seo from '../../../lib/components/generals/seo.svelte';
+	import { onMount } from 'svelte';
 
 	let { data } = $props();
 	let domains = data.domains;
@@ -28,21 +29,25 @@
 	// function getActivityRate(events) {
 	// 	return Math.round(last24hours(events) / 24);
 	// }
+
+	
+
+	
 </script>
 
 <svelte:head>
 	<Seo title="Dashboard - Littlestats" />
 </svelte:head>
 <div class="container mx-auto p-6">
-	<div class="mb-6 flex items-center justify-between  dark:text-gray-200">
+	<div class="mb-6 flex items-center justify-between dark:text-gray-200">
 		<h1 class="text-2xl font-bold">Sites</h1>
 		<a href="/settings"> + Add Domain </a>
 	</div>
 
 	{#if domains.length > 0}
-		<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-			{#each domains as domain}
-				<Sitecard {domain} />
+		<div id="grid" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+			{#each domains as domain, index}
+				<Sitecard {domain} {index} length={domains.length}/>
 			{/each}
 		</div>
 	{:else}

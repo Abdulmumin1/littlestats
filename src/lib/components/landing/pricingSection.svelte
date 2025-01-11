@@ -388,7 +388,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
 			>
 				Start for free
 			</a>
@@ -404,7 +404,7 @@
 			<div
 				class="absolute right-4 top-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full px-3 py-1 text-sm text-white"
 			>
-				Best Value
+				Supports Development
 			</div>
 			<h3 class="mb-4 text-xl font-semibold">{plans[1].name}</h3>
 			<div class="mb-4 text-4xl font-bold">
@@ -436,7 +436,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
 			>
 				Get lifetime access
 			</a>

@@ -1588,6 +1588,8 @@
 			} catch (error) {}
 		});
 
+		// window.setAnalyticsDevMode(false)
+
 		return () => {
 			unsubscribe();
 		};

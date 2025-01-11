@@ -4,7 +4,7 @@
 	import MiniChart from '../../../lib/components/analytics/graphStuff/miniChart.svelte';
 	import { Link, Activity, Clock, Eye, ArrowUpRight } from 'lucide-svelte';
 
-	let { domain = {} } = $props();
+	let { domain = {}, index, length } = $props();
 
 	function last24hours(events) {
 		if (!events || !Array.isArray(events)) return 0;
@@ -62,7 +62,7 @@
 
 <a
 	href="/site/{domain.id}"
-	class="flex w-full flex-col  justify-between rounded-lg py-4 p-6  bg-{$color}-100/50 dark:bg-stone-800/50  dark:text-gray-200"
+	class="flex w-full flex-col justify-between rounded-lg py-4 p-6  bg-{$color}-100/50 dark:bg-stone-800/50  dark:text-gray-200 {index == length -1 && length % 2 != 0 ? 'col-span-2':'' }" 
 >
 	<!-- Card Header -->
 	<div class="">

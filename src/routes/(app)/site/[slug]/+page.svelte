@@ -187,8 +187,8 @@
 	}
 
 	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
-	let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
-	let managed_domains = [...current_domain, ...temp_domain];
+	// let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
+	let managed_domains = [...data.domains];
 	let loading = $state(false);
 
 	async function fetchFromDefaultDates(date) {
@@ -326,7 +326,9 @@
 		{ value: 7, label: 'Last 7 days' },
 		{ value: 14, label: 'Last 14 days' },
 		{ value: 21, label: 'Last 21 days' },
-		{ value: 30, label: 'Last 30 days' }
+		{ value: 30, label: 'Last 30 days' },
+		{ value: 60, label: 'Last 60 days' },
+		{ value: 90, label: 'Last 90 days' }
 	];
 	let domain_options = Array.from(managed_domains).map((e) => {
 		return { value: e.id, label: e.name };
