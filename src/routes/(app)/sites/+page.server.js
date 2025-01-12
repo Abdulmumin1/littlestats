@@ -1,51 +1,42 @@
 /** @type {import('./$types').PageLoad} */
 export async function load({ locals: { pb, ch }, params }) {
 	try {
-		// you can also fetch all records at once via getFullList
-		// const domains = await pb.collection('domain').getFullList({
-		// 	expand: 'events_via_domain_id'
-		// });
-
+		// Fetch all domains
 		const domain_recs = await pb.collection('domain').getFullList({
 			sort: '-created'
 		});
-		let domains = [];
 
-		for (let index = 0; index < domain_recs.length; index++) {
-			let element = domain_recs[index];
-			const now = new Date();
+		// Calculate the cutoff date (30 days ago)
+		const now = new Date();
+		const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+		const formattedLast30Days = last30Days.toISOString().slice(0, 19).replace('T', ' ');
 
-			const last24Hours = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+		// Fetch events for all domains in parallel
+		const domainsWithEvents = await Promise.all(
+			domain_recs.map(async (element) => {
+				const query = `
+					SELECT *
+					FROM events
+					WHERE domain_id = '${element.id}' 
+					AND timestamp >= '${formattedLast30Days}' 
+					AND event_type = 'pageview'
+				`;
+				const resultSet = await ch.query({ query, format: 'JSONEachRow' });
+				const dataset = await resultSet.json();
 
-			const formattedLast24Hours = last24Hours.toISOString().slice(0, 19).replace('T', ' ');
+				// Attach events to the domain object
+				return {
+					...element,
+					expand: {
+						events_via_domain_id: dataset
+					}
+				};
+			})
+		);
 
-			const query = `
-			SELECT *
-			FROM events
-			WHERE domain_id = '${element.id}' AND timestamp >= '${formattedLast24Hours}' AND event_type = 'pageview'`;
-			const resultSet = await ch.query({
-				query: query,
-				format: 'JSONEachRow'
-			});
-			const dataset = await resultSet.json();
-			element['expand'] = {};
-			element['expand']['events_via_domain_id'] = dataset;
-			domains = [...domains, element];
-		}
-
-		// console.log(domains);
-		// console.log(records);
-
-		// const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-		// console.log(params);
-		// you can also fetch all records at once via getFullList
-		// const records = await pb.collection('events').getFullList({
-		// 	sort: '-created',
-		// 	filter: `domain_id = '${params.slug}'`
-		// });
-		// console.log(domains.length, domain_recs.length);
-		return { domains: domain_recs };
+		return { domains: domainsWithEvents };
 	} catch (error) {
-		console.error(error);
+		console.error('Error in load function:', error);
+		return { fail: true, message: error?.message || 'Failed to load data' };
 	}
 }

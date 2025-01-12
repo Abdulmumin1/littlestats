@@ -3,23 +3,23 @@
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
 	import PageItem from '$lib/components/analytics/pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
-
 	import { deserialize } from '$app/forms';
-	import PagesSection from '../../../../lib/components/analytics/pagesSection.svelte';
-	import ChartJsGraph from '../../../../lib/components/analytics/graphStuff/chartJsGraph.svelte';
-	import Seo from '../../../../lib/components/generals/seo.svelte';
-	import ReferrerSection from '../../../../lib/components/analytics/referrerSection.svelte';
-	import BrowserSection from '../../../../lib/components/analytics/browserSection.svelte';
-	import OsSection from '../../../../lib/components/analytics/OsSection.svelte';
-	import LoadingState from '../../../../lib/components/analytics/graphStuff/loadingState.svelte';
+	import PagesSection from '$lib/components/analytics/pagesSection.svelte';
+	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
+	import Seo from '$lib/components/generals/seo.svelte';
+	import ReferrerSection from '$lib/components/analytics/referrerSection.svelte';
+	import BrowserSection from '$lib/components/analytics/browserSection.svelte';
+	import OsSection from '$lib/components/analytics/OsSection.svelte';
+	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
 	import { X, Calendar } from 'lucide-svelte';
 	import { scale, slide } from 'svelte/transition';
 	import { isOsInUserAgent, isBrowserInUserAgent, getCountry } from '$lib/slug/helpers.js';
-	import CountrySection from '../../../../lib/components/analytics/CountrySection.svelte';
-	import Dropdown from '../../../../lib/components/generals/dropdown.svelte';
-	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
+	import CountrySection from '$lib/components/analytics/CountrySection.svelte';
+	import Dropdown from '$lib/components/generals/dropdown.svelte';
+	import PickDate from '$lib/components/generals/pickDate.svelte';
+	import { derived } from 'svelte/store';
 
-	let { data = $bindable() } = $props();
+	let {data} = $props();
 
 	let page_data = $state(data.records);
 
@@ -27,96 +27,77 @@
 		page_data = data.records;
 	});
 
-	let views = $derived(page_data.filter((e) => e.event_type != 'pageExit'));
-	// Function to get unique user agents
+	// Derived state for views, unique user agents, bounces, and average duration
+	let views = $derived(page_data.filter((e) => e.event_type !== 'pageExit'));
+	let uniqueUserAgents = $derived(getUniqueUserAgents(page_data));
+	let bounces = $derived(calculateBounceRate(page_data));
+	let averageVisitDuration = $derived(calculateAverageDuration(page_data));
+
+	// Backdate state
+	let backdateRecords = $state([]);
+	let backdateViews = $state(0);
+	let backdateBounces = $state(0);
+	let backdateaverageVisitDuration = $state(0);
+	let backdateuniqueUserAgents = $state([]);
+
+	// Filters and UI state
+	let filters = $state([]);
+	let loading = $state(false);
+	let sortInterval = $state(1);
+	let chartFilter = $state('Views');
+		
+	let chartD = $derived({
+			data: chartFilter === 'Visitors' ? uniqueUserAgents : chartFilter === 'Views' ? views : [averageVisitDuration],
+			label: chartFilter
+		});
+	let datePickerModal = $state(null);
+	let selectedStartDate = $state(new Date());
+	let selectedEndDate = $state(null);
+	let isOpen = $state(false);
+
+	// Helper functions
 	function getUniqueUserAgents(events) {
 		const uniqueAgents = new Map();
-
 		events.forEach((event) => {
 			if (!uniqueAgents.has(event.ip)) {
 				uniqueAgents.set(event.ip, event);
 			}
 		});
-
 		return Array.from(uniqueAgents.values());
 	}
 
 	function calculateAverageDuration(events) {
-		// Filter out 'pageExit' events that have a valid 'duration'
 		const validEvents = events.filter((e) => e.event_type === 'pageExit' && e.duration > 0);
-
-		// Check if there are no valid events
-		if (validEvents.length === 0) {
-			return 0;
-		}
-
-		// Calculate total duration
+		if (validEvents.length === 0) return 0;
 		const totalDuration = validEvents.reduce((acc, curr) => acc + curr.duration, 0);
-
-		// Calculate average duration
-		const averageDuration = totalDuration / validEvents.length;
-
-		return averageDuration;
+		return totalDuration / validEvents.length;
 	}
 
-	// Function to calculate bounce rate
 	function calculateBounceRate(events) {
-		let totalVisits = 0; // Total number of page views
+		const userSessions = {};
+		let totalVisits = 0;
 		let bounceCount = 0;
 
-		// Create a map to track users by session or unique identifier
-		const userSessions = {};
-
-		// Iterate through events and categorize them
-		for (const event of events) {
+		events.forEach((event) => {
 			const { ip, event_type } = event;
+			if (!userSessions[ip]) userSessions[ip] = { pageViews: 0 };
 
-			// Ensure we are using user_agent or user_agent as a unique user identifier
-			if (!userSessions[ip]) {
-				userSessions[ip] = { pageViews: 0 };
-			}
-
-			// Count the pageviews for each user
 			if (event_type === 'pageview') {
 				totalVisits++;
 				userSessions[ip].pageViews++;
 			}
 
-			// Mark as bounce if the user only visited a single page and left
 			if (userSessions[ip].pageViews === 1 && event_type === 'pageExit') {
 				bounceCount++;
 			}
-		}
+		});
 
-		// Prevent division by zero if no page views
 		const bounceRate = totalVisits === 0 ? 0 : (bounceCount / totalVisits) * 100;
-
-		return {
-			bounceRate: bounceRate.toFixed(2), // Format to two decimal places
-			totalVisits: totalVisits,
-			bounceCount: bounceCount
-		};
+		return { bounceRate: bounceRate.toFixed(2), totalVisits, bounceCount };
 	}
 
-	let bounces = $derived(calculateBounceRate(page_data));
-	let averageVisitDuration = $derived(calculateAverageDuration(page_data));
-	// $: formatDr = formatDuration(parseInt(averageVisitDuration));
-	let uniqueUserAgents = $derived(getUniqueUserAgents(page_data));
-
-	let backdateRecords = $state([]);
-
-	let backdateViews = $state(0);
-
-	let backdateBounces = $state(0);
-
-	let backdateaverageVisitDuration = $state(0);
-
-	let backdateuniqueUserAgents = $state([]);
-
-	let filters = $state([]);
-
-	function handleAddfilter(filter) {
-		filter = filter.detail;
+	function triggerFilter(e) {
+		let filter = e.detail;
 		// let local_filters = [];
 
 		if (filters.length > 0) {
@@ -135,193 +116,119 @@
 		} else {
 			filters = [...filters, filter];
 		}
-
-		// filters = local_filters;
-		applyfilter(filters);
+		applyFilter(filters)
 	}
-
 	function removeFilter(filter) {
 		filters = filters.filter((e) => e != filter);
-		applyfilter(filters);
+		applyFilter(filters)
 	}
-
-	function applyfilter(ft) {
-		let mock_page = [...data.records];
-
-		ft.forEach((filter) => {
-			if (filter.type == 'page') {
-				mock_page = mock_page.filter((e) => e.url == filter.query);
-			} else if (filter.type == 'ref') {
-				mock_page = mock_page.filter((e) => {
-					if (filter.query == 'Direct') {
-						return !e.referrer;
-					} else {
-						return e.referrer.includes(filter.query);
-					}
-				});
-			} else if (filter.type == 'browser') {
-				mock_page = mock_page.filter((e) => {
-					return isBrowserInUserAgent(e.user_agent, filter.query);
-				});
-			} else if (filter.type == 'os') {
-				mock_page = mock_page.filter((e) => {
-					return isOsInUserAgent(e.user_agent, filter.query);
-				});
-			} else if (filter.type == 'country') {
-				mock_page = mock_page.filter((e) => {
-					// console.log(e.timezone == '', filter.query);
-					try {
-						if (e.timezone == '') return false;
-						return getCountry(e?.timezone) == filter.query;
-					} catch (error) {
-						return false;
-					}
-				});
+	function applyFilter(filters) {
+		let filteredData = [...data.records];
+		filters.forEach((filter) => {
+			switch (filter.type) {
+				case 'page':
+					filteredData = filteredData.filter((e) => e.url === filter.query);
+					break;
+				case 'ref':
+					filteredData = filteredData.filter((e) =>
+						filter.query === 'Direct' ? !e.referrer : e.referrer?.includes(filter.query)
+					);
+					break;
+				case 'browser':
+					filteredData = filteredData.filter((e) => isBrowserInUserAgent(e.user_agent, filter.query));
+					break;
+				case 'os':
+					filteredData = filteredData.filter((e) => isOsInUserAgent(e.user_agent, filter.query));
+					break;
+				case 'country':
+					filteredData = filteredData.filter((e) => {
+						try {
+							return e.timezone && getCountry(e.timezone) === filter.query;
+						} catch {
+							return false;
+						}
+					});
+					break;
 			}
 		});
-
-		// console.log(mock_page.length, data.records.length);
-		page_data = [...mock_page];
-		// filterlegth = mock_page.length;
-		// console.log(mock_page.length, data.records.length);
+		page_data = filteredData;
 	}
-
-	let current_domain = data.domains.filter((e) => e.id == data.domain_id);
-	// let temp_domain = data.domains.filter((e) => e.id != data.domain_id);
-	let managed_domains = [...data.domains];
-	let loading = $state(false);
 
 	async function fetchFromDefaultDates(date) {
 		loading = true;
-
-		let form = new FormData();
+		const form = new FormData();
 		form.append('defaultRange', date);
 		form.append('domain_id', data.domain_id);
 
-		let response = await fetch('?/fetchDate', {
-			method: 'post',
-			body: form
-		});
-
+		const response = await fetch('?/fetchDate', { method: 'POST', body: form });
 		if (response.ok) {
-			let local_result = deserialize(await response.text());
-			let local_records = local_result.data;
-			page_data = local_records;
+			const result = deserialize(await response.text());
+			page_data = result.data.records;
+
 			data.records = page_data;
-			loading = false;
-
-			// console.log(local_records);
 		}
+		loading = false;
 	}
 
-	async function updateSpikeCache(date, dt) {
-		let form = new FormData();
+	async function updateSpikeCache(date, data) {
+		const form = new FormData();
 		form.append('defaultRange', date);
 		form.append('domain_id', data.domain_id);
-		form.append('data', JSON.stringify(dt));
+		form.append('data', JSON.stringify(data));
 
-		let response = await fetch('?/updateSpikes', {
-			method: 'post',
-			body: form
-		});
-
-		if (response.ok) {
-			return true;
-		}
-		return false;
+		const response = await fetch('?/updateSpikes', { method: 'POST', body: form });
+		return response.ok;
 	}
+
 	async function fetchSpikes(date) {
-		let form = new FormData();
+		const form = new FormData();
 		form.append('defaultRange', date);
 		form.append('domain_id', data.domain_id);
 
-		let response = await fetch('?/fetchSpikes', {
-			method: 'post',
-			body: form
-		});
-
+		const response = await fetch('?/fetchSpikes', { method: 'POST', body: form });
 		if (response.ok) {
-			let local_result = deserialize(await response.text());
-			// console.log(local_result.data);
-
-			if (!local_result.data.cache) {
-				let local_records = local_result.data.results ?? [];
-				backdateRecords = local_records;
-				backdateViews = backdateRecords.filter((e) => e.event_type != 'pageExit');
+			const result = deserialize(await response.text());
+			if (!result.data.cache) {
+				backdateRecords = result.data.results ?? [];
+				backdateViews = backdateRecords.filter((e) => e.event_type !== 'pageExit');
 				backdateBounces = calculateBounceRate(backdateRecords);
 				backdateaverageVisitDuration = calculateAverageDuration(backdateRecords);
 				backdateuniqueUserAgents = getUniqueUserAgents(backdateRecords);
 
-				// console.log(backdateBounces, backdateuniqueUserAgents);
-				// create spike values.
-				// update spikes tables.
-				// updateSpikeCache()
-				let d2 = {
+				await updateSpikeCache(date, {
 					views: backdateViews.length,
 					visitors: backdateuniqueUserAgents.length,
-					// bounce_rate:isNaN();
-					visit_duration: parseInt(
-						isNaN(backdateaverageVisitDuration) ? 0 : backdateaverageVisitDuration
-					),
-					bounce_rate: parseInt(isNaN(backdateBounces.bounceRate) ? 0 : backdateBounces.bounceRate),
+					visit_duration: parseInt(backdateaverageVisitDuration || 0),
+					bounce_rate: parseInt(backdateBounces.bounceRate || 0),
 					domain_id: data.domain_id
-				};
-				// console.log('Not using catch');
-
-				await updateSpikeCache(date, d2);
+				});
 			} else {
-				// update spike values.
-				// console.log('Using using catch');
-				// console.log(local_result.data);
-				backdateViews = local_result.data.results.record.views;
-				backdateBounces = { bounceRate: local_result.data.results.record.bounce_rate };
-				backdateaverageVisitDuration = local_result.data.results.record.visit_duration;
-				backdateuniqueUserAgents = local_result.data.results.record.visitors;
+				backdateViews = result.data.results.record.views;
+				backdateBounces = { bounceRate: result.data.results.record.bounce_rate };
+				backdateaverageVisitDuration = result.data.results.record.visit_duration;
+				backdateuniqueUserAgents = result.data.results.record.visitors;
 			}
 		}
 	}
 
-	let sortInterval = $state(1);
-
-	let chartD = $state();
-
-	$effect(() => {
-		chartD = { data: views, label: 'Views' };
-	});
-
-	let filterlegth = 0;
-
 	function handleChartFilter(event) {
-		let fl = event.detail.query;
-		// console.log(fl);
-		if (fl == 'Visitors') {
-			chartD = { data: uniqueUserAgents, label: 'Visitors' };
-		} else if (fl == 'Views') {
-			chartD = { data: views, label: 'Views' };
-		} else if (fl == 'Visit Duration') {
-			chartD = { data: [averageVisitDuration], label: 'Visit Duration' };
-		} else if (fl == 'Bounce Rate') {
-			chartD = { data: [averageVisitDuration], label: 'Bounce Rate' };
-		}
+	chartFilter = event.detail.query;
+	
 	}
-	async function handleDateChange(e) {
-		// console.log(e.detail);
-		// return;
-		await fetchFromDefaultDates(e.detail.value);
-		sortInterval = parseInt(e.detail.value);
 
-		if (filters.length > 0) {
-			applyfilter(filters);
-		}
-		await fetchSpikes(e.detail.value);
+	async function handleDateChange(event) {
+		const date = event.detail.value;
+		await fetchFromDefaultDates(date);
+		sortInterval = parseInt(date);
+		if (filters.length > 0) applyFilter(filters);
+		await fetchSpikes(date);
 	}
 
 	onMount(async () => {
-		// console.log(result);
 		await fetchSpikes(0);
 	});
 
-	let optis = [
+	const optis = [
 		{ value: 0, label: 'Last 24 hours' },
 		{ value: 7, label: 'Last 7 days' },
 		{ value: 14, label: 'Last 14 days' },
@@ -330,33 +237,17 @@
 		{ value: 60, label: 'Last 60 days' },
 		{ value: 90, label: 'Last 90 days' }
 	];
-	let domain_options = Array.from(managed_domains).map((e) => {
-		return { value: e.id, label: e.name };
-	});
-	// console.log(domain_options);
 
-	let datePickerModal = $state(null);
-	let selectedStartDate = $state(new Date());
-	let selectedEndDate = $state(null);
-	let isOpen = $state(false);
-
-	function openDatePicker() {
-		isOpen = !isOpen;
-	}
-
-	function handleCustomDateChange(event) {
-		selectedStartDate = event.detail.startDate;
-		selectedEndDate = event.detail.endDate;
-	}
+	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
+	const current_domain = data.domains.find((e) => e.id === data.domain_id);
 </script>
 
 <svelte:head>
-	<Seo title={`${current_domain[0].name} - littlestats`} />
+	<Seo title={`${current_domain.name} - littlestats`} />
 </svelte:head>
 
 <div class="min-h-screen p-2 text-black">
-	<!-- <div>devcanvas.art</div> -->
-	<PickDate
+	<!-- <PickDate
 		bind:this={datePickerModal}
 		bind:startDate={selectedStartDate}
 		bind:endDate={selectedEndDate}
@@ -366,7 +257,7 @@
 			selectedStartDate = null;
 			selectedEndDate = null;
 		}}
-	/>
+	/> -->
 	{#if loading}
 		<LoadingState />
 	{/if}
@@ -374,65 +265,20 @@
 	<div class="container mx-auto flex flex-col gap-4 dark:text-white">
 		<nav class="flex flex-wrap justify-between gap-4 py-2">
 			<div class="flex flex-wrap items-center gap-4 md:gap-5">
-				<!-- <select
-					name="domains"
-					id="domains"
-					on:change={(e) => {
-						window.location.href = `/site/${e.target.value}`;
-					}}
-					class="rounded-full border border-gray-600 font-bold text-white bg-{$color}-500 px-2 py-1"
-				>
-					{#each managed_domains as domain}
-						<option value={domain.id}>{domain.name}</option>
-					{/each}
-					<button>Add domain</button>
-				</select> -->
 				<Dropdown
-					on:change={(e) => {
-						window.location.href = `/site/${e.detail.value}`;
-					}}
+					on:change={(e) => (window.location.href = `/site/${e.detail.value}`)}
 					title=""
 					value={data.domain_id}
 					options={domain_options}
 				>
-					{#snippet btn()}
-						<div>
-							<a href="/settings">+ add domain</a>
-						</div>
-					{/snippet}
+					<a href="/settings">+ add domain</a>
 				</Dropdown>
-
-				<!-- <div class="flex items-center gap-2">
-					<div class="h-3 w-3 rounded-full bg-{$color}-400"></div>
-					0 current visitors
-				</div> -->
 			</div>
 			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
-				{#snippet btn()}
-					<div>
-						<button onclick={openDatePicker} class="flex items-center gap-1">
-							<Calendar size={16} /> Custom Date
-						</button>
-					</div>
-				{/snippet}
+				<button onclick={() => (isOpen = !isOpen)} class="flex items-center gap-1">
+					<Calendar size={16} /> Custom Date
+				</button>
 			</Dropdown>
-
-			<!-- <div class="flex items-center gap-2">
-				<label for="filter">Filter</label>
-				<select
-					name="domains"
-					id="filter"
-					on:change={handleDateChange}
-					class="rounded-full border border-gray-600 font-bold text-white bg-{$color}-500 px-4 py-1"
-				>
-					<option value="0">Last 24 hours</option>
-
-					<option value="7">Last 7 days</option>
-					<option value="14">Last 14 days</option>
-					<option value="21">Last 21 days</option>
-					<option value="30">Last 30 days</option>
-				</select>
-			</div> -->
 		</nav>
 
 		{#if filters.length > 0}
@@ -441,14 +287,14 @@
 					<button
 						transition:scale
 						onclick={() => removeFilter(filter)}
-						class="flex w-fit gap-1 rounded-full bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700 items-center p-1 px-2 text-gray-100"
-						>{filter.type}
-						<span
-							class="bg-{$color}-100 rounded-full px-2 text-black dark:bg-stone-800 dark:text-gray-100"
-							>{filter.query}</span
-						>
-						<span><X size={13} /></span></button
+						class="flex  items-center w-fit gap-1 rounded-full bg-{$color}-600 dark:bg-{$color}-700 p-1 px-2 text-gray-100"
 					>
+						{filter.type}
+						<span class="rounded-full bg-{$color}-100 px-2 text-black dark:bg-stone-800 dark:text-gray-100">
+							{filter.query}
+						</span>
+						<span><X size={13} /></span>
+					</button>
 				{/each}
 			</div>
 		{/if}
@@ -487,28 +333,17 @@
 				type="percent"
 				filter_on={filters.length > 0}
 			/>
-			<!-- <ViewCard
-				name="Visitors"
-				number="{parseInt(bounces.totalVisits)}%"
-				percentange="14%"
-				type="down"
-			/> -->
 		</header>
 
-		<!-- {backdateaverageVisitDuration}{JSON.stringify(backdateBounces)}{backdateBounces.bounceRate ==
-			NaN} -->
-		<!-- <GrapthView viewRecords={views} /> -->
-		<!-- <MdGraphStuff /> -->
-		<!-- <AnotherChart viewRecords={views} {sortInterval} /> -->
 		<ChartJsGraph {chartD} {sortInterval} />
 		<div class="mt-6 flex flex-wrap gap-6">
-			<PagesSection {views} on:filter={handleAddfilter} />
-			<ReferrerSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<PagesSection {views} on:filter={triggerFilter} />
+			<ReferrerSection {views} on:filter={triggerFilter} domain={current_domain} />
 		</div>
 		<div class="mb-12 mt-12 flex flex-wrap gap-12">
-			<CountrySection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
-			<BrowserSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
-			<OsSection {views} on:filter={handleAddfilter} domain={current_domain[0]} />
+			<CountrySection {views} on:filter={triggerFilter} domain={current_domain} />
+			<BrowserSection {views} on:filter={triggerFilter} domain={current_domain} />
+			<OsSection {views} on:filter={triggerFilter} domain={current_domain} />
 		</div>
 	</div>
 </div>

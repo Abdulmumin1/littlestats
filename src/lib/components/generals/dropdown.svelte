@@ -54,7 +54,7 @@
 
 		{#if isOpen}
 			<div
-				class="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg"
+				class="absolute z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white dark:border-stone-900 dark:bg-stone-800 shadow-lg"
 				role="listbox"
 			>
 				<ul class="py-1">
@@ -65,10 +65,10 @@
 							onclick={() => handleSelect(option.value)}
 							onkeydown={(e) => e.key === 'Enter' && handleSelect(option.value)}
 							tabindex="0"
-							class="cursor-pointer px-4 py-2 hover:bg-gray-100
+							class="cursor-pointer px-4 py-2 hover:bg-gray-100  dark:hover:bg-gray-100/5
                   {value === option.value
-								? 'bg-' + $color + '-50 text-' + $color + '-600'
-								: 'text-gray-700'}"
+								? 'bg-' + $color + '- dark:bg-gray-100/5 text-' + $color + '-600'
+								: 'text-gray-700 dark:text-gray-200'}"
 						>
 							{option.label}
 						</li>

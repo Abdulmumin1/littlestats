@@ -180,8 +180,8 @@
 						borderWidth: 2,
 						borderRadius: 5,
 						spacing: 20,
-						...(chartType == 'bar' ? { backgroundColor: usedColor.primary } : {})
-						// pointRadius: 0 // Removes the circle markers
+						...(chartType == 'bar' ? { backgroundColor: usedColor.primary } : {}),
+						pointRadius: 0 // Removes the circle markers
 					}
 				]
 			},

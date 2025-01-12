@@ -60,74 +60,77 @@
 	let viewCount = formatNumber(views.length);
 </script>
 
-<a
-	href="/site/{domain.id}"
-	class="flex w-full flex-col justify-between rounded-lg py-4 p-6  bg-{$color}-100/50 dark:bg-stone-800/50  dark:text-gray-200 {index == length -1 && length % 2 != 0 ? 'col-span-2':'' }" 
->
-	<!-- Card Header -->
-	<div class="">
-		<div class="flex items-center justify-between gap-3 pb-4">
-			<div class="flex items-center gap-2">
-				<Link class="h-4 w-4 text-black dark:text-gray-200" />
-				<h3 class="text-lg font-semibold text-black dark:text-gray-200">
-					{domain.name}
-				</h3>
+<div class="dark:border-x-4 border-{$color}-900 rounded-lg {index == length -1 && length % 2 != 0 ? 'col-span-2':'' }">
+
+	<a
+		href="/site/{domain.id}"
+		class="flex w-full flex-col justify-between rounded-lg py-4 p-6  bg-{$color}-100/50 dark:bg-stone-800/50  dark:text-gray-200" 
+	>
+		<!-- Card Header -->
+		<div class="">
+			<div class="flex items-center justify-between gap-3 pb-4">
+				<div class="flex items-center gap-2">
+					<Link class="h-4 w-4 text-black dark:text-gray-200" />
+					<h3 class="text-lg font-semibold text-black dark:text-gray-200">
+						{domain.name}
+					</h3>
+				</div>
+				<!-- <div
+			class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-100 text-black dark:text-gray-200"
+		>
+			ID: {domain.id}
+		</div> -->
 			</div>
-			<!-- <div
-        class="w-fit rounded-full px-2 py-1 text-[9px] md:text-xs bg-{$color}-100 text-black dark:text-gray-200"
-    >
-        ID: {domain.id}
-    </div> -->
 		</div>
-	</div>
-
-	<!-- {#if domain?.expand}
-    <div class="p-4">
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div class="flex items-center gap-2">
-                <Eye class="h-4 w-4 text-black dark:text-gray-200" />
-                <div>
-                    <p class="text-sm text-gray-900 dark:text-gray-300">Lifetime Views</p>
-                    <p class="font-semibold text-black dark:text-black dark:text-gray-200">
-                        {filterView(domain.expand.events_via_domain_id).toLocaleString()}
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <Clock class="h-4 w-4 text-black dark:text-gray-200" />
-                <div>
-                    <p class="text-sm text-gray-900 dark:text-gray-300">Last 24 Hours</p>
-                    <p class="font-semibold text-black dark:text-black dark:text-gray-200">
-                        {last24hours(domain.expand.events_via_domain_id).toLocaleString()}
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <Activity class="h-4 w-4 text-black dark:text-gray-200" />
-                <div>
-                    <p class="text-sm text-gray-900 dark:text-gray-300">Activity Rate</p>
-                    <p class="font-semibold text-black dark:text-gray-200">
-                        {getActivityRate(domain.expand.events_via_domain_id)} /hr
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-{/if} -->
-	<div class="flex flex-col gap-2 pr-3 md:pr-5">
-		<MiniChart chartD={{ data: views, label: 'label' }} sortInterval={30} />
-		<p>
-
-			Last 30 days: <span class="font-bold text-{$color}-500">{viewCount}</span> views
-		</p>
-	</div>
-	<!-- Card Footer -->
-	<!-- <div class=" px-4">
-    <a href="/site/{domain.id}" class="flex items-center gap-1 text-sm text-{$color}-700">
-        Goto Dashboard
-        <ArrowUpRight class="h-3 w-3" />
-    </a>
-</div> -->
-</a>
+	
+		<!-- {#if domain?.expand}
+		<div class="p-4">
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+				<div class="flex items-center gap-2">
+					<Eye class="h-4 w-4 text-black dark:text-gray-200" />
+					<div>
+						<p class="text-sm text-gray-900 dark:text-gray-300">Lifetime Views</p>
+						<p class="font-semibold text-black dark:text-black dark:text-gray-200">
+							{filterView(domain.expand.events_via_domain_id).toLocaleString()}
+						</p>
+					</div>
+				</div>
+	
+				<div class="flex items-center gap-2">
+					<Clock class="h-4 w-4 text-black dark:text-gray-200" />
+					<div>
+						<p class="text-sm text-gray-900 dark:text-gray-300">Last 24 Hours</p>
+						<p class="font-semibold text-black dark:text-black dark:text-gray-200">
+							{last24hours(domain.expand.events_via_domain_id).toLocaleString()}
+						</p>
+					</div>
+				</div>
+	
+				<div class="flex items-center gap-2">
+					<Activity class="h-4 w-4 text-black dark:text-gray-200" />
+					<div>
+						<p class="text-sm text-gray-900 dark:text-gray-300">Activity Rate</p>
+						<p class="font-semibold text-black dark:text-gray-200">
+							{getActivityRate(domain.expand.events_via_domain_id)} /hr
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if} -->
+		<div class="flex flex-col gap-2 pr-3 md:pr-5">
+			<MiniChart chartD={{ data: views, label: 'label' }} sortInterval={30} />
+			<p>
+	
+				Last 30 days: <span class="font-bold text-{$color}-500">{viewCount}</span> views
+			</p>
+		</div>
+		<!-- Card Footer -->
+		<!-- <div class=" px-4">
+		<a href="/site/{domain.id}" class="flex items-center gap-1 text-sm text-{$color}-700">
+			Goto Dashboard
+			<ArrowUpRight class="h-3 w-3" />
+		</a>
+	</div> -->
+	</a>
+</div>
