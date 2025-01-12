@@ -57,7 +57,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 		class="container z-50 mx-auto mt-12 max-w-[1000px] rounded-2xl p-4 py-12 dark:border-none border-{$color}-300"
 	>
 		<h3
-			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-600 dark:bg-{$color}-700 w-fit rounded-full px-3 py-[.15rem] text-white"
+			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-600 w-fit rounded-full px-3 py-[.15rem] text-white"
 		>
 			<ArrowRight size={20} /> Features
 		</h3>

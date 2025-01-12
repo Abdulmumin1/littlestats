@@ -34,14 +34,14 @@
 <div id="pricing"></div>
 <div class="mt-16 sm:mt-20 lg:mt-24">
 	<div
-		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600 dark:bg-{$color}-700 rounded-full dark:text-white"
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600  rounded-full dark:text-white"
 	></div>
 	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">Super Affordable Pricing</h2>
 	<p
 		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-{$color}-600  sm:mb-8 sm:max-w-2xl sm:text-xl"
 	>
 		Use Littlestats for free for a whole month - <span
-			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600 dark:bg-{$color}-700 font-extrabold">30</span
+			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600  font-extrabold">30</span
 		> day trial
 	</p>
 
@@ -103,7 +103,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
+				class="rounded-full text-white bg-{$color}-600  px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-400"
 			>
 				Start for free
 			</a>
@@ -240,7 +240,7 @@
   
 		<a
 		  href="/signup"
-		  class="rounded-full bg-{$color}-600 dark:bg-{$color}-700 px-6 py-3 text-center font-semibold text-white transition duration-300 hover:bg-{$color}-400"
+		  class="rounded-full bg-{$color}-600  px-6 py-3 text-center font-semibold text-white transition duration-300 hover:bg-{$color}-400"
 		>
 		  Start 30-day free trial
 		</a>
@@ -309,7 +309,7 @@
 <div id="pricing"></div>
 <div class="mt-16 sm:mt-20 lg:mt-24">
 	<div
-		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600 dark:bg-{$color}-700 rounded-full dark:text-white"
+		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600  rounded-full dark:text-white"
 	></div>
 	<h2 class="text-center text-2xl font-bold sm:text-3xl dark:text-white">
 		Simple, Affordable Pricing
@@ -318,7 +318,7 @@
 		class="mx-auto mb-6 mt-3 max-w-xl text-center text-lg font-semibold text-black/70 sm:mb-8 sm:max-w-2xl sm:text-xl dark:text-white/80"
 	>
 		Start with a free month - <span
-			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600 dark:bg-{$color}-700 font-extrabold"
+			class="text-{$color}-100 rounded-full px-2 bg-{$color}-600  font-extrabold"
 			>30</span
 		> day trial
 	</p>
@@ -327,7 +327,7 @@
 		<div class="flex items-center rounded-full bg-${$color}-300 border-{$color}-300">
 			<button
 				class="rounded-l-full px-3 py-2 font-medium {!isYearly
-					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
+					? `bg-${$color}-600  text-white`
 					: `bg-${$color}-100/50 dark:bg-${$color}-100`}"
 				class:text-{$color}-600={isYearly < 0.5}
 				onclick={() => toggleSubscription(false)}>Monthly</button
@@ -335,14 +335,14 @@
 
 			<button
 				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
-					? `bg-${$color}-600 dark:bg-${$color}-700 text-white`
+					? `bg-${$color}-600  text-white`
 					: `bg-${$color}-100/50 dark:bg-${$color}-100`}"
 				onclick={() => toggleSubscription(true)}
 				class:text-{$color}-600={isYearly > 0.5}
 			>
 				Yearly
 				<span
-					class="absolute -top-4 border-{$color}-300 left-10 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 flex w-16 items-center justify-center rounded-full p-1 text-xs"
+					class="absolute -top-4 border-{$color}-300 left-10 text-gray-100 bg-{$color}-600  flex w-16 items-center justify-center rounded-full p-1 text-xs"
 					>{calculateDiscountPercentage()}% off</span
 				>
 			</button>
@@ -388,7 +388,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
+				class="rounded-full text-white bg-{$color}-600  px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
 			>
 				Start for free
 			</a>
@@ -402,7 +402,7 @@
 			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border p-6 shadow-inner border-{$color}-300 shadow-{$color}-700 relative"
 		>
 			<div
-				class="absolute right-4 top-4 bg-{$color}-600 dark:bg-{$color}-700 rounded-full px-3 py-1 text-sm text-white"
+				class="absolute right-4 top-4 bg-{$color}-600  rounded-full px-3 py-1 text-sm text-white"
 			>
 				Supports Development
 			</div>
@@ -436,7 +436,7 @@
 			</ul>
 			<a
 				href="/signup"
-				class="rounded-full text-white bg-{$color}-600 dark:bg-{$color}-700 px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
+				class="rounded-full text-white bg-{$color}-600  px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
 			>
 				Get lifetime access
 			</a>
