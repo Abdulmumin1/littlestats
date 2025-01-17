@@ -60,11 +60,11 @@
 	let viewCount = formatNumber(views.length);
 </script>
 
-<div class="dark:border-x-4 border-{$color}-900 rounded-lg {index == length -1 && length % 2 != 0 ? 'col-span-2':'' }">
+<div class="dark:border-x-[1px] rounded-xl border-{$color}-900   {index == length -1 && length % 2 != 0 ? 'md:col-span-2':'' }">
 
 	<a
 		href="/site/{domain.id}"
-		class="flex w-full flex-col justify-between rounded-lg py-4 p-6  bg-{$color}-100/50 dark:bg-stone-800/50  dark:text-gray-200" 
+		class="flex w-full flex-col justify-between rounded-lg  py-4 p-6  bg-{$color}-100/50 dark:bg-stone-800/50  dark:text-gray-200" 
 	>
 		<!-- Card Header -->
 		<div class="">
