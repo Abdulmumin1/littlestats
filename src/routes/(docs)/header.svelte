@@ -17,10 +17,10 @@
 radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(100% - 10px)/40px 100% repeat-x;"
 	></div>
 
-	<h1 class="mb-2 mt-4 px-5 text-3xl font-bold text-{$color}-600 dark:text-black">
+	<h1 class="mb-2 mt-4 px-5 text-3xl font-bold text-{$color}-600 dark:text-white">
 		{@render children?.()}
 	</h1>
-	<p class="mb-4 px-5 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
+	<p class="mb-4 px-5 text-sm text-gray-600 dark:text-gray-100">Last updated: {new Date().toLocaleDateString()}</p>
 
 	<div
 		id="demo"

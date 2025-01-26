@@ -40,7 +40,7 @@
 </svelte:head>
 
 <main class="min-h-screen text-black">
-	<div class=" s mx-auto sm:py-12 lg:py-16">
+	<div class="mx-auto sm:py-12 lg:py-16">
 		<!-- <Banner /> -->
 		<Nav />
 

@@ -274,7 +274,7 @@
 		},
 		{
 			name: 'Lifetime',
-			price: 125,
+			price: 89,
 			features: [
 				'Everything in Monthly plan',
 				'Lifetime Updates',
@@ -328,7 +328,7 @@
 			<button
 				class="rounded-l-full px-3 py-2 font-medium {!isYearly
 					? `bg-${$color}-600  text-white`
-					: `bg-${$color}-100/50 dark:bg-${$color}-100`}"
+					: `bg-${$color}-50/50 dark:bg-${$color}-100`}"
 				class:text-{$color}-600={isYearly < 0.5}
 				onclick={() => toggleSubscription(false)}>Monthly</button
 			>
@@ -336,10 +336,10 @@
 			<button
 				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
 					? `bg-${$color}-600  text-white`
-					: `bg-${$color}-100/50 dark:bg-${$color}-100`}"
-				onclick={() => toggleSubscription(true)}
+					: `bg-${$color}-50/50 dark:bg-${$color}-100`}"
 				class:text-{$color}-600={isYearly > 0.5}
-			>
+				onclick={() => toggleSubscription(true)}
+				>
 				Yearly
 				<span
 					class="absolute -top-4 border-{$color}-300 left-10 text-gray-100 bg-{$color}-600  flex w-16 items-center justify-center rounded-full p-1 text-xs"
@@ -404,7 +404,7 @@
 			<div
 				class="absolute right-4 top-4 bg-{$color}-600  rounded-full px-3 py-1 text-sm text-white"
 			>
-				Supports Development
+				Best Deal
 			</div>
 			<h3 class="mb-4 text-xl font-semibold">{plans[1].name}</h3>
 			<div class="mb-4 text-4xl font-bold">

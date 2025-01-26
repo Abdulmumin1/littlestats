@@ -1,5 +1,5 @@
-<script lang="ts">
-	import { Calendar, Github, Twitter, Mail } from 'lucide-svelte';
+<script>
+	import {  Twitter, Mail } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 
 	const currentYear = new Date().getFullYear();

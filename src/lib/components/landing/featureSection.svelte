@@ -45,7 +45,7 @@
 	];
 </script>
 
-<div class=" px-4 md:px-0 bg-{$color}-100/50 dark:bg-{$color}-100 rounded">
+<div class="  bg-{$color}-100/50 dark:bg-{$color}-100">
 	<div
 		id="box"
 		class="bg-{$color}-50 dark:bg-stone-900"
@@ -54,7 +54,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 	></div>
 	<div
 		id="features"
-		class="container z-50 mx-auto mt-12 max-w-[1000px] rounded-2xl p-4 py-12 dark:border-none border-{$color}-300"
+		class="container px-4 z-50 mx-auto mt-12 max-w-[1000px] rounded-2xl p-4 py-12 dark:border-none border-{$color}-300"
 	>
 		<h3
 			class="mb-3 flex items-center gap-1 px-2 text-xl font-bold bg-{$color}-600 w-fit rounded-full px-3 py-[.15rem] text-white"
