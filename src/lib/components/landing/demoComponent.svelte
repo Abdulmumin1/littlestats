@@ -390,9 +390,9 @@
 			<Dropdown on:change={handleDateChange} value={optis[2].value} title="Filter" options={optis}>
 				{#snippet btn()}
 					<div>
-						<button onclick={openDatePicker} class="flex items-center gap-1">
+						<!-- <button onclick={openDatePicker} class="flex items-center gap-1">
 							<Calendar size={16} /> Custom Date
-						</button>
+						</button> -->
 					</div>
 				{/snippet}
 			</Dropdown>
