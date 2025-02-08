@@ -15,7 +15,13 @@
 	 */
 
 	/** @type {Props} */
-	let { chartD = { data: [], label: 'Views' }, showChart = false, sortInterval = 1 } = $props();
+	let {
+		chartD = { data: [], label: 'Views' },
+		bar = false,
+		line = false,
+		showChart = false,
+		sortInterval = 1
+	} = $props();
 
 	let chartCanvas = $state(null);
 	let chart = $state(null);
@@ -161,7 +167,7 @@
 			} catch {}
 		}
 	});
-	let chartType = $state('bar'); // NEW state for chart type
+	let chartType = $state(bar ? 'bar' : line ? 'line' : 'bar'); // NEW state for chart type
 
 	// $: console.log(c);
 	const MountChart = () => {
@@ -280,7 +286,7 @@
 </script>
 
 <div class=" w-full rounded-3xl p-2">
-	<div class="flex items-center">
+	<div class="flex items-center text-sm">
 		<button class="flex items-center gap-1" onclick={toggleChart}
 			>{#if showChart}
 				<ChevronUp size={16} />
@@ -289,22 +295,24 @@
 			{/if} Chart</button
 		>
 		<!-- Toggle between Line and Bar chart -->
-		<div class="ml-2 flex">
-			<button
-				onclick={() => toggleChartType('line')}
-				class="{chartType == 'line'
-					? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100/50 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-l-full px-2"
-				>Line</button
-			>
-			<button
-				onclick={() => toggleChartType('bar')}
-				class=" {chartType == 'bar'
-					? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
-					: `bg-${$color}-100/50 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-r-full px-2"
-				>Bar</button
-			>
-		</div>
+		{#if !(bar || line)}
+			<div class="ml-2 flex">
+				<button
+					onclick={() => toggleChartType('line')}
+					class="{chartType == 'line'
+						? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
+						: `bg-${$color}-100/50 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-l-full px-2"
+					>Line</button
+				>
+				<button
+					onclick={() => toggleChartType('bar')}
+					class=" {chartType == 'bar'
+						? `bg-${$color}-600 dark:bg-${$color}-700 text-gray-100 `
+						: `bg-${$color}-100/50 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100`}  rounded rounded-r-full px-2"
+					>Bar</button
+				>
+			</div>
+		{/if}
 	</div>
 
 	{#if showChart}

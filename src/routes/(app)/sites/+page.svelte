@@ -38,7 +38,7 @@
 <svelte:head>
 	<Seo title="Dashboard - Littlestats" />
 </svelte:head>
-<div class="container mx-auto p-6">
+<div class="container max-w-7xl mx-auto p-6">
 	<div class="mb-6 flex items-center justify-between dark:text-gray-200">
 		<h1 class="text-2xl font-bold">Sites</h1>
 		<a href="/settings"> + Add Domain </a>

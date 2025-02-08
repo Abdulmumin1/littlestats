@@ -63,6 +63,16 @@
 			];
 		}
 	});
+
+	function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',  // Use 'short' for "Jan" instead of "January"
+        day: '2-digit',
+    });
+}
+
 </script>
 
 <svelte:head>
@@ -124,6 +134,11 @@
 							</div>
 						</div>
 						{#if data.user.sub_id}
+						<div class=" text-black dark:text-gray-100">
+							Renews At: <span class="font-extrabold text-black dark:text-gray-100">
+								{formatDate(subscription.renewalDate)}</span
+							>
+						</div>
 							<div class="flex gap-2">
 								<a
 									href="https://polar.sh/purchases/subscriptions/{data.user.sub_id}"

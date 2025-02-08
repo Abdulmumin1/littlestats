@@ -79,15 +79,15 @@
 		let bounceCount = 0;
 
 		events.forEach((event) => {
-			const { ip, event_type } = event;
-			if (!userSessions[ip]) userSessions[ip] = { pageViews: 0 };
+			const { ip, event_type, session_id } = event;
+			if (!userSessions[session_id||ip]) userSessions[session_id||ip] = { pageViews: 0 };
 
 			if (event_type === 'pageview') {
 				totalVisits++;
-				userSessions[ip].pageViews++;
+				userSessions[session_id||ip].pageViews++;
 			}
 
-			if (userSessions[ip].pageViews === 1 && event_type === 'pageExit') {
+			if (userSessions[session_id||ip].pageViews === 1 && event_type === 'pageExit') {
 				bounceCount++;
 			}
 		});
@@ -225,7 +225,10 @@
 	}
 
 	onMount(async () => {
-		await fetchSpikes(0);
+		let date = 7
+		await fetchFromDefaultDates(date);
+		sortInterval = parseInt(date);
+		await fetchSpikes(date);
 	});
 
 	const optis = [
@@ -258,6 +261,8 @@
 			selectedEndDate = null;
 		}}
 	/> -->
+	<h1 class="mb-4 text-2xl md:text-3xl font-bold text-gray-100 px-2 pt-4">Traffic</h1>
+
 	{#if loading}
 		<LoadingState />
 	{/if}
@@ -274,7 +279,7 @@
 					<a href="/settings">+ add domain</a>
 				</Dropdown>
 			</div>
-			<Dropdown on:change={handleDateChange} title="Filter" options={optis}>
+			<Dropdown on:change={handleDateChange} title="Filter" options={optis} value={sortInterval}>
 				<button onclick={() => (isOpen = !isOpen)} class="flex items-center gap-1">
 					<Calendar size={16} /> Custom Date
 				</button>
@@ -335,7 +340,7 @@
 			/>
 		</header>
 
-		<ChartJsGraph {chartD} {sortInterval} />
+		<ChartJsGraph {chartD} {sortInterval} showChart={true} />
 		<div class="mt-6 flex flex-wrap gap-6">
 			<PagesSection {views} on:filter={triggerFilter} />
 			<ReferrerSection {views} on:filter={triggerFilter} domain={current_domain} />

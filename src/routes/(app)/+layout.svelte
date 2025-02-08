@@ -11,6 +11,6 @@
 </script>
 
 <InsideNav />
-<div class="mx-auto max-w-7xl p-2">
+<div class="xl:mx-auto max-w-[90rem] p-2">
 	{@render children?.()}
 </div>

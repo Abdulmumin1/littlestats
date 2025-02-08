@@ -1,8 +1,10 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
 	import { formatNumber } from '$lib/slug/helpers.js';
+	import { onMount } from 'svelte';
 	import MiniChart from '../../../lib/components/analytics/graphStuff/miniChart.svelte';
 	import { Link, Activity, Clock, Eye, ArrowUpRight } from 'lucide-svelte';
+	import { deserialize } from '$app/forms';
 
 	let { domain = {}, index, length } = $props();
 
@@ -56,11 +58,32 @@
 		return Math.round(recentEvents.length / timeSpanHours);
 	}
 
-	let views = domain.expand.events_via_domain_id;
-	let viewCount = formatNumber(views.length);
+	let views = $state([])
+	let viewCount = $derived(views.length)
+	let loading = $state(false)
+	
+	onMount(async()=>{
+		await fetchFromDefaultDates()
+	})
+
+
+	async function fetchFromDefaultDates() {
+		loading = true;
+		const form = new FormData();
+		form.append('domain_id', domain.id);
+
+		const response = await fetch('?/getData', { method: 'POST', body: form });
+		if (response.ok) {
+			const result = deserialize(await response.text());
+			// console.log(result)
+			views = result.data.dataset
+		}
+		loading = false;
+	}
+
 </script>
 
-<div class="dark:border-x-[1px] rounded-xl border-{$color}-900   {index == length -1 && length % 2 != 0 ? 'md:col-span-2':'' }">
+<div class=" rounded-xl border-{$color}-900   {index == length -1 && length % 2 != 0 ? '':'' }">
 
 	<a
 		href="/site/{domain.id}"

@@ -55,9 +55,9 @@
 		aria-label="Toggle theme"
 	>
 		{#if darkMode}
-			<Moon size={20} />
+			<Moon size={20} class="fill-white" />
 		{:else}
-			<Sun size={20} />
+			<Sun size={20} class="fill-white" />
 		{/if}
 	</button>
 

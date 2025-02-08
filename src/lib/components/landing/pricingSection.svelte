@@ -401,11 +401,11 @@
 		<div
 			class="flex w-full max-w-md flex-col rounded-2xl bg-{$color}-50 border p-6 shadow-inner border-{$color}-300 shadow-{$color}-700 relative"
 		>
-			<div
+			<!-- <div
 				class="absolute right-4 top-4 bg-{$color}-600  rounded-full px-3 py-1 text-sm text-white"
 			>
 				Best Deal
-			</div>
+			</div> -->
 			<h3 class="mb-4 text-xl font-semibold">{plans[1].name}</h3>
 			<div class="mb-4 text-4xl font-bold">
 				${plans[1].price}<span class="text-xl font-normal">/lifetime</span>

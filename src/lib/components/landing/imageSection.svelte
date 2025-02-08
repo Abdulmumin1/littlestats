@@ -68,7 +68,7 @@
 		</p>
 	</div>
 	<div
-		class="mx-auto mb-12 max-w-[1500px] border-2 px-2 pt-6 md:rounded-2xl md:px-12 border-{$color}-700"
+		class="mx-auto mb-12 max-w-[1500px] border-2 px-2 pt-6 md:rounded-2xl md:px-12 border-{$color}-700 dark:bg-stone-900"
 	>
 		<DemoComponent {data} />
 	</div>

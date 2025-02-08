@@ -28,9 +28,10 @@
 	let path = $derived($page.url.pathname);
 </script>
 
-<nav
-	class="mb-4 text-black bg-{$color}-100/50 mx-4  max-w-7xl rounded-full py-1 md:mx-auto md:py-3 dark:bg-stone-800/50"
-	style="margin-top:40px;"
+<div class="bg-{$color}-100/50 dark:bg-stone-800/50">
+	<nav
+	class=" text-black  mx-4  max-w-7xl rounded-full py-1 md:mx-auto md:py-3 "
+	
 >
 	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
@@ -53,6 +54,7 @@
 							<a href="/sites" class="  rounded-full text-sm font-bold">Dashboard</a>
 						</div>
 						<a href="/settings" class="rounded-full">
+							<span class="sr-only">Settings</span>
 							<Settings size={20} />
 						</a>
 
@@ -98,6 +100,7 @@
 
 	<!-- <div class="wavy-line bg-{$color}-600"></div> -->
 </nav>
+</div>
 {#if isMenuOpen}
 	<div transition:slide use:clickOutside onclick_outside={closeMenu} class="md:hidden">
 		<!-- <div class="space-y-1 px-2 pb-3 pt-2 sm:px-3">

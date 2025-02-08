@@ -161,7 +161,7 @@
 			} catch {}
 		}
 	});
-	let chartType = $state('line'); // NEW state for chart type
+	let chartType = $state('bar'); // NEW state for chart type
 
 	// $: console.log(c);
 	const MountChart = () => {

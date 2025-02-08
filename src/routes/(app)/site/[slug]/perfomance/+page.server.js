@@ -12,7 +12,6 @@ async function fetchRecords(pb, domain_id, startDate, endDate) {
 		SELECT *
 		FROM events
 		WHERE domain_id = '${domain_id}' 
-		AND event_type = 'pageview'
 		AND timestamp >= '${startDate.toISOString().slice(0, 19).replace('T', ' ')}'
 		${endDate ? `AND timestamp < '${endDate.toISOString().slice(0, 19).replace('T', ' ')}'` : ''}
 	`;
@@ -50,7 +49,7 @@ async function fetchCache(pb, date, domain_id) {
 
 /** @type {import('./$types').Actions} */
 export const actions = {
-	fetchDate: async ({ locals: { pb, ch }, request }) => {
+	fetchPerfomance: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();
 		const selectedDate = parseInt(data.get('defaultRange'));
 		const domain_id = data.get('domain_id');
@@ -96,7 +95,7 @@ export const actions = {
 				default: { start: getDateRange(2), end: getDateRange(1) }
 			};
 
-			const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
+			const { start, end } = { start: selectedDate * 2, end: selectedDate };
 			const dataset = await fetchRecords(ch, domain_id, start, end);
 			return { results: dataset, cache: false };
 		} catch (error) {
@@ -137,9 +136,7 @@ export const actions = {
 export async function load({ locals: { pb, ch }, params }) {
 	try {
 		const domains = await pb.collection('domain').getFullList({ sort: '-created' });
-		// const last24Hours = getDateRange(1);
-		// const dataset = await fetchRecords(ch, params.slug, last24Hours);
-
+		const last24Hours = getDateRange(1);
 		return { records: [], domains, domain_id: params.slug };
 	} catch (error) {
 		console.error('Error loading data:', error);
