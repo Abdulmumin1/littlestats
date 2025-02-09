@@ -2,6 +2,7 @@ import { fail } from '@sveltejs/kit';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
+	days = days <= 0 ? 1 : days
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }

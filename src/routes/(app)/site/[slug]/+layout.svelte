@@ -39,7 +39,7 @@
 					aria-current={isActive(link.href) ? 'page' : undefined}
 				>
 				<svelte:component this={link.icon} size={16}/>
-					<span class="">{link.text}</span>
+					<span class="{isActive(link.href) ? 'sr-only':'block'}">{link.text}</span>
 				</a>
 			{/each}
 		</nav>

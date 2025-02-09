@@ -1,75 +1,144 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
-	import { ArrowRight } from 'lucide-svelte';
-	import { fly } from 'svelte/transition';
+	import { ArrowRight, LineChart, MousePointer2, Shield, Logs, Construction } from 'lucide-svelte';
+	import { fly, fade, slide } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 	import DemoComponent from './demoComponent.svelte';
-
-	let images = {
-		rose: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728117533/Screenshot_2024-10-05_at_09-25-23_cqlncy.png',
-		pink: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728117597/Screenshot_2024-10-05_at_09-39-28_gkinic.png',
-		purple:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728117666/Screenshot_2024-10-05_at_09-40-33_bui583.png',
-		fuchsia:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728117667/Screenshot_2024-10-05_at_09-40-07_mab2gf.png',
-		orange:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118053/orange_oyfjss.png',
-		yellow:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118054/yellow_bfumfp.png',
-		amber:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118054/amber_xt3qdf.png',
-		green:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118056/green_k9uowc.png',
-		lime: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118056/lime_mh1zxb.png',
-		emerald:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118058/emerald_airlve.png',
-		teal: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118058/teal_oc7xx1.png',
-		blue: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118060/blue_wycwgx.png',
-		cyan: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118059/cyan_yqauo2.png',
-		indigo:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118061/indigo_dt7p4u.png',
-		sky: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118063/sky_bazv9r.png',
-		violet:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118063/violet_qqygfa.png',
-		stone:
-			'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118085/stone_gqjj5x.png',
-		red: 'https://res.cloudinary.com/dtrqaqezs/image/upload/w_1000,ar_16:9,c_fill,g_auto,e_sharpen/v1728118085/red_gysz22.png'
-	};
+	import PerfomanceDemo from './perfomanceDemo.svelte';
+	import DemoLogComponent from './demoLogComponent.svelte';
 
 	let { data = $bindable() } = $props();
+
+	const features = [
+		{
+			id: 'traffic',
+			title: 'Traffic Monitoring',
+			description:
+				'Real-time traffic analysis with advanced pattern recognition and performance optimization insights.',
+			icon: LineChart
+		},
+		{
+			id: 'events',
+			title: 'Custom Event Tracking',
+			description:
+				'Seamlessly track user interactions with powerful customizable event parameters and triggers.',
+			icon: MousePointer2
+		},
+		{
+			id: 'performance',
+			title: 'Performance Analytics',
+			description:
+				'Privacy-first performance metrics with comprehensive analysis and actionable insights.',
+			icon: Shield
+		},
+		{
+			id: 'logs',
+			title: 'Logs',
+			description:
+				'Collect and analyze your application logs with powerful filtering and search capabilities.',
+			icon: Logs
+		}
+	];
+
+	let activeTab = $state(features[0].id);
+	let indicatorWidth = $state(null);
+	let indicatorLeft = $state(null);
+	let tabsContainer = $state(null);
+
+	$effect(() => {
+		if (tabsContainer) {
+			const activeTabElement = tabsContainer.querySelector(`[data-tab="${activeTab}"]`);
+			if (activeTabElement) {
+				indicatorWidth = activeTabElement.offsetWidth;
+				indicatorLeft = activeTabElement.offsetLeft;
+			}
+		}
+	});
 </script>
 
-<!-- <p class=" mb-1 mt-20 max-w-xl gap-1 text-lg text-gray-900 dark:text-white sm:mb-8 sm:max-w-2xl sm:text-xl">
-	<span class=" text-{$color}-500"><ArrowRight /></span>Not just cheap though,
-	<span class="bg-{$color}-900 text-{$color}-100 font-extrabold">Super fun to use</span>
-</p> -->
-<!-- <div class="container mx-auto max-w-[1000px] p-3">
+<div class="space-y-12 bg-{$color}-600 px-4 md:px-0 py-6 md:py-12">
 	<h2
-		class="mb-4 mt-20 text-center font-serif text-2xl font-extrabold leading-tight text-black sm:mb-6 sm:text-3xl lg:text-4xl dark:text-white"
+		class="mt-9 text-center text-3xl font-extrabold leading-tight text-black sm:text-4xl lg:text-5xl dark:text-white"
 	>
-		Your <span class="text-{$color}-600 italic">View</span>, Your
-		<span class="text-{$color}-600 italic" style="font-family: inter;">Vibes</span>
+		Handy Features for
+		<span class="text-{$color}-300 italic">Modern Analytics</span>
 	</h2>
 
-	{#key $color}
-		<div class="mt-12 rounded-2xl border-4 bg-{$color}-50 p-3 border-{$color}-300">
-			<img in:fly={{ y: 10 }} class="rounded-xl" src={images[$color]} alt="" srcset="" />
+	<!-- Tabs Navigation -->
+	<div class="relative mx-auto max-w-4xl">
+		<div class="relative flex flex-wrap justify-center gap-2 md:gap-4" bind:this={tabsContainer}>
+			{#each features as feature}
+				<button
+					data-tab={feature.id}
+					class="group relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 md:text-base
+						{activeTab === feature.id
+						? `bg-${$color}-100 text-${$color}-700 dark:bg-${$color}-900/30 dark:text-${$color}-300`
+						: 'text-gray-300 hover:text-gray-200'}"
+					on:click={() => (activeTab = feature.id)}
+				>
+					<svelte:component
+						this={feature.icon}
+						class="h-4 w-4 md:h-5 md:w-5"
+						strokeWidth={activeTab === feature.id ? 2.5 : 2}
+					/>
+					{feature.title}
+				</button>
+			{/each}
+
+			<!-- Animated Indicator
+			<div
+				class="absolute bottom-0 h-0.5 bg-{$color}-600 transition-all duration-300 ease-out"
+				style="width: {indicatorWidth}px; left: {indicatorLeft}px;"
+			/> -->
 		</div>
-	{/key}
-</div> -->
-<h2
-	class="mb-4 mt-20 text-center text-3xl font-extrabold leading-tight text-black sm:mb-6 md:text-4xl lg:text-5xl dark:text-white"
->
-	<span class="text-{$color}-600 italic">Demo</span>
-</h2>
-<div class="md:mx-6">
-	<div class="mx-auto max-w-[1500px] dark:text-gray-100">
-		<p class="flex gap-2 py-2">
-			<span class=" text-{$color}-700"><ArrowRight /></span>Click any entity to filter
-		</p>
 	</div>
-	<div
-		class="mx-auto mb-12 max-w-[1500px] border-2 px-2 pt-6 md:rounded-2xl md:px-12 border-{$color}-700 dark:bg-stone-900"
-	>
-		<DemoComponent {data} />
+
+	<!-- Tab Content -->
+	<div class="relative mx-auto max-w-7xl">
+		{#each features as feature}
+			{#if activeTab === feature.id}
+				<div class="relative" in:fly={{ y:30, duration: 300 }}>
+					<div class="space-y-8">
+						<!-- Feature Description -->
+						<div class="">
+							<p class="text-lg text-gray-100">
+								{feature.description}
+							</p>
+						</div>
+
+						<!-- Demo Component -->
+						<div
+							class="rounded-xl relative border-2 border-{$color}-200 bg-white p-6 shadow-lg dark:border-{$color}-800 dark:bg-stone-900"
+						>
+							<p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+								<ArrowRight class="h-4 w-4 text-{$color}-600" />
+								Click any entity to filter
+							</p>
+							<div
+								class=" mt-4
+							"
+							>
+								{#if feature.id == 'traffic'}
+									<DemoComponent {data} />
+								{:else if feature.id == 'performance'}
+									<PerfomanceDemo {data} />
+								{:else}
+								<div class="text- text-white w-full flex flex-col items-center justify-center"><Construction size={100} class="rotate-2"/>
+								Demo Incoming...
+								</div>
+								<!-- <DemoLogComponent data={[]}/> -->
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
+			{/if}
+		{/each}
 	</div>
 </div>
+
+<style>
+	button {
+		-webkit-tap-highlight-color: transparent;
+	}
+</style>

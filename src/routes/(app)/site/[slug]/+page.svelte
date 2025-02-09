@@ -18,6 +18,8 @@
 	import Dropdown from '$lib/components/generals/dropdown.svelte';
 	import PickDate from '$lib/components/generals/pickDate.svelte';
 	import { derived } from 'svelte/store';
+	import { defaultRange as globalRange, optis } from '$lib/globalstate.svelte.js';
+
 
 	let {data} = $props();
 
@@ -79,15 +81,15 @@
 		let bounceCount = 0;
 
 		events.forEach((event) => {
-			const { ip, event_type, session_id } = event;
-			if (!userSessions[session_id||ip]) userSessions[session_id||ip] = { pageViews: 0 };
+			const { ip, event_type } = event;
+			if (!userSessions[ip]) userSessions[ip] = { pageViews: 0 };
 
 			if (event_type === 'pageview') {
 				totalVisits++;
-				userSessions[session_id||ip].pageViews++;
+				userSessions[ip].pageViews++;
 			}
 
-			if (userSessions[session_id||ip].pageViews === 1 && event_type === 'pageExit') {
+			if (userSessions[ip].pageViews === 1 && event_type === 'pageExit') {
 				bounceCount++;
 			}
 		});
@@ -220,26 +222,18 @@
 		const date = event.detail.value;
 		await fetchFromDefaultDates(date);
 		sortInterval = parseInt(date);
+		globalRange.setRange(sortInterval)
 		if (filters.length > 0) applyFilter(filters);
 		await fetchSpikes(date);
 	}
 
 	onMount(async () => {
-		let date = 7
+		let date = globalRange.getRange();
 		await fetchFromDefaultDates(date);
 		sortInterval = parseInt(date);
 		await fetchSpikes(date);
 	});
 
-	const optis = [
-		{ value: 0, label: 'Last 24 hours' },
-		{ value: 7, label: 'Last 7 days' },
-		{ value: 14, label: 'Last 14 days' },
-		{ value: 21, label: 'Last 21 days' },
-		{ value: 30, label: 'Last 30 days' },
-		{ value: 60, label: 'Last 60 days' },
-		{ value: 90, label: 'Last 90 days' }
-	];
 
 	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
 	const current_domain = data.domains.find((e) => e.id === data.domain_id);

@@ -5,6 +5,7 @@
 	import MiniChart from '../../../lib/components/analytics/graphStuff/miniChart.svelte';
 	import { Link, Activity, Clock, Eye, ArrowUpRight } from 'lucide-svelte';
 	import { deserialize } from '$app/forms';
+	import { dashboardInterval as globalRange } from '$lib/globalstate.svelte.js';
 
 	let { domain = {}, index, length } = $props();
 
@@ -142,10 +143,10 @@
 		</div>
 	{/if} -->
 		<div class="flex flex-col gap-2 pr-3 md:pr-5">
-			<MiniChart chartD={{ data: views, label: 'label' }} sortInterval={30} />
+			<MiniChart chartD={{ data: views, label: 'label' }} sortInterval={globalRange} />
 			<p>
 	
-				Last 30 days: <span class="font-bold text-{$color}-500">{viewCount}</span> views
+				Last {globalRange} days: <span class="font-bold text-{$color}-500">{viewCount}</span> views
 			</p>
 		</div>
 		<!-- Card Footer -->

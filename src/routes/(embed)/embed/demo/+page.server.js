@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
 
+
 async function fetchCache(pb, date, domain_id) {
 	try {
 		const now = new Date();

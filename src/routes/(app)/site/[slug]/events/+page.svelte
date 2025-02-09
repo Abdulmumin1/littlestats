@@ -11,6 +11,11 @@
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
 	import { deserialize } from '$app/forms';
 	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
+	import { defaultRange as globalRange, optis } from '$lib/globalstate.svelte.js';
+	import Drawer from '../../../../../lib/components/generals/drawer.svelte';
+	import BottomDrawer from '../../../../../lib/components/generals/bottomDrawer.svelte';
+	import { MoreVertical } from 'lucide-svelte';
+	import PageItem from '../../../../../lib/components/analytics/pageItem.svelte';
 
 	// You can import additional components (e.g., charts, filters) as needed
 
@@ -100,53 +105,53 @@
 	let page_data = $state(data.records);
 	let sortInterval = $state(1);
 
-	for (let i = 0; i < 19; i++) {
-		// Randomly choose properties
-		const event_type = randomFromArray(eventTypes);
-		const url = randomFromArray(urls);
-		const referrer = randomFromArray(referrers);
-		const user_agent = randomFromArray(userAgents);
-		const timestamp = randomDate(startDate, endDate);
-		// For 'pageExit' events, give a random duration between 1 and 500 seconds; otherwise null.
-		const duration = event_type === 'pageExit' ? randomInt(1, 500) : null;
-		const ip = randomIp();
-		const timezone = randomFromArray(timezones);
-		// Use the same timestamp for created_at for simplicity.
-		const created_at = timestamp;
-		const user_id = randomUUID();
-		const screen = randomFromArray(screens);
-		const language = randomFromArray(languages);
-		const event_name = randomFromArray(eventNames);
-		// Build a random event_data payload
-		const eventDataObj = {
-			buttonId: 'cta-button',
-			buttonColor: randomFromArray(buttonColors),
-			campaign: randomFromArray(campaigns),
-			pageLoadTime: randomInt(500, 2000)
-		};
-		const event_data = JSON.stringify(eventDataObj);
-		const session_id = randomUUID();
+	// for (let i = 0; i < 19; i++) {
+	// 	// Randomly choose properties
+	// 	const event_type = randomFromArray(eventTypes);
+	// 	const url = randomFromArray(urls);
+	// 	const referrer = randomFromArray(referrers);
+	// 	const user_agent = randomFromArray(userAgents);
+	// 	const timestamp = randomDate(startDate, endDate);
+	// 	// For 'pageExit' events, give a random duration between 1 and 500 seconds; otherwise null.
+	// 	const duration = event_type === 'pageExit' ? randomInt(1, 500) : null;
+	// 	const ip = randomIp();
+	// 	const timezone = randomFromArray(timezones);
+	// 	// Use the same timestamp for created_at for simplicity.
+	// 	const created_at = timestamp;
+	// 	const user_id = randomUUID();
+	// 	const screen = randomFromArray(screens);
+	// 	const language = randomFromArray(languages);
+	// 	const event_name = randomFromArray(eventNames);
+	// 	// Build a random event_data payload
+	// 	const eventDataObj = {
+	// 		buttonId: 'cta-button',
+	// 		buttonColor: randomFromArray(buttonColors),
+	// 		campaign: randomFromArray(campaigns),
+	// 		pageLoadTime: randomInt(500, 2000)
+	// 	};
+	// 	const event_data = JSON.stringify(eventDataObj);
+	// 	const session_id = randomUUID();
 
-		// Assemble the event object
-		page_data.push({
-			domain_id: 'mwn1qyxs2n8ha58',
-			event_type,
-			url,
-			referrer,
-			user_agent,
-			timestamp,
-			duration,
-			ip,
-			timezone,
-			created_at,
-			user_id,
-			screen,
-			language,
-			event_name,
-			event_data,
-			session_id
-		});
-	}
+	// 	// Assemble the event object
+	// 	page_data.push({
+	// 		domain_id: 'mwn1qyxs2n8ha58',
+	// 		event_type,
+	// 		url,
+	// 		referrer,
+	// 		user_agent,
+	// 		timestamp,
+	// 		duration,
+	// 		ip,
+	// 		timezone,
+	// 		created_at,
+	// 		user_id,
+	// 		screen,
+	// 		language,
+	// 		event_name,
+	// 		event_data,
+	// 		session_id
+	// 	});
+	// }
 
 	function bucketEventsByName(events) {
 		return events.reduce((buckets, event) => {
@@ -165,7 +170,15 @@
 			if ('event_data' in event) {
 				const eventData = JSON.parse(event.event_data); // Parse the JSON string
 
-				Object.assign(mergedData, eventData); // Merge the data into a single object
+				for (const [key, value] of Object.entries(eventData)) {
+					if (key == 'pageLoadTime' || key == 'memory') continue;
+					if (key in mergedData) {
+						mergedData[key][value] = mergedData[key][value] ?  mergedData[key][value] + 1: 1 ;
+					} else {
+						mergedData[key] = Object.fromEntries([[value, 1]]);
+					}
+				}
+				// Object.assign(mergedData, eventData); // Merge the data into a single object
 			}
 		}
 
@@ -274,27 +287,22 @@
 	function sumData(d) {
 		return Math.max(...d.map((item) => item[1]));
 	}
+
+
 	let sumReferalData = $derived(sumData(sortedReferals));
 	let sumCountryData = $derived(sumData(sortedCountryData));
 	let loading = $state(false);
-	$effect(() => {
-		console.log(events);
-	});
+	let dropDownContent = []
+	// $effect(() => {
+	// 	console.log(events);
+	// });
 	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
-	const optis = [
-		{ value: 0, label: 'Last 24 hours' },
-		{ value: 7, label: 'Last 7 days' },
-		{ value: 14, label: 'Last 14 days' },
-		{ value: 21, label: 'Last 21 days' },
-		{ value: 30, label: 'Last 30 days' },
-		{ value: 60, label: 'Last 60 days' },
-		{ value: 90, label: 'Last 90 days' }
-	];
 
 	async function handleDateChange(event) {
 		const date = event.detail.value;
 		await fetchFromDefaultDates(date);
 		sortInterval = parseInt(date);
+		globalRange.setRange(sortInterval);
 	}
 
 	async function fetchFromDefaultDates(date) {
@@ -314,7 +322,7 @@
 	}
 
 	onMount(async () => {
-		let date = 7
+		let date = globalRange.getRange();
 		await fetchFromDefaultDates(date);
 		sortInterval = parseInt(date);
 		// await fetchSpikes(date);
@@ -329,7 +337,7 @@
 	<LoadingState />
 {/if}
 <div class="min-h-screen p-4 text-white">
-	<h1 class="mb-4 text-2xl md:text-3xl font-bold text-gray-100 px-2 pt-4">Events</h1>
+	<h1 class="mb-4 px-2 pt-4 text-2xl font-bold text-gray-100 md:text-3xl">Events</h1>
 	<nav class="flex flex-wrap justify-between gap-4 py-2">
 		<div class="flex flex-wrap items-center gap-4 md:gap-5">
 			<Dropdown
@@ -350,35 +358,58 @@
 
 	<div class="mt-5 flex flex-col gap-12">
 		<div class="flex flex-col gap-2">
-            <ul class="flex flex-wrap gap-2">
-                {#each events as [eventName, events], index}
-                    <section
-                        onclick={() => {
-                            activeEvent = index;
-                        }}
-                        class="views cursor-pointer bg-{$color}-100/50 px-6 dark:bg-stone-800/50 {index ==
-                        activeEvent
-                            ? `border-${$color}-600 border-2`
-                            : ''}"
-                    >
-                        <h2>{eventName} ({events.length})</h2>
-                    </section>
-                {/each}
-                
-            </ul>
-            <div class="flex flex-wrap">
-                {#each Object.entries(activeSubData) as d}
-                    <div
-                        class="flex w-fit items-center gap-1 rounded-full bg-{$color}-600 p-1 px-2 text-gray-100 dark:bg-stone-800"
-                    >
-                        {d[0]}
-                        <span class="rounded-full bg-{$color}-100 px-2 text-black dark:bg-stone-950  dark:text-gray-100">
-                            {d[1]}
-                        </span>
-                    </div>
-                {/each}
-            </div>
-        </div>
+			<ul class="flex flex-wrap gap-2">
+				{#each events as [eventName, events], index}
+					<section
+						onclick={() => {
+							activeEvent = index;
+						}}
+						class="views cursor-pointer bg-{$color}-100/50 px-6 dark:bg-stone-800/50 {index ==
+						activeEvent
+							? `border-${$color}-600 border-2`
+							: ''}"
+					>
+						<h2>{eventName} ({events.length})</h2>
+					</section>
+				{/each}
+			</ul>
+			<div class="flex flex-wrap gap-2">
+				{#each Object.entries(activeSubData) as d}
+					<div
+						class="flex flex-col w-fit  gap-1 rounded-xl bg-{$color}-600 p-1 px-2 text-gray-300 dark:bg-stone-800"
+					>
+						{d[0]}
+						<span
+							class="rounded-full bg-{$color}-100 px-2 py-1 text-lg text-black dark:bg-stone-950 dark:text-gray-100"
+						>
+							<BottomDrawer>
+								{#snippet handle()}
+									<button>
+										{Object.entries(d[1])[0][0]}
+										<!-- {#if Array.from(d[1]).length > 1}
+											<MoreVertical />
+										{/if} -->
+									</button>
+								{/snippet}
+
+								{#snippet content()}
+									<div
+										class="no-scrollbar relative flex flex-col gap-1 overflow-y-auto px-[20px] py-2"
+									>
+										{#each Object.entries(d[1]) as page (page)}
+											<div animate:flip={{ duration: 100 }}>
+												<PageItem on:filter type="ref" path={page[0]} views={page[1]} />
+
+											</div>
+										{/each}
+									</div>
+								{/snippet}
+							</BottomDrawer>
+						</span>
+					</div>
+				{/each}
+			</div>
+		</div>
 		<ChartJsGraph
 			chartD={{
 				data: activeEventData,
@@ -433,6 +464,7 @@
 								<div
 									class="flex justify-between gap-2 px-2 py-1 dark:border-x-[13px] border-{$color}-700 rounded-md"
 								>
+
 									<span>{page[0]}</span> <span>{page[1]}</span>
 								</div>
 							</div>

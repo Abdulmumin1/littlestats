@@ -19,8 +19,8 @@
 
 	/** @type {Props} */
 	let {
-		title = 'Littlestats - Simple, Affordable Analytics for Websites',
-		description = 'Littlestats gives you easy, affordable website analytics—simple insights to help your site grow faster.',
+		title = 'Littlestats - The Analytics Tool With the Right Metrics',
+		description = 'Littlestats gives you the right metrics to help you grow.',
 		imageUrl = 'https://littlestats.click/littlestats.png',
 		url = 'https://littlestats.click',
 		jsonLd,

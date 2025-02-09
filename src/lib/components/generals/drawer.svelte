@@ -12,7 +12,7 @@
 	 */
 
 	/** @type {Props} */
-	let { side = 'left', width = 300, isOpen = $bindable(false) } = $props();
+	let { side = 'left', width = 300, isOpen = $bindable(false), handle } = $props();
 
 	let drawerEl = $state();
 	let isDragging = false;
@@ -88,7 +88,9 @@
 />
 
 <div class="drawer-container">
-	<button onclick={toggleDrawer}>Toggle Drawer</button>
+	<div onclick={toggleDrawer}>
+		{@render handle?.()}
+	</div>
 	<div
 		class="drawer"
 		style="width: {width}px; {side}: {$position}px;"

@@ -46,7 +46,7 @@
 
 		<Hero />
 		<ImageSection {data} />
-		<FeatureSection />
+		<!-- <FeatureSection /> -->
 		<!-- <ReasonSection/> -->
 		<PricingSection />
 		<!-- <Waitlist /> -->

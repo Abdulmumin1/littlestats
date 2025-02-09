@@ -7,7 +7,8 @@
 	import { scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
-	import { defaultRange as globalRange, optis } from '$lib/globalstate.svelte.js';
+	import { defaultRange as globalRange, optis } from '$lib/demostate.svelte.js';
+	import DemoLoadingState from '../analytics/graphStuff/demoLoadingState.svelte';
 
 	// New filter state
 	let searchQuery = '';
@@ -151,7 +152,6 @@
 	let sortInterval;
 	let loading = false;
 
-	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
 
 
 	async function handleDateChange(event) {
@@ -231,7 +231,7 @@
 			form.append('defaultRange', date);
 			form.append('domain_id', data.domain_id);
 
-			const response = await fetch('?/fetchPerfomance', {
+			const response = await fetch('?/fetchDate', {
 				method: 'POST',
 				body: form
 			});
@@ -270,25 +270,16 @@
 		// await fetchSpikes(date);
 	});
 </script>
-<svelte:head>
-	<title>{data.domains[0].name} - Peformance Analytics</title>
-</svelte:head>
+
 
 {#if loading}
-	<LoadingState />
+	<DemoLoadingState />
 {/if}
 <div class="mx-auto  text-gray-100">
 	<h1 class="mb-4 text-2xl md:text-3xl font-bold text-gray-100 px-2 pt-4">Perfomance</h1>
 
 	<nav class="flex flex-wrap justify-between gap-4 py-2">
-		<Dropdown
-			on:change={(e) => (window.location.href = `/site/${e.detail.value}/perfomance`)}
-			title=""
-			value={data.domain_id}
-			options={domain_options}
-		>
-			<a href="/settings" class="text-blue-500">+ add domain</a>
-		</Dropdown>
+		yaqeen.me
 		<Dropdown on:change={handleDateChange} title="Filter" options={optis} value={sortInterval}>
 			<button class="flex items-center gap-1 text-gray-300">
 				<Calendar size={16} /> Custom Date
@@ -385,7 +376,7 @@
                 >
             </div>
 		</div>
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-2 max-h-[600px] overflow-y-scroll">
 
 	{#each processedUrlMetrics as [url, data], i (url)}
 	<div animate:flip={{duration:199}} class="url-metric flex flex-col gap-1 bg-stone-700/40 p-2 rounded">

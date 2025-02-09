@@ -2,6 +2,7 @@ import { fail } from '@sveltejs/kit';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
+	days = days <= 0 ?1 :days
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
@@ -137,10 +138,10 @@ export const actions = {
 export async function load({ locals: { pb, ch }, params }) {
 	try {
 		const domains = await pb.collection('domain').getFullList({ sort: '-created' });
-		const last24Hours = getDateRange(1);
-		const dataset = await fetchRecords(ch, params.slug, last24Hours);
+		// const last24Hours = getDateRange(1);
+		// const dataset = await fetchRecords(ch, params.slug, last24Hours);
 
-		return { records: dataset, domains, domain_id: params.slug };
+		return { records: [], domains, domain_id: params.slug };
 	} catch (error) {
 		console.error('Error loading data:', error);
 		return { fail: true };

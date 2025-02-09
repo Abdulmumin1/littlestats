@@ -2,6 +2,7 @@ import { fail } from '@sveltejs/kit';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
+	days = days <= 0 ?1 :days
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
@@ -12,7 +13,7 @@ async function fetchRecords(pb, domain_id, startDate, endDate) {
 		SELECT *
 		FROM events
 		WHERE domain_id = '${domain_id}' 
-		AND event_type = 'pageview'
+		AND event_type IN ('pageview', 'pageExit')
 		AND timestamp >= '${startDate.toISOString().slice(0, 19).replace('T', ' ')}'
 		${endDate ? `AND timestamp < '${endDate.toISOString().slice(0, 19).replace('T', ' ')}'` : ''}
 	`;
