@@ -73,7 +73,7 @@
 					class="group relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 md:text-base
 						{activeTab === feature.id
 						? `bg-${$color}-100 text-${$color}-700 dark:bg-${$color}-900/30 dark:text-${$color}-300`
-						: 'text-gray-300 hover:text-gray-200'}"
+						: 'text-gray-100 hover:text-gray-200'}"
 					on:click={() => (activeTab = feature.id)}
 				>
 					<svelte:component

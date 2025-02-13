@@ -22,7 +22,7 @@
 	onMount(()=>{
 		console.log($page.params.slug)
 	})
-	const baseClasses = 'rounded-xl px-4 py-1 transition-colors duration-200 w-fit md:w-full text-center md:text-start inline-flex gap-2 items-center';
+	const baseClasses = 'rounded-xl px-4 py-1 text-sm md:text-base transition-colors duration-200 w-fit md:w-full text-center md:text-start inline-flex gap-2 items-center';
 </script>
 
 <div class="min-h-screen relative p-0 text-black h-full">
@@ -39,7 +39,7 @@
 					aria-current={isActive(link.href) ? 'page' : undefined}
 				>
 				<svelte:component this={link.icon} size={16}/>
-					<span class="{isActive(link.href) ? 'sr-only':'block'}">{link.text}</span>
+					<span class="{isActive(link.href) ? 'sr-only md:not-sr-only':'block'}">{link.text}</span>
 				</a>
 			{/each}
 		</nav>
