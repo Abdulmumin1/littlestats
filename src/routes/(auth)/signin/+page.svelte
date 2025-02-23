@@ -57,7 +57,7 @@
 	<form action="?/oauth" method="post" class="w-fit max-w-[28rem]">
 		<button
 			type="submit"
-			class="flex w-full items-center justify-center gap-2 bg-{$color}-100/50 rounded-xl p-2 dark:bg-stone-800/50 dark:text-gray-100 border-{$color}-500"
+			class="flex w-full items-center justify-center gap-2 bg-{$color}-200 bg-opacity-35 rounded-xl p-2 dark:bg-stone-800/50 dark:text-gray-100 border-{$color}-500"
 		>
 			<img width="20" src="/google-auth.svg" alt="" srcset="" />Continue with Google
 		</button>
@@ -67,7 +67,7 @@
 		method="post"
 		use:enhance={handleSubmit}
 		action="?/login"
-		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-100/50 p-2 px-3 md:p-5 dark:bg-stone-800/50"
+		class="container flex max-w-[28rem] flex-col gap-2 rounded-xl bg-{$color}-200 bg-opacity-35 p-2 px-3 md:p-5 dark:bg-stone-800/50"
 	>
 		<p class=" mb-3 mt-2 text-3xl font-semibold text-gray-800 dark:text-gray-100">Welcome Back</p>
 		<input
@@ -75,19 +75,19 @@
 			placeholder="email@example.com"
 			name="email"
 			bind:value={email}
-			class="rounded-xl border-b-2 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
+			class="rounded-lg border-b-2 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-2 text-black"
 		/>
 		<input
 			type="password"
 			placeholder="password"
 			name="password"
 			bind:value={password}
-			class="rounded-xl border-b-2 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-3 text-black"
+			class="rounded-lg border-b-2 dark:bg-stone-600 dark:bg-stone-700/50 dark:text-gray-100 border-{$color}-500 bg-gray-100 px-2 py-2 text-black"
 		/>
 		<button
 			aria-busy={loading}
 			disabled={loading}
-			class="flex items-center justify-center gap-3 rounded-xl text-black bg-{$color}-500 duration-210 px-4 py-3 text-black transition-colors hover:bg-{$color}-400"
+			class="flex items-center justify-center gap-3 rounded-lg text-black bg-{$color}-500 duration-210 px-4 py-2 text-black transition-colors hover:bg-{$color}-400"
 			>Login
 			{#if loading}
 				<Loader class="animate-spin" size={16} />

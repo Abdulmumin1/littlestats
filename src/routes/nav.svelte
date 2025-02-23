@@ -13,7 +13,7 @@
 </script>
 
 <nav
-	class="relative border-stone-800 text-black dark:border-b dark:bg-stone-900 bg-{$color}-100/50 mx-4 mt-4 max-w-[1100px] rounded-full py-1 md:mx-auto md:py-1 dark:bg-stone-800/50"
+	class="relative border-stone-800 text-black dark:border-b bg-{$color}-100 bg-opacity-45  mx-4 mt-4 max-w-[1100px] rounded-full py-1 md:mx-auto md:py-1 dark:bg-stone-800/50"
 >
 	<!-- Ambient Glow Effects -->
 

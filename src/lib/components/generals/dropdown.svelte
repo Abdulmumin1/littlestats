@@ -43,7 +43,7 @@
 		<button
 			id="custom-select"
 			onclick={() => (isOpen = !isOpen)}
-			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 border border-stone-800 rounded-xl font-bold"
+			class="flex w-48 items-center justify-between px-4 py-1 text-gray-100 bg-{$color}-600 dark:bg-{$color}-700 border-b-4 border-{$color}-800 border rounded-xl font-bold"
 			type="button"
 			aria-haspopup="listbox"
 			aria-expanded={isOpen}
@@ -67,7 +67,7 @@
 							tabindex="0"
 							class="cursor-pointer px-4 py-2 hover:bg-gray-100  dark:hover:bg-gray-100/5
                   {value === option.value
-								? 'bg-' + $color + '-200 dark:bg-gray-100/5 text-' + $color + '-400'
+								? 'bg-' + $color + '-200 bg-opacity-35 dark:bg-gray-100/5 text-' + $color + '-800 dark:text-white'
 								: 'text-gray-700 dark:text-gray-200'}"
 						>
 							{option.label}

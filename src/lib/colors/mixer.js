@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-export let color = writable('lime');
+export let color = writable('purple');
 
 export const colorList = {
 	stone: {

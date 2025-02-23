@@ -6,7 +6,7 @@
 	import { enhance } from '$app/forms';
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
-	import { calculateTrialDaysLeft } from '$lib/utils.js';
+	import { calculateTrialDaysLeft,formatDate } from '$lib/utils.js';
 	import Seo from '../../../../lib/components/generals/seo.svelte';
 	let subscriptions = $state([]);
 	let newSubscriptionName = '';
@@ -64,15 +64,7 @@
 		}
 	});
 
-	function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',  // Use 'short' for "Jan" instead of "January"
-        day: '2-digit',
-    });
-}
-
+	
 </script>
 
 <svelte:head>
@@ -118,7 +110,7 @@
 				{#each subscriptions as subscription (subscription.name)}
 					<div
 						animate:flip={{ duration: 300 }}
-						class="flex flex-col rounded-md bg-{$color}-100/50 p-3 dark:bg-stone-800/50 dark:text-gray-100"
+						class="flex flex-col rounded-md bg-{$color}-200 bg-opacity-35 p-3 dark:bg-stone-800/50 dark:text-gray-100"
 					>
 						<h2 class="mb-4 flex items-center text-xl font-semibold">
 							<CreditCard class="mr-2" /> Subscripiton Information
@@ -134,15 +126,15 @@
 							</div>
 						</div>
 						{#if data.user.sub_id}
-						<div class=" text-black dark:text-gray-100">
-							Renews At: <span class="font-extrabold text-black dark:text-gray-100">
-								{formatDate(subscription.renewalDate)}</span
-							>
-						</div>
+							<div class=" text-black dark:text-gray-100">
+								Renews At: <span class="font-extrabold text-black dark:text-gray-100">
+									{formatDate(subscription.renewalDate)}</span
+								>
+							</div>
 							<div class="flex gap-2">
 								<a
 									href="https://polar.sh/purchases/subscriptions/{data.user.sub_id}"
-									class="mt-2 flex gap-2 self-end rounded-2xl border border-black bg-{$color}-600 dark:bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
+									class="mt-2 flex gap-2 self-end rounded-2xl border-b-4 border-{$color}-800 border bg-{$color}-600 dark:bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
 								>
 									<Settings size={20} />
 									Manage Subscripiton

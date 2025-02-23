@@ -28,51 +28,55 @@
 
 	function sortViewsByHour(viewRecords) {
 		const now = new Date();
-		const twentyFourHoursAgo = new Date(now - 24 * 60 * 60 * 1000);
-		const intervals = [24, 20, 16, 12, 8, 4, 1];
-		const counts = new Map(intervals.map((hr) => [`${hr}hr ago`, 0]));
-		let awhile = 0;
+		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+		// Define buckets for events within the last 24 hours.
+		// Each bucket is defined as [min, max) except the last, which includes exactly 24 hours.
+		const intervals = [
+			{ label: 'a while ago', min: 0, max: 1 },
+			{ label: '1 - 4hr ago', min: 1, max: 4 },
+			{ label: '4 - 8hr ago', min: 4, max: 8 },
+			{ label: '8 - 12hr ago', min: 8, max: 12 },
+			{ label: '12 - 16hr ago', min: 12, max: 16 },
+			{ label: '16 - 20hr ago', min: 16, max: 20 },
+			{ label: '20 - 24hr ago', min: 20, max: 24 }
+		];
+
+		// Initialize counts for each interval.
+		const counts = {};
+		intervals.reverse().forEach((interval) => {
+			counts[interval.label] = 0;
+		});
 
 		viewRecords.forEach((record) => {
 			const recordDate = new Date(record.timestamp);
 			if (isNaN(recordDate.getTime())) {
 				console.warn(`Invalid date encountered: ${record.timestamp}`);
-				return; // Skip this record
-			}
-
-			// if (recordDate < twentyFourHoursAgo) {
-			// 	return; // Skip records older than 24 hours
-			// }
-
-			const hoursAgo = (now - recordDate) / (60 * 60 * 1000);
-
-			// Handle views less than an hour ago
-			if (hoursAgo < 1) {
-				awhile += 1;
-				// counts.set('1hr ago', counts.get('1hr ago') + 1);
 				return;
 			}
-			// console.log(intervals.length < 0);
-			// Find the appropriate interval and increment its count
-			for (let i = 0; i < intervals.length; i++) {
-				let next = intervals[i + 1] ?? 0;
-				if (hoursAgo >= next && hoursAgo <= intervals[i]) {
-					// console.log(`Setting ${hoursAgo} to ${intervals[i]}hr ago basket`);
-					counts.set(`${intervals[i]}hr ago`, counts.get(`${intervals[i]}hr ago`) + 1);
-					break; // Stop after incrementing the count for the most appropriate interval
+			// Only process events from the last 24 hours.
+			if (recordDate < twentyFourHoursAgo) return;
+
+			const hoursAgo = (now - recordDate) / (60 * 60 * 1000);
+			console.log(hoursAgo)
+
+			// Find the matching interval.
+			for (const interval of intervals) {
+				// For all but the last bucket, use a half-open interval [min, max)
+				// For the last bucket (max === 24), include events exactly 24 hours old.
+				if (
+					hoursAgo >= interval.min &&
+					(hoursAgo < interval.max || (interval.max === 24 && hoursAgo <= 24))
+				) {
+					counts[interval.label]++;
+					break;
 				}
-				console.groupEnd();
 			}
 		});
 
-		// Convert Map to Object and ensure all intervals are included
-		const result = Object.fromEntries(
-			intervals.map((hr) => [`${hr}hr ago`, counts.get(`${hr}hr ago`)])
-		);
-
-		result['a while ago'] = awhile;
-		return result;
+		return counts;
 	}
+
 	function sortViewsBy7Days(viewRecords) {
 		return sortViewsByDays(viewRecords, 7);
 	}
@@ -92,59 +96,38 @@
 	function sortViewsByDays(viewRecords, totalDays) {
 		const now = new Date();
 		const startDate = new Date(now - totalDays * 24 * 60 * 60 * 1000);
-		const intervals = Array.from({ length: totalDays }, (_, i) => totalDays - i);
-		const counts = new Map(intervals.map((day) => [`${day} days ago`, 0]));
-		counts.set('Today', 0);
+		const intervals = Array.from({ length: totalDays }, (_, i) => ({
+			label: i === 0 ? 'Today' : `${i} days ago`,
+			min: i,
+			max: i + 1
+		})).reverse(); // Reverse to check from oldest to newest
+
+		const counts = new Map(intervals.map((i) => [i.label, 0]));
 
 		viewRecords.forEach((record) => {
-			// console.log(counts);
 			const recordDate = new Date(record.timestamp);
 			if (isNaN(recordDate.getTime())) {
 				console.warn(`Invalid date encountered: ${record.timestamp}`);
-				return; // Skip this record
+				return;
 			}
 
 			if (recordDate < startDate) {
-				return; // Skip records older than the specified number of days
+				return; // Skip records older than the start date
 			}
 
 			const daysAgo = Math.floor((now - recordDate) / (24 * 60 * 60 * 1000));
 
-			// console.log(daysAgo);
-			// Handle views less than a day ago
-			if (daysAgo < 1) {
-				// console.log(daysAgo);
-
-				if (counts.has('Today')) {
-					counts.set('Today', counts.get('Today') + 1);
-				} else {
-					counts.set('Today', 0);
-				}
-				return;
-			}
-
-			// console.log(daysAgo);
-
-			// Find the appropriate interval and increment its count
-			for (let i = intervals.length; i > 0; i--) {
-				// console.log(daysAgo, intervals[i], intervals[i + 1]);
-				if (daysAgo <= intervals[i]) {
-					// console.log(`Setting ${daysAgo} to ${intervals[i]} ago basket`);
-					counts.set(`${intervals[i]} days ago`, counts.get(`${intervals[i]} days ago`) + 1);
-					break; // Stop after incrementing the count for the most appropriate interval
+			for (const interval of intervals) {
+				if (daysAgo >= interval.min && daysAgo < interval.max) {
+					counts.set(interval.label, counts.get(interval.label) + 1);
+					break;
 				}
 			}
 		});
 
-		// Convert Map to Object and ensure all intervals are included
-		const days_ob = Object.fromEntries(
-			intervals.map((day) => [`${day} days ago`, counts.get(`${day} days ago`)])
-		);
-
-		const result = { ...days_ob, Today: counts.get('Today') };
-		// console.log(totalDays, intervals, result);
-		return result;
+		return Object.fromEntries(intervals.map((i) => [i.label, counts.get(i.label)]));
 	}
+
 	function transformViewDataForGraph(viewData) {
 		return Object.entries(viewData).map(([key, value]) => ({
 			myX: key,
@@ -167,7 +150,7 @@
 			} catch {}
 		}
 	});
-	let chartType = $state(bar ? 'bar' : line ? 'line' : 'bar'); // NEW state for chart type
+	let chartType = $state(bar ? 'bar' : line ? 'line' : 'line'); // NEW state for chart type
 
 	// $: console.log(c);
 	const MountChart = () => {
@@ -187,7 +170,7 @@
 						borderRadius: 5,
 						spacing: 20,
 						...(chartType == 'bar' ? { backgroundColor: usedColor.primary } : {}),
-						pointRadius: 0 // Removes the circle markers
+						pointRadius: 1 // Removes the circle markers
 					}
 				]
 			},

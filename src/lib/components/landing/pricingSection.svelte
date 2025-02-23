@@ -307,7 +307,7 @@
 </script>
 
 <div id="pricing"></div>
-<div class="mt-16 sm:mt-20 lg:mt-24">
+<div class="mt-16 sm:mt-20 lg:mt-24 font-inter">
 	<div
 		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600  rounded-full dark:text-white"
 	></div>

@@ -7,6 +7,10 @@ export default {
 		extend: {
 			boxShadow: {
 				'custom-light': '0 -10px 100px rgba(0, 0, 0, 0.089)'
+			},
+			fontFamily:{
+				inter: 'inter',
+				lato:"Lato"
 			}
 		}
 	},

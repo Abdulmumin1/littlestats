@@ -30,7 +30,7 @@
 			>
 				The Analytics Tool With the 
 				<span
-				class="relative inline-block text-{$color}-500 tracking-wide italic"
+				class="relative inline-block text-{$color}-500 tracking-wide italic font-inter"
 			>
 				Right
 				<span class="absolute bottom-0 left-0 h-0 w-full bg-{$color}-100 dark:bg-{$color}-700 -z-10 transform -skew-x-12" />

@@ -66,7 +66,7 @@
 	<h1 class="mb-4 text-2xl font-bold dark:text-white">Account Management</h1>
 
 	<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
-		<div class="rounded-md bg-{$color}-100/50 p-4 dark:bg-stone-800/50 dark:text-gray-100">
+		<div class="rounded-md bg-{$color}-200 bg-opacity-35 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<User class="mr-2" /> Personal Information
 			</h2>
@@ -160,7 +160,7 @@
 			{/if}
 		</div> -->
 
-		<div class="rounded-md bg-{$color}-100/50 p-4 dark:bg-stone-800/50 dark:text-gray-100">
+		<div class="rounded-md bg-{$color}-200 bg-opacity-35 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<Mail class="mr-2" /> Notification Preferences
 			</h2>
@@ -190,7 +190,7 @@
 			</div>
 		</div>
 
-		<div class="rounded-md bg-{$color}-100/50 p-4 dark:bg-stone-800/50 dark:text-gray-100">
+		<div class="rounded-md bg-{$color}-200 bg-opacity-35 p-4 dark:bg-stone-800/50 dark:text-gray-100">
 			<h2 class="mb-4 flex items-center text-xl font-semibold">
 				<CreditCard class="mr-2" /> Billing Information
 			</h2>

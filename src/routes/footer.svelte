@@ -5,12 +5,12 @@
 	const currentYear = new Date().getFullYear();
 </script>
 
-<footer class="bg-{$color}-100/50 dark:bg-stone-800/50 ">
+<footer class="bg-{$color}-100/50 dark:bg-stone-800/50 font-inter">
 	<!-- <div class="wavy-line bg-{$color}-600"></div> -->
 
 	<div
 		id="box"
-		class="bg-{$color}-50 dark:bg-{$color}-600"
+		class="bg-{$color}-600 dark:bg-{$color}-600"
 		style="--mask: radial-gradient(14.14px at 50% calc(100% - 20px),#000 99%,#0000 101%) calc(50% - 20px) 0/40px 100%,
 radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(100% - 10px)/40px 100% repeat-x;"
 	></div>

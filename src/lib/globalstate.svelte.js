@@ -2,7 +2,7 @@ export let dashboardInterval = 30
 
 
 export class DateRange {
-    range = $state(1);
+    range = $state(7);
   
     getRange() {
       return this.range;
@@ -13,12 +13,32 @@ export class DateRange {
     }
   
     clearRange() {
-      this.range = 1;
+      this.range = 7;
+    }
+
+  }
+  
+
+class DataCache {
+    cache = $state({});
+  
+    getCache(key) {
+      // console.log(key, this.cache)
+      return this.cache?.[key];
+    }
+  
+    setCach(key, value) {
+      this.cache = {...this.cache,  ...Object.fromEntries([[key, value]])}
+    }
+  
+    clearCache() {
+      this.cache = {};
     }
 
   }
   
 export let defaultRange = new DateRange();
+export let datacache = new DataCache()
 
 export const optis = [
     { value: 1, label: 'Last 24 hours' },

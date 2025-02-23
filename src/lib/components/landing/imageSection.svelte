@@ -58,7 +58,7 @@
 
 <div class="space-y-12 bg-{$color}-600 px-4 md:px-0 py-6 md:py-12">
 	<h2
-		class="mt-9 text-center text-3xl font-extrabold leading-tight text-black sm:text-4xl lg:text-5xl dark:text-white"
+		class="mt-9 text-center text-3xl font-extrabold leading-tight  sm:text-4xl lg:text-5xl text-white"
 	>
 		Handy Features for
 		<span class="text-{$color}-300 italic">Modern Analytics</span>
@@ -108,7 +108,7 @@
 
 						<!-- Demo Component -->
 						<div
-							class="rounded-xl relative border-2 border-{$color}-200 bg-white p-6 shadow-lg dark:border-{$color}-800 dark:bg-stone-900"
+							class="rounded-xl relative border-2 border-{$color}-200  bg-{$color}-500 p-6 shadow-lg dark:border-{$color}-800 dark:bg-stone-900"
 						>
 							<p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
 								<ArrowRight class="h-4 w-4 text-{$color}-600" />

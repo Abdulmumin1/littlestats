@@ -46,12 +46,14 @@
 		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 		updateTheme(prefersDark);
 	}
+
+	let {bottom = false} = $props()
 </script>
 
 <div class="relative">
 	<button
 		onclick={toggleDropdown}
-		class="flex items-center justify-center rounded-full border-2 p-2 border-{$color}-700 bg-{$color}-50 text-black dark:bg-stone-900 dark:text-gray-100"
+		class="flex items-center justify-center rounded-full border p-2 border-{$color}-600 bg-{$color}-50 text-black dark:bg-stone-900 dark:text-gray-100"
 		aria-label="Toggle theme"
 	>
 		{#if darkMode}
@@ -66,7 +68,7 @@
 			transition:fly={{ y: 10 }}
 			use:clickOutside
 			onclick_outside={closeDropdown}
-			class="absolute right-0 mt-2 w-48 rounded-md border border-{$color}-200 z-50 bg-white shadow-lg"
+			class="absolute right-0 mt-2 w-48 rounded-md border border-{$color}-200 z-50 bg-white text-black dark:bg-stone-800 dark:text-white dark:border-0 shadow-lg {bottom?'bottom-12':''}"
 		>
 			<div class="py-1">
 				<button
@@ -74,14 +76,14 @@
 					class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-600 hover:dark:bg-{$color}-700 hover:text-white"
 				>
 					<Sun size={16} class="mr-2" />
-					Light
+					Light (experimental)
 				</button>
 				<button
 					onclick={() => updateTheme(true)}
 					class="flex w-full items-center px-4 py-2 text-sm hover:bg-{$color}-600 hover:dark:bg-{$color}-700 hover:text-white"
 				>
 					<Moon size={16} class="mr-2" />
-					Dark (experimental)
+					Dark 
 				</button>
 				<button
 					onclick={setSystemTheme}

@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
+	import InsideNav from '$lib/components/generals/insideNav.svelte';
 	/**
 	 * @typedef {Object} Props
 	 * @property {import('svelte').Snippet} [children]
@@ -16,8 +17,8 @@
 </script>
 
 <svelte:window bind:innerWidth />
-
-<div class="min-h-screen p-0 text-black md:p-2">
+<InsideNav/>
+<div class="min-h-screen p-0 text-black md:p-2 max-w-6xl mx-auto">
 	<div class="container mx-auto flex flex-col gap-4 pt-2 md:flex-row md:pt-6">
 		<div
 			class="flex w-full flex-row justify-center gap-1 px-2 md:w-[300px] md:flex-col md:justify-start md:px-4"
@@ -25,8 +26,8 @@
 			<a
 				class={`rounded-2xl ${
 					path.endsWith('/settings') || path.endsWith('/settings/')
-						? `border-${$color}-800 bg-${$color}-600 dark:bg-${$color}-700 border-2 text-white`
-						: `bg-${$color}-100 dark:bg-stone-800/50 dark:text-gray-100`
+						? `border-b-4 border-${$color}-800 border bg-${$color}-600 dark:bg-${$color}-700  text-white`
+						: `bg-${$color}-200 bg-opacity-35 dark:bg-stone-800/50 dark:text-gray-100`
 				} px-4 py-2`}
 				href="/settings"
 			>
@@ -34,20 +35,20 @@
 			</a>
 			<a
 				class="rounded-2xl {path.endsWith('/settings/subscription')
-					? `border-${$color}-800 bg-${$color}-600 dark:bg-${$color}-700 border-2 text-white`
-					: `bg-${$color}-100 dark:bg-stone-800/50 dark:text-gray-100`} } px-4 py-2"
+					? `border-b-4 border-${$color}-800 border bg-${$color}-600 dark:bg-${$color}-700  text-white`
+					: `bg-${$color}-200 bg-opacity-35 dark:bg-stone-800/50 dark:text-gray-100`} } px-4 py-2"
 				href="/settings/subscription">Subscription</a
 			>
 			<a
 				class="rounded-2xl {path.endsWith('/settings/account')
-					? `border-${$color}-800 bg-${$color}-600 dark:bg-${$color}-700 border-2 text-white`
-					: `bg-${$color}-100 dark:bg-stone-800/50 dark:text-gray-100`} p} px-4 py-2"
+					? `border-b-4 border-${$color}-800 border bg-${$color}-600 dark:bg-${$color}-700  text-white`
+					: `bg-${$color}-200 bg-opacity-35 dark:bg-stone-800/50 dark:text-gray-100`} p} px-4 py-2"
 				href="/settings/account">Account</a
 			>
 		</div>
 		<div class="wavy-line block md:hidden bg-{$color}-6}-600"></div>
 
-		<div class="w-full px-2">
+		<div class="w-full px-2 ">
 			{@render children?.()}
 		</div>
 	</div>

@@ -26,28 +26,31 @@
 	}
 
 	let path = $derived($page.url.pathname);
+
+	let {title=false} = $props()
 </script>
 
-<div class="bg-{$color}-100/50 dark:bg-stone-800/50">
+<div class="bg-{$color}-200 bg-opacity-35 dark:bg-stone-800/50">
 	<nav
 	class=" text-black  mx-4  max-w-7xl rounded-full py-1 md:mx-auto md:py-3 "
 	
 >
-	<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+	<div class="mx-auto l px-4 sm:px-6 lg:px-8">
 		<div class="flex h-16 items-center justify-between">
 			<div class="flex items-center">
-				<a
+			
+						<a
 					href="/"
-					class="flex flex-shrink-0 items-center rounded-2xl border border-black bg-{$color}-600 dark:bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700 px-2 py-1"
+					class="flex flex-shrink-0 items-center rounded-2xl  border-b-4 border-{$color}-800 bg-{$color}-600 dark:bg-{$color}-600 dark:bg-{$color}-700 px-2 py-1"
 				>
-					<!-- <ChartBar size={18} class="text-{$color}-950" /> -->
 					<span class="px-2 text-lg font-bold text-gray-100">Littlestats</span>
 				</a>
+			
 			</div>
 			<div class="flex items-center gap-2">
 				<MixerComp />
 				<div
-					class="hidden items-center rounded-2xl border border-black px-4 py-2 md:flex bg-{$color}-600 dark:bg-{$color}-700 dark:bg-{$color}-600 dark:bg-{$color}-700"
+					class="hidden items-center rounded-2xl  border-b-4 border-{$color}-800 border px-4 py-2 md:flex bg-{$color}-600 dark:bg-{$color}-700"
 				>
 					<div class=" flex items-center justify-center gap-3 text-gray-100 md:ml-0">
 						<div class="flex">

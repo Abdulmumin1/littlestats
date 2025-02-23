@@ -12,11 +12,17 @@
 </script>
 
 <div class=" min-h-screen">
-	<div
-		class="container mx-auto min-h-screen max-w-[1000px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16"
-	>
+	<div class="pt-12">
+
 		<Nav />
-		{@render children?.()}
+	</div>
+	<div
+		class="container  mx-auto min-h-screen max-w-[1000px] px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16"
+	>
+		<section class="font-inter">
+
+			{@render children?.()}
+		</section>
 	</div>
 	<Footer />
 </div>

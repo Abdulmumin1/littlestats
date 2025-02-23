@@ -37,3 +37,43 @@ export function calculateTrialDaysLeft(activationDate) {
 
 	return roundedDaysLeft;
 }
+
+export function formatDate(dateString) {
+	
+		const date = new Date(dateString);
+		
+		let d = date.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short', // Use 'short' for "Jan" instead of "January"
+			day: '2-digit'
+		});
+		if (d == 'Invalid Date') return dateString
+		return d;
+	
+}
+
+
+export function executeInWorker(func, ...args) {
+    return new Promise((resolve, reject) => {
+        const blob = new Blob([
+            `onmessage = function(e) {
+                const [funcStr, args] = e.data;
+                const func = new Function('return ' + funcStr)();
+                postMessage(func(...args));
+            }`
+        ], { type: 'application/javascript' });
+        
+        const worker = new Worker(URL.createObjectURL(blob));
+        worker.onmessage = (e) => {
+            resolve(e.data);
+            worker.terminate();
+        };
+        worker.onerror = (e) => {
+            reject(e.message);
+            worker.terminate();
+        };
+		// console.log(func.toString())
+        
+        worker.postMessage([func.toString(), args]);
+    });
+}

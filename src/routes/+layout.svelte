@@ -1567,7 +1567,7 @@
 	}
 	onMount(() => {
 		const c = localStorage.getItem('little_stat_color');
-		color.set(c ?? 'lime');
+		color.set(c ?? 'purple');
 		loaded = true;
 
 		let htmlEl = document.querySelector('html');
@@ -1602,7 +1602,7 @@
 
 <LoadProgress />
 {#if loaded}
-	<div class="min-h-screen bg-{$color}-50 dark:bg-stone-900">
+	<div class="min-h-screen bg-stone-50 dark:bg-stone-900 prose-headings:font-inter">
 		{@render children?.()}
 	</div>
 {/if}

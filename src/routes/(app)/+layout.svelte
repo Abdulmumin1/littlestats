@@ -10,7 +10,7 @@
 	let { children } = $props();
 </script>
 
-<InsideNav />
-<div class="xl:mx-auto max-w-[90rem] p-2">
+<!-- <InsideNav /> -->
+<div class="xl:mx-auto">
 	{@render children?.()}
 </div>

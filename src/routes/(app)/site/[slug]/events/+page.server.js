@@ -12,7 +12,7 @@ async function fetchRecords(pb, domain_id, startDate, endDate) {
 	const query = `
 		SELECT *
 		FROM events
-		WHERE domain_id = '${domain_id}' 
+		WHERE domain_id = '${domain_id.replaceAll(' ', '')}' 
         AND event_type = 'customEvent'
 		AND timestamp >= '${startDate.toISOString().slice(0, 19).replace('T', ' ')}'
 		${endDate ? `AND timestamp < '${endDate.toISOString().slice(0, 19).replace('T', ' ')}'` : ''}
@@ -135,13 +135,13 @@ export const actions = {
 };
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ locals: { pb, ch }, params }) {
+export async function load({ parent, locals: { pb, ch }, params }) {
 	try {
-		const domains = await pb.collection('domain').getFullList({ sort: '-created' });
+		const domains = await parent()
 		// const last24Hours = getDateRange(1);
 		// const dataset = await fetchRecords(ch, params.slug, last24Hours);
-
-		return { records: [], domains, domain_id: params.slug };
+		
+		return domains
 	} catch (error) {
 		console.error('Error loading data:', error);
 		return { fail: true };

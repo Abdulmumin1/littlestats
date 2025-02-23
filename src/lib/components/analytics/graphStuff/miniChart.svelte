@@ -15,7 +15,7 @@
 	 */
 
 	/** @type {Props} */
-	let { chartD = { data: [], label: 'Views' }, showChart = false, sortInterval = 30 } = $props();
+	let { chartD = { data: [], label: 'Views' }, showChart = false, sortInterval = 30, sorted=false, type="bar" } = $props();
 
 	let chartCanvas = $state(null);
 	let chart = $state(null);
@@ -161,7 +161,7 @@
 			} catch {}
 		}
 	});
-	let chartType = $state('bar'); // NEW state for chart type
+	let chartType = $state(type); // NEW state for chart type
 
 	// $: console.log(c);
 	const MountChart = () => {
@@ -175,7 +175,7 @@
 						data: chartData.map((d) => d.myY),
 						borderColor: usedColor.primary,
 						tension: 0.0,
-						pointRadius: 0, // Removes the circle markers
+						pointRadius: 1, // Removes the circle markers
 
 						fill: 'origin',
 						borderWidth: 2,
@@ -266,7 +266,7 @@
 	let viewRecords = $derived(chartD.data);
 	let chartData = $derived(
 		transformViewDataForGraph(
-			sortInterval <= 1 ? sortViewsByHour(viewRecords) : sortViewsByDays(viewRecords, sortInterval)
+			sorted? viewRecords : sortInterval <= 1 ? sortViewsByHour(viewRecords) : sortViewsByDays(viewRecords, sortInterval)
 		)
 	);
 	let c = $derived(chartData.map((d) => d.myX));

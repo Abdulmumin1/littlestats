@@ -9,10 +9,10 @@
 	let { children } = $props();
 </script>
 
-<div class="mt-6 rounded-xl bg-{$color}-100/50">
+<div class="mt-6 rounded-xl bg-{$color}-200 bg-opacity-75">
 	<div
 		id="box"
-		class="bg-{$color}-50 dark:bg-stone-900"
+		class="bg-{$color}-100 dark:bg-stone-900"
 		style="--mask: radial-gradient(14.14px at 50% calc(100% - 20px),#000 99%,#0000 101%) calc(50% - 20px) 0/40px 100%,
 radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(100% - 10px)/40px 100% repeat-x;"
 	></div>
@@ -24,7 +24,7 @@ radial-gradient(14.14px at 50% calc(100% + 10px),#0000 99%,#000 101%) 50% calc(1
 
 	<div
 		id="demo"
-		class="bg-{$color}-50 dark:bg-stone-900"
+		class="bg-{$color}-100 dark:bg-stone-900"
 		style="--mask: radial-gradient(14.14px at 50% 20px,#000 99%,#0000 101%) calc(50% - 20px) 0/40px 100%,
     radial-gradient(14.14px at 50% -10px,#0000 99%,#000 101%) 50% 10px/40px 100% repeat-x;"
 	></div>

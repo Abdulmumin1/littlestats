@@ -1,10 +1,10 @@
 import { fail } from '@sveltejs/kit';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ locals: { pb } }) {
-	const user = pb.authStore.model;
-	return { user };
-}
+// export async function load({ locals: { pb } }) {
+// 	const user = pb.authStore.model;
+// 	return { user };
+// }
 
 /** @type {import('./$types').Actions} */
 export const actions = {
