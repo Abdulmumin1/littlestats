@@ -5,7 +5,8 @@
 	import { color } from '$lib/colors/mixer.js';
 	import { getContext, setContext } from 'svelte';
 	import { writable } from 'svelte/store';
-
+	import Dropdown from '../generals/dropdown.svelte';
+    import {calctypeoptions} from '$lib/funnels/helpers.js'
 	let {
 		availableSteps = [
 			{ id: 1, name: 'Get Started', value: 'Get Started', color: '#60A5FA', type: 'event' },
@@ -16,6 +17,7 @@
 	} = $props();
 
 	let funnelSteps = $state([]);
+	let funnelType = $state('user');
 	let funnelName = $state('');
 	let searchQuery = $state('');
 	const dndConfig = $state({
@@ -57,15 +59,18 @@
         filteredSteps = availableSteps;
 		funnelSteps = [];
 		change = !change;
+        tab != tab;
 		modal.close();
 	}
 
 	function save() {
 		try {
-			funnelContext.set({ name: funnelName, steps: funnelSteps });
+			funnelContext.set({ name: funnelName, type:funnelType, steps: funnelSteps });
 			closeModal();
 		} catch (error) {}
 	}
+
+
 	function handleRemoveStep(index) {
 		// let s = funnelSteps.find((_, i) => i == index)
 		// let x = [...new Set([...filteredSteps, s])]
@@ -81,25 +86,36 @@
 	let change = $state(true);
 
 	let tab = $state(true);
+   
 </script>
+
 
 <button
 	class="flex items-center justify-center gap-1 rounded-xl border-b-4 border-{$color}-800 border text-gray-100 bg-{$color}-600 px-4 py-1 font-bold hover:bg-{$color}-600 dark:bg-{$color}-700"
 	onclick={openModal}>Create Funnel</button
 >
 
-<dialog bind:this={modal} class=" rounded-md">
+<dialog bind:this={modal} class=" rounded-md ">
 	{#key change}
-		<div class="relative min-w-[1200px] rounded-xl bg-stone-50">
-			<header class="sticky top-0 flex items-center justify-between gap-3 p-3">
-				<div class="w-full">
+		<div class="relative min-w-full md:min-w-[1200px] rounded-xl bg-stone-50">
+			<header class="sticky top-0 flex items-center gap-3 p-3 flex-wrap bg-stone-100">
+				<div class="flex-1">
 					<input
 						type="text"
 						bind:value={funnelName}
 						placeholder="Enter Funnel Name"
-						class="w-full rounded-lg border-0 p-2 text-xl"
+						class="flex-1 rounded-lg border-0 p-2 text-xl"
 					/>
 				</div>
+                <Dropdown
+					on:change={(e) => {
+                        funnelType = e.detail.value
+                    }}
+					title="Sorting Type"
+					value={funnelType}
+					options={calctypeoptions}
+				>
+				</Dropdown>
 				<div class="flex gap-2">
 					<button
 						onclick={save}
@@ -113,9 +129,9 @@
 				</div>
 			</header>
 			<div class="">
-				<div class="flex gap-8">
+				<div class="flex flex-col md:flex-row gap-8">
 					<!-- Available Steps Pool -->
-					<div class="w-1/3 bg-{$color}-200 bg-opacity-15 shadow-sm px-6 flex flex-col gap-3">
+					<div class="w-full md:w-1/3 bg-{$color}-200 bg-opacity-15 shadow-sm px-6 flex flex-col gap-3">
 						<div class="flex flex-col">
                             <h2 class="mb-4 text-xl font-bold ">Available Steps</h2>
                             <div class="flex *:flex-1 *:py-2 *:rounded-lg">
@@ -188,7 +204,7 @@
 					</div>
 
 					<!-- Funnel Builder -->
-					<div class="flex-1 rounded-lg bg-stone-50 p-6 shadow-sm">
+					<div class="flex-1  rounded-lg bg-stone-50 p-6 shadow-sm">
 						<h2 class="mb-4 text-xl font-bold">Your Funnel</h2>
 						<div
 							use:dndzone={{

@@ -35,7 +35,7 @@
 	let events = $state([]);
 
 	$effect(async () => {
-		let dataSnapshot = $state.snapshot(generateRandomEvents());
+		let dataSnapshot = $state.snapshot(page_data);
 		// console.log(dataSnapshot)
 		events = await executeInWorker(bucketEventsByName, dataSnapshot);
 		

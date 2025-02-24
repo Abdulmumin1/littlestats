@@ -3,6 +3,7 @@
 	import Chart from 'chart.js/auto';
 	import { executeInWorker } from '$lib/utils';
 	import { calculateFunnel } from '$lib/funnels/helpers.js';
+	import { DivideCircle } from 'lucide-svelte';
 
 	let { data, funnelStepsContext } = $props();
 
@@ -21,53 +22,6 @@
 	// Reactive block to handle data changes
 
 	// Corrected funnel calculation logic
-	function calculateFunnelx(data, funnelSteps) {
-		// 1. Group events by session
-		const sessions = {};
-		data.forEach((event) => {
-			if (!sessions[event.session_id]) {
-				sessions[event.session_id] = [];
-			}
-			sessions[event.session_id].push(event);
-		});
-
-		// 2. Process each session's events in chronological order
-		const sessionProgress = {};
-
-		Object.entries(sessions).forEach(([sessionId, events]) => {
-			// Sort events by timestamp
-			events.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-			let currentStep = 0; // Track which step the user is trying to complete next
-
-			// 3. Check events against funnel steps in order
-			events.forEach((event) => {
-				if (currentStep >= funnelSteps.length) return; // Funnel completed
-
-				const targetStep = funnelSteps[currentStep];
-				const isMatch =
-					(targetStep.type === 'url' && event.url === targetStep.value) ||
-					(targetStep.type === 'event' && event.event_name === targetStep.value);
-
-				if (isMatch) {
-					currentStep++; // Move to next step in funnel
-				}
-			});
-
-			// Store the highest completed step index
-			sessionProgress[sessionId] = currentStep - 1;
-		});
-
-		// 4. Calculate counts for each step
-		const funnelResults = {};
-		funnelSteps.forEach((step, index) => {
-			funnelResults[step.value] = Object.values(sessionProgress).filter(
-				(completedStep) => completedStep >= index
-			).length;
-		});
-
-		return funnelResults;
-	}
 
 	function calculateFunneld(data, funnelSteps) {
 		// 1. Group events by user_id and sort chronologically
@@ -126,15 +80,17 @@
 		return new Chart(canvas, {
 			type: 'bar',
 			data: {
-				labels: funnelSteps,
+				labels: $funnelStepsContext.steps.map((step) => step.name),
 				// 'rgba(54, 162, 235, 0.2)'
 				datasets: [
 					{
 						label: $funnelStepsContext.name ?? 'Funnel Steps',
 						data: data_,
 						backgroundColor: $funnelStepsContext.steps.map((step) => step.color),
-						borderColor: 'rgba(54, 162, 235, 1)',
-						borderWidth: 1
+						borderColor: $funnelStepsContext.steps.map((step) => step.color),
+						borderWidth: 1,
+						borderRadius: 10,
+
 					}
 				]
 			},
@@ -151,11 +107,11 @@
 
 	async function updateChart() {
 		if (!chart) return;
-		let objs = structuredClone($state.snapshot(data));
-		let steps = structuredClone($state.snapshot($funnelStepsContext.steps))
+		let objs = $state.snapshot(data);
+		let steps = $state.snapshot($funnelStepsContext.steps);
 		// console.log(objs)
-		funnelCounts = await executeInWorker(calculateFunnel, objs, steps);
-		chart.data.labels = funnelSteps;
+		funnelCounts = await executeInWorker(calculateFunnel, objs, steps, $funnelStepsContext.type);
+		chart.data.labels = $funnelStepsContext.steps.map((step) => step.name);
 		let data_ = funnelSteps.map((step) => funnelCounts[step]);
 		chart.data.datasets[0].label = $funnelStepsContext.name;
 		chart.data.datasets[0].data = data_;
@@ -171,10 +127,10 @@
 		// 	// $inspect(funnelCounts);
 		// 	console.log(funnelSteps.map((step) => funnelCounts[step]));
 		// }
-			chart = createChart(funnelCounts, funnelSteps);
+		chart = createChart(funnelCounts, funnelSteps);
 
 		let unsubscribe = funnelStepsContext.subscribe(async (_) => {
-			console.log(_)
+			// console.log(_)
 			await updateChart();
 		});
 
@@ -182,20 +138,66 @@
 			unsubscribe();
 		};
 	});
+
+	let funnelEntries = $derived(Object.entries(funnelCounts));
+	$effect(() => {
+		$inspect(funnelEntries);
+	});
 </script>
 
 <canvas id="funnelChart" class="w-full"></canvas>
 {#if funnelCounts && funnelSteps}
-	<h2>Funnel Analysis</h2>
-	<table class="w-full">
-		<thead><tr><th>Step</th><th>Count</th></tr></thead>
+	<h2 class="text-xl  py-4">Funnel Analysis</h2>
+	<!-- <div class="flex w-full">
+		<p>Steps</p>
+		<p>Counts</p>
+	</div>
+
+	<div class="flex gap-2 flex-col">
+		{#each $funnelStepsContext.steps as step, index}
+			<div >
+				<div   style="background-color: {step.color}; width:{((funnelCounts[step.value]/funnelEntries?.[0]?.[1] ?? funnelCounts[step.value] ) * 100).toFixed(0)}%;" class="flex justify-between rounded-xl items-center">
+					<span  class="m-3 bg-white/50 rounded-xl px-2 py-1">{step.name}</span>
+					<span  class="m-3 bg-white/50 rounded-xl px-2 py-1">{funnelCounts[step.value]} {(( funnelCounts[step.value] / funnelEntries?.[0]?.[1] ?? funnelCounts[step.value]) * 100).toFixed(0)}%</span>
+				</div>
+			</div>
+		{/each}
+
+
+	</div> -->
+	<table class="w-full text-black dark:text-white">
+		<thead
+			><tr
+				><th class="border-2 border-stone-300 dark:border-stone-700">
+					<div class="flex items-center gap-2">
+						Step
+						<div class="flex">
+							{#each $funnelStepsContext.steps as step}
+								<div class="-m-1 h-4 w-4 rounded-xl" style="background:{step.color};"></div>
+							{/each}
+						</div>
+					</div>
+				</th><th class="border-2 border-stone-300 dark:border-stone-700"
+					>Users</th
+				> <th class="border-2 border-stone-300 dark:border-stone-700">Percentage</th></tr
+			></thead
+		>
 		<tbody>
 			{#each $funnelStepsContext.steps as step}
-				<tr
-					><td style="background-color: {step.color}; " class="m-3 rounded-xl">{step.name}</td><td
-						>{funnelCounts[step.value]}</td
-					></tr
-				>
+				<tr>
+					<td class="border-2 border-stone-300 dark:border-stone-700">
+						<div class="flex items-center gap-2">
+							<div class="h-4 w-4 rounded-full" style="background-color: {step.color}; "></div>
+							{step.name}
+						</div>
+					</td>
+					<td class="border-2 border-stone-300 dark:border-stone-700">{funnelCounts[step.value]} </td>
+					<td class="border-2 border-stone-300 dark:border-stone-700">
+						{(
+							(funnelCounts[step.value] / funnelEntries?.[0]?.[1] ?? funnelCounts[step.value]) * 100
+						).toFixed(0)}%
+					</td>
+				</tr>
 			{/each}
 		</tbody>
 	</table>
@@ -207,9 +209,13 @@
 	canvas {
 		max-height: 500px;
 	}
-
+	table {
+		border-collapse: collapse;
+	}
 	th,
 	td {
 		padding: 10px;
+		/* border: 5px solid #cdcecc; */
+		/* border-radius: 100px; */
 	}
 </style>

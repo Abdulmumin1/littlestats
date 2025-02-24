@@ -8,4 +8,3 @@ export async function load({ locals: { pb, ch }, params }) {
 		return { fail: true };
 	}
 }
-

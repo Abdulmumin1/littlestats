@@ -156,7 +156,7 @@
 
 	async function handleDateChange(event) {
 		const date = event.detail.value;
-		await fetchFromDefaultDates(date);
+		// await fetchFromDefaultDates(date);
 		sortInterval = parseInt(date);
 		globalRange.setRange(sortInterval)
 
@@ -265,7 +265,7 @@
 
 	onMount(async () => {
 		let date = globalRange.getRange()
-		await fetchFromDefaultDates(date);
+		// await fetchFromDefaultDates(date);
 		sortInterval = parseInt(date);
 		// await fetchSpikes(date);
 	});
@@ -275,8 +275,9 @@
 {#if loading}
 	<DemoLoadingState />
 {/if}
+
+
 <div class="mx-auto  text-gray-100">
-	<h1 class="mb-4 text-2xl md:text-3xl font-bold text-gray-100 px-2 pt-4">Perfomance</h1>
 
 	<nav class="flex flex-wrap justify-between gap-4 py-2">
 		yaqeen.me
@@ -286,26 +287,25 @@
 			</button>
 		</Dropdown>
 	</nav>
-
-	<div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3">
-		<div class="rounded-xl bg-{$color}-100/50 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
-			<h3 class="text-sm text-gray-300">Avg Page Load</h3>
+	<div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3 text-black dark:text-white">
+		<div class="rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
+			<h3 class="text-sm ">Avg Page Load</h3>
 			<div class="text-xl font-bold">{(formattedMetrics.avgLoad/1000).toFixed(1)}s</div>
 		</div>
-		<div class="rounded-xl bg-{$color}-100/50 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
-			<h3 class="text-sm text-gray-300">Avg Memory Usage</h3>
+		<div class="rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
+			<h3 class="text-sm ">Avg Memory Usage</h3>
 			<div class="text-xl font-bold">
 				{formattedMetrics.avgMemUsed}MB / {formattedMetrics.avgMemTotal}MB
 			</div>
 		</div>
-		<div class="rounded-xl bg-{$color}-100/50 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
-			<h3 class="text-sm text-gray-300">Avg Session Duration</h3>
+		<div class="rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
+			<h3 class="text-sm ">Avg Session Duration</h3>
 			<div class="text-xl font-bold">{formattedMetrics.avgSession}s</div>
 		</div>
 	</div>
 
-	<div class="mt-6 rounded-xl bg-{$color}-100/50 dark:bg-stone-800 p-4">
-		<div class="mb-4 flex items-center flex-wrap  gap-4 justify-between">
+	<div class="mt-6 rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4">
+		<div class="mb-4 flex items-center flex-wrap  gap-4 justify-between text-black dark:text-white">
 			<h3 class="text-lg font-semibold">Performance by Page</h3>
 			<div class="flex items-center gap-2 flex-wrap">
 				<!-- <Dropdown
@@ -340,7 +340,7 @@
                     <span>Load time</span>
                    </div>
                </div> -->
-				<button onclick={() => (showSearch = !showSearch)} class="text-gray-300">
+				<button onclick={() => (showSearch = !showSearch)} class="">
 					<Search size={18} />
 				</button>
 			</div>
@@ -348,14 +348,14 @@
         <!-- transition:slide={{}} -->
 		{#if showSearch}
 			<input
-				class="w-full rounded-lg bg-{$color}-100/50 dark:bg-stone-800 p-2 text-gray-200"
+				class="w-full rounded-lg bg-{$color}-100/50 dark:bg-stone-800 p-2 text-black dark:text-gray-200"
 				placeholder="Search pages..."
 				bind:value={searchQuery}
 				type="search"
 			/>
 		{/if}
 
-		<div class="mt-4 flex justify-between gap-4 text-gray-300 py-2 border-b mb-2 border-stone-700">
+		<div class="mt-4 flex justify-between gap-4 text-black dark:text-gray-300 py-2 border-b mb-2 border-stone-700">
             <div>
                 Sort
             </div>
@@ -376,11 +376,11 @@
                 >
             </div>
 		</div>
-<div class="flex flex-col gap-2 max-h-[600px] overflow-y-scroll">
+<div class="flex flex-col gap-2">
 
 	{#each processedUrlMetrics as [url, data], i (url)}
-	<div animate:flip={{duration:199}} class="url-metric flex flex-col gap-1 bg-stone-700/40 p-2 rounded">
-		<div class="url text-gray-100 truncate">{url}</div>
+	<div animate:flip={{duration:199}} class="url-metric flex flex-col gap-1  bg-{$color}-100/50 dark:bg-stone-700/40 p-2 rounded">
+		<div class="url text-black dark:text-gray-100 truncate">{url}</div>
 		<div class="bars flex flex-col gap-1">
 			<div class="load-bar bg-blue-500" style="width: {Math.min(data.loadTime / 100, 100)}%">
 				{(data.loadTime/1000).toFixed(1)}s
@@ -397,7 +397,6 @@
 </div>
 	</div>
 </div>
-
 <style>
 	.load-bar,
 	.memory-bar {

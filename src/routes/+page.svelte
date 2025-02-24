@@ -31,7 +31,6 @@
 			]
 		}
 	];
-	let { data = $bindable() } = $props();
 	// console.log(data)
 </script>
 
@@ -45,7 +44,7 @@
 		<Nav />
 
 		<Hero />
-		<ImageSection {data} />
+		<ImageSection/>
 		<!-- <FeatureSection /> -->
 		<!-- <ReasonSection/> -->
 		<PricingSection />

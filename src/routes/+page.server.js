@@ -1,4 +1,5 @@
 import { fail } from '@sveltejs/kit';
+import { generateRandomEvents, randomInt } from '../lib/mockData';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
@@ -36,13 +37,18 @@ async function fetchCache(pb, date, domain_id) {
 	const collection = collections[range] || collections.default;
 
 	try {
-		const record = await pb.collection(collection).getFirstListItem(`domain_id="${domain_id}"`);
-		const cutoffDate = getDateRange(range);
-		const updatedAt = new Date(record.updated).getTime();
+		// const record = await pb.collection(collection).getFirstListItem(`domain_id="${domain_id}"`);
+		// const cutoffDate = getDateRange(range);
+		// const updatedAt = new Date(record.updated).getTime();
 
-		if (updatedAt >= cutoffDate.getTime()) {
-			return { record };
-		}
+		// if (updatedAt >= cutoffDate.getTime()) {
+			return { record:{
+				views: randomInt(20, 3000),
+				bounce_rate:randomInt(20, 100),
+				visit_duration:randomInt(10, 50),
+				visitors:randomInt(20, 300),
+			} };
+		// }
 	} catch (error) {
 		console.error(`Cache fetch error for ${collection}:`, error);
 	}
@@ -64,9 +70,9 @@ export const actions = {
 			const filterToUse = getDateRange(
 				selectedDate
 			);
-			const dataset = await fetchRecords(ch, domain_id, filterToUse);
+			// const dataset = await fetchRecords(ch, domain_id, filterToUse);
 			// console.log(dataset)
-			return {records:[...dataset]};
+			return { records: generateRandomEvents(3000, filterToUse, new Date())};
 		} catch (error) {
 			console.error('Error fetching date:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });

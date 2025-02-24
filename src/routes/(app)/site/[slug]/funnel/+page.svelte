@@ -10,6 +10,8 @@
 	import { writable } from 'svelte/store';
 	import {executeInWorker} from '$lib/utils'
 	import { generateRandomEvents } from '$lib/mockData.js';
+	import { bucketEventsByName } from '$lib/funnels/helpers.js';
+    import {calctypeoptions} from '$lib/funnels/helpers.js'
 
 	let { data } = $props();
 	// let data = {
@@ -176,11 +178,13 @@
 		// console.log(page_data)
 	});
 
+	
 	let loading = $state();
 	setContext(
 		'funnelSteps',
 		writable({
 			name: 'Demo Funnel',
+			type:'user',
 			steps: [
 				{ id: 4, name: 'Contact', value: '/contact', color: '#F472B6', type: 'url' },
 				{ id: 1, name: 'Sign Up', value: 'Sign Up', color: '#60A5FA', type:'event' },
@@ -205,6 +209,7 @@
 	function add(a, b) { return a + b; }
 	
 	let urls_page = $state([])
+	let steps_events = $state([])
 	let lastColor = null;
 
 function getRandomColor() {
@@ -214,16 +219,19 @@ function getRandomColor() {
 	} while (hue === lastColor);
 
 	lastColor = hue;
-	return `hsl(${hue}, 100%, 30%)`; // Higher saturation & lower lightness for better contrast
+	return `hsl(${hue}, 90%, 40%)`; // Higher saturation & lower lightness for better contrast
 }
 	$effect(async ()=>{
 		
 		let xs = $state.snapshot(page_data)
 		
 		let urls = await executeInWorker(fetchPages, xs)
-
+		let eventsteps = await executeInWorker(bucketEventsByName, xs)
 		urls_page = urls.map((e, index)=>{
 			return {id:index, name:e, value:e, color:getRandomColor(), type:'url'}
+		})
+		steps_events = eventsteps.map((e, index)=>{
+			return {id:index, name:e, value:e, color:getRandomColor(), type:'event'}
 		})
 	})
 
@@ -250,14 +258,25 @@ function getRandomColor() {
 		}
 		loading = false;
 	}
-	// onMount(async () => {
-	// 	let date = globalRange.getRange();
-	// 	await fetchFromDefaultDates(date);
-	// 	sortInterval = parseInt(date);
-	// 	// await fetchSpikes(date);
-	// });
+
+	async function handleDateChange(event) {
+		const date = event.detail.value;
+		await fetchFromDefaultDates(date);
+		sortInterval = parseInt(date);
+		globalRange.setRange(sortInterval);
+	}
+
+	onMount(async () => {
+		let date = globalRange.getRange();
+		await fetchFromDefaultDates(date);
+		sortInterval = parseInt(date);
+		// await fetchSpikes(date);
+	});
 
 	let fsteps = $derived($funnelStepsContext);
+	let funnelType = $derived($funnelStepsContext.type);
+	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
+	const current_domain = data.domains.find((e) => e.id === data.domain_id);
 </script>
 
 <div>
@@ -266,17 +285,49 @@ function getRandomColor() {
 	{/if}
 </div>
 
-<section class="flex items-center justify-between">
-	<!-- {fsteps.name} -->
-	<div class="flex items-center gap-3">
-		<div class="flex">
-			{#each fsteps.steps as step}
-				<div class="-m-1 h-4 w-4 rounded-xl" style="background:{step.color};"></div>
-			{/each}
+<section class='flex flex-col gap-3'>
+	<nav class="flex flex-wrap justify-between gap-4 py-2">
+		<div class="flex flex-wrap items-center gap-4 md:gap-5 ">
+			<Dropdown
+				on:change={(e) => (window.location.href = `/site/${e.detail.value}/funnel`)}
+				title=""
+				value={data.domain_id}
+				options={domain_options}
+			>
+				<a href="/settings">+ add domain</a>
+			</Dropdown>
 		</div>
-		{fsteps.name}
-	</div>
-	<FunEl uniquePages={urls_page} />
+		<Dropdown on:change={handleDateChange} title="Filter" options={optis} value={sortInterval}>
+			<button onclick={() => (isOpen = !isOpen)} class="flex items-center gap-1">
+				<Calendar size={16} /> Custom Date
+			</button>
+		</Dropdown>
+	</nav>
+	<section class="flex items-center justify-between flex-wrap gap-3">
+		<!-- {fsteps.name} -->
+		<div class="flex items-center gap-3 px-4">
+			<div class="flex">
+				{#each fsteps.steps as step}
+					<div class="-m-1 h-4 w-4 rounded-xl" style="background:{step.color};"></div>
+				{/each}
+			</div>
+			{fsteps.name}
+		</div>
+		<div class="flex gap-2 flex-wrap">
+			<Dropdown
+			on:change={(e) => {
+				funnelStepsContext.update((cur)=>{
+					return {...cur, type:e.detail.value}
+				})
+			}}
+			title="Sorting Type"
+			value={funnelType}
+			options={calctypeoptions}
+		>
+		</Dropdown>
+			<FunEl uniquePages={urls_page} availableSteps={steps_events}/>
+		</div>
+	</section>
 </section>
 {#key page_data || funnelSteps}
 	<Funnels data={page_data} {funnelStepsContext} />

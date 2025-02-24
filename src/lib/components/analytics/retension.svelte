@@ -1,4 +1,5 @@
 <script>
+	import { generateRandomEvents } from '$lib/mockData.js';
 	import Chart from 'chart.js/auto';
 	import { color } from '$lib/colors/mixer.js';
 
@@ -14,24 +15,24 @@
 		}
 		return 1 + Math.ceil((firstThursday - target) / 604800000);
 	}
-	function generateDummyEvents(
-		numEvents = 10000,
-		startDate = '2025-10-10',
-		endDate = '2025-12-31'
-	) {
-		const events = [];
-		const userIds = Array.from({ length: numEvents / 10 }, (_, i) => `user${i + 1}`);
-		const start = new Date(startDate).getTime();
-		const end = new Date(endDate).getTime();
+	// function generateDummyEvents(
+	// 	numEvents = 1000,
+	// 	startDate = '2025-10-10',
+	// 	endDate = '2025-12-31'
+	// ) {
+	// 	const events = [];
+	// 	const userIds = Array.from({ length: numEvents / 10 }, (_, i) => `user${i + 1}`);
+	// 	const start = new Date(startDate).getTime();
+	// 	const end = new Date(endDate).getTime();
 
-		for (let i = 0; i < numEvents; i++) {
-			const randomTimestamp = new Date(start + Math.random() * (end - start)).toISOString();
-			const randomUser = userIds[Math.floor(Math.random() * userIds.length)];
-			events.push({ timestamp: randomTimestamp, user_id: randomUser });
-		}
+	// 	for (let i = 0; i < numEvents; i++) {
+	// 		const randomTimestamp = new Date(start + Math.random() * (end - start)).toISOString();
+	// 		const randomUser = userIds[Math.floor(Math.random() * userIds.length)];
+	// 		events.push({ timestamp: randomTimestamp, user_id: randomUser });
+	// 	}
 
-		return events;
-	}
+	// 	return events;
+	// }
 
 	function getWeekDateRangeFormatted(isoWeekString) {
 		const [year, week] = isoWeekString.split('-W').map(Number);
@@ -126,12 +127,7 @@
 	}
 
 	let {
-		events = [
-			{ timestamp: '2025-02-03T10:00:00Z', user_id: 'user1' },
-			{ timestamp: '2025-02-03T12:00:00Z', user_id: 'user2' },
-			{ timestamp: '2025-02-10T09:00:00Z', user_id: 'user1' },
-			{ timestamp: '2025-02-10T11:00:00Z', user_id: 'user3' }
-		]
+		events = []
 	} = $props();
 
 	const weeklyUsersRaw = calculateWeeklyUsersRaw(events);
@@ -199,11 +195,11 @@
 		<thead class="z-10">
 			<tr class="">
 				<th class="z-40 rounded-xl" style="padding:0px !important;">
-					<div class="relative h-full w-full py-2">
+					<div class="relative h-full w-full py-2 flex px-3">
 						<div
 							class="absolute inset-0 -z-0 m-auto bg-{$color}-600 h-full w-full rounded-lg"
 						></div>
-						<span class="relative">Cohort</span>
+						<span class="relative text-">Cohort</span>
 					</div>
 				</th>
 				{#each sortedWeeks as week, index}
@@ -242,7 +238,13 @@
 						<div
 							class="absolute inset-0 -z-0 m-auto h-full w-full rounded-lg bg-{$color}-600"
 						></div>
-						<span class="relative"> {getWeekDateRangeFormatted(baseWeek)}</span>
+						<!-- {JSON.stringify(randomColors)} -->
+						<div class="flex items-center  gap-4">
+							<div class='w-4 h-4 relative border-white border-2 rounded-full' style='background-color:{randomColors[baseWeek]};'>
+
+							</div>
+							<span class="relative"> {getWeekDateRangeFormatted(baseWeek)}</span>
+						</div>
 					</td>
 
 					{#each Object.entries(retentionData) as [otherWeek, count], index}
@@ -262,7 +264,10 @@
 							></div>
 							<!-- style="background-color: {getColor()}" -->
 							<!-- {JSON.stringify()} -->
-							<span class="relative">
+							<span class="relative {(
+								(count / weeklyUsersRaw[baseWeek].size) *
+								100
+							).toFixed(0) < 59?'text-black dark:text-white':''}" >
 								{((count / weeklyUsersRaw[baseWeek].size) * 100).toFixed(0)}%</span
 							>
 						</td>
