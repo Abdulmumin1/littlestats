@@ -83,6 +83,10 @@
 	// );
 
 	let filteredSteps = $state(availableSteps);
+
+	$effect(()=>{
+		filteredSteps = availableSteps;
+	})
 	let change = $state(true);
 
 	let tab = $state(true);

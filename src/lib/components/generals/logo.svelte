@@ -1,12 +1,13 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
+	import { MousePointerClick } from 'lucide-svelte';
 	/**
 	 * @typedef {Object} Props
 	 * @property {number} [size]
 	 */
 
 	/** @type {Props} */
-	let { size = 200 } = $props();
+	let { size = 90 } = $props();
 	const height = size / 2;
 	const scaleFactor = size / 200;
 
@@ -153,14 +154,7 @@
 	let usedColor = $derived(colorList[$color] ?? greenColors);
 </script>
 
-<svg xmlns="http://www.w3.org/2000/svg" width={size} {height} viewBox="0 0 200 100">
-	<!-- <defs>
-		<linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-			<stop offset="0%" style={{ stopColor: `${usedColor.primary}`, stopOpacity: 1 }} />
-			<stop offset="50%" style={{ stopColor: `${usedColor.primary}`, stopOpacity: 1 }} />
-			<stop offset="100%" style={{ stopColor: `${usedColor.primary}`, stopOpacity: 1 }} />
-		</linearGradient>
-	</defs> -->
+<!-- <svg xmlns="http://www.w3.org/2000/svg" width={size} {height} viewBox="0 0 200 100">
 
 	<path
 		d="M20 80 Q50 20, 100 50 T180 30"
@@ -177,7 +171,8 @@
 	<circle cx="160" cy="70" r={3 * scaleFactor} fill={usedColor.primary} opacity="0.7" />
 	<circle cx="70" cy="20" r={2 * scaleFactor} fill={usedColor.secondary} opacity="0.7" />
 	<circle cx="130" cy="60" r={2 * scaleFactor} fill={usedColor.secondary} opacity="0.7" />
-</svg>
+</svg> -->
+<MousePointerClick class="text-stone-800 dark:text-stone-300" fill={usedColor.primary} {size} strokeWidth={.4}/>
 
 <!-- <style>
 

@@ -202,7 +202,6 @@
 				scales: {
 					x: {
 						ticks: {
-							stepSize: 1000,
 							display: false
 						},
 						grid: {
@@ -212,7 +211,6 @@
 					y: {
 						beginAtZero: true,
 						ticks: {
-							stepSize: 1000,
 							display: false
 						},
 						grid: {

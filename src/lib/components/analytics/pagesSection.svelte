@@ -7,7 +7,7 @@
 	import SectionWrapper from './sectionWrapper.svelte';
 	import { Expand, Maximize } from 'lucide-svelte';
 
-	let { views, jump = true } = $props();
+	let { views, jump = true, sorted = false } = $props();
 	let max_page_item_count = 10;
 
 	function fetchPages(events) {
@@ -24,7 +24,7 @@
 
 		return Array.from(uniquePages).sort((a, b) => b[1] - a[1]);
 	}
-	let pages = $derived(fetchPages(views));
+	let pages = $derived(sorted ? views :fetchPages(views));
 	let fullPages = $state([...pages]);
 	let trunaced_pages = $derived([...pages].splice(0, max_page_item_count));
 
@@ -74,7 +74,7 @@
 			<EmptyValues />
 		{/each}
 		<!-- {trunaced_pages.length}={ fetchPages(views).length}={pages.length} -->
-		{#if trunaced_pages.length < fetchPages(views).length}
+		{#if trunaced_pages.length < views.length}
 			<BottomDrawer {searchQuery}>
 				{#snippet handle()}
 					<div>

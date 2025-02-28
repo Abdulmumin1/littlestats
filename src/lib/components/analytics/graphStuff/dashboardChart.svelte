@@ -203,7 +203,6 @@
 				scales: {
 					x: {
 						ticks: {
-							stepSize: 1000,
 							display: true
 						},
 						grid: {

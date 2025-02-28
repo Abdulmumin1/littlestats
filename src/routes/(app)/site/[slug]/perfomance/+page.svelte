@@ -226,14 +226,14 @@
 	async function fetchFromDefaultDates(date) {
 		loading = true;
 
-		let cache = datacache.getCache(`traffic-${date}-${data.domain_id}`);
-		if (cache?.length) {
-			page_data = cache;
-			data.records = cache;
-			loading = false
+		// let cache = datacache.getCache(`traffic-${date}-${data.domain_id}`);
+		// if (cache?.length) {
+		// 	page_data = cache;
+		// 	data.records = cache;
+		// 	loading = false
 
-			return
-		}
+		// 	return
+		// }
 		
 		try {
 			const form = new FormData();
@@ -254,7 +254,7 @@
 			}
 			page_data = result.data.records;
 			data.records = page_data;
-			datacache.setCach(`traffic-${date}-${data.domain_id}`, result.data.records);
+			// datacache.setCach(`traffic-${date}-${data.domain_id}`, result.data.records);
 		} catch (error) {
 			console.error('Fetch failed:', error);
 			// Consider adding user-facing error notification
@@ -273,7 +273,7 @@
 	}
 
 	onMount(async () => {
-		let date = globalRange.getRange()
+		let date = globalRange.getSingle()
 		await fetchFromDefaultDates(date);
 		sortInterval = parseInt(date);
 		// await fetchSpikes(date);

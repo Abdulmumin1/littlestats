@@ -1,8 +1,9 @@
 import { fail } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
-	days = days <= 0 ?1 :days
+	days = days <= 0 ? 1 : days
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
@@ -62,14 +63,50 @@ export const actions = {
 		}
 
 		try {
-			const filterToUse = getDateRange(
-				selectedDate
-			);
-			const dataset = await fetchRecords(ch, domain_id, filterToUse);
+			let url = `${env.DASHBOARD_WORKER}traffic/${domain_id}/${selectedDate ?? 1}`
+			let res = await fetch(url)
+			// console.log(res.ok)
+			if (res.ok) {
+				let result = await res.json();
+				return {records:result}
+			}
+			// const filterToUse = getDateRange(
+			// 	selectedDate
+			// );
+			// const dataset = await fetchRecords(ch, domain_id, filterToUse);
 			// console.log(dataset)
-			return {records:[...dataset]};
+			return { records: [...dataset] };
 		} catch (error) {
 			console.error('Error fetching date:', error);
+			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+		}
+	},
+
+	fetchRange: async ({ locals: { pb, ch }, request }) => {
+		const data = await request.formData();
+		const selectedStart = data.get('start');
+		const selectedEnd = data.get('end')
+		const domain_id = data.get('domain_id');
+
+		if (!selectedStart || !selectedEnd || !domain_id) {
+			return fail(400, { fail: true, message: 'Range and domain ID are required' });
+		}
+
+		try {
+			// const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
+			// const dataset = await fetchRecords(ch, domain_id, start, end);
+			let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${selectedStart}/${selectedEnd}`
+			let res = await fetch(url)
+			if (res.ok) {
+				let result = await res.json();
+				return {records: result}
+			}else {
+				return {error:true}
+			}
+			// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
+			// return { results: dataset, cache: false };
+		} catch (error) {
+			console.error('Error fetching spikes:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
 		}
 	},
@@ -83,24 +120,19 @@ export const actions = {
 			return fail(400, { fail: true, message: 'Range and domain ID are required' });
 		}
 
-		const cacheData = await fetchCache(pb, selectedDate, domain_id);
-		if (cacheData) {
-			return { results: cacheData, cache: true };
-		}
-
 		try {
-			const now = new Date();
-			const ranges = {
-				30: { start: getDateRange(60), end: getDateRange(30) },
-				21: { start: getDateRange(30), end: getDateRange(21) },
-				14: { start: getDateRange(21), end: getDateRange(14) },
-				7: { start: getDateRange(14), end: getDateRange(7) },
-				default: { start: getDateRange(2), end: getDateRange(1) }
-			};
-
 			const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
-			const dataset = await fetchRecords(ch, domain_id, start, end);
-			return { results: dataset, cache: false };
+			// const dataset = await fetchRecords(ch, domain_id, start, end);
+			let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${start}/${end}`
+			let res = await fetch(url)
+			if (res.ok) {
+				let result = await res.json();
+				return {records: result}
+			}else {
+				return {error:true}
+			}
+			// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
+			// return { results: dataset, cache: false };
 		} catch (error) {
 			console.error('Error fetching spikes:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
@@ -138,12 +170,12 @@ export const actions = {
 		const data = await request.formData();
 		const lastEvent = data.get('lastEvent');
 		const domain_id = data.get('domain_id');
-	
+
 		// Ensure values are correctly formatted and validated
 		if (!domain_id || !lastEvent) {
 			throw new Error('Invalid input: domain_id and lastEvent are required.');
 		}
-	
+
 		const query = `
 			SELECT * FROM events 
 			WHERE domain_id = '${domain_id}' AND timestamp > '${lastEvent}'
@@ -151,12 +183,12 @@ export const actions = {
 			LIMIT 10
 		`;
 		// console.log(query)
-	
+
 		const resultSet = await ch.query({
 			query,
 			format: 'JSONEachRow'
 		});
-	
+
 		return await resultSet.json();
 	}
 };
@@ -167,8 +199,30 @@ export async function load({ parent, locals: { pb, ch }, params }) {
 		const domains = await parent()
 		// const last24Hours = getDateRange(1);
 		// const dataset = await fetchRecords(ch, params.slug, last24Hours);
-
-		return domains
+		let empty = {
+			"views": 0,
+			"bounce_rate": {
+			  "bounceRate": "0.00",
+			  "totalVisits": 0,
+			  "bounceCount": 0
+			},
+			"uniqueUserAgents": 0,
+			"averageVisitDuration": 0,
+			"sortedURls": [],
+			"sortedReferrers": [],
+			"sortedContries": [],
+			"sortedBrowsers": [],
+			"sortedOS": [],
+			"graph": {
+			  
+			},
+			"visitorgraph": {
+			  
+			},
+			"interval": "30",
+			"domain_id": ""
+		  }
+		return {...domains, records: empty }
 	} catch (error) {
 		console.error('Error loading data:', error);
 		return { fail: true };

@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
 	import { Line } from 'svelte-chartjs';
 
 	let dataLine = {
@@ -32,4 +32,4 @@
 <div>
 	dfsjfdslfdsl
 	<Line data={dataLine} options={{ responsive: true }} />
-</div>
+</div> -->

@@ -38,12 +38,12 @@ export function calculateTrialDaysLeft(activationDate) {
 	return roundedDaysLeft;
 }
 
-export function formatDate(dateString) {
+export function formatDate(dateString, year=true) {
 	
 		const date = new Date(dateString);
 		
 		let d = date.toLocaleDateString('en-US', {
-			year: 'numeric',
+			...(year && {year:'numeric'}),
 			month: 'short', // Use 'short' for "Jan" instead of "January"
 			day: '2-digit'
 		});

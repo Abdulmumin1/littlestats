@@ -32,6 +32,7 @@
 		}
 	];
 	// console.log(data)
+	let {data} = $props()
 </script>
 
 <svelte:head>
@@ -44,7 +45,7 @@
 		<Nav />
 
 		<Hero />
-		<ImageSection/>
+		<ImageSection {data}/>
 		<!-- <FeatureSection /> -->
 		<!-- <ReasonSection/> -->
 		<PricingSection />

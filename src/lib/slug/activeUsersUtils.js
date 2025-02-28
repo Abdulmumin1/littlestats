@@ -1,4 +1,3 @@
-import { tr } from "date-fns/locale";
 
 /**
  * Calculate Daily Active Users (DAU) from an array of event objects.
@@ -23,7 +22,7 @@ export function calculateDailyActiveUsers(events) {
 	for (const date in dailyUsers) {
 		dailyCounts[date] = dailyUsers[date].size;
 	}
-	console.log(dailyCounts);
+	// console.log(dailyCounts);
 	return dailyCounts;
 }
 

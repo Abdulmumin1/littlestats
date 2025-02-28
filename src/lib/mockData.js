@@ -145,3 +145,234 @@ export function generateRandomEvents(
 	}
 	return dummy;
 }
+
+export const mockDataFunnel = [
+    // User 1: Perfect funnel completion (all steps in order)
+    {
+        user_id: "user_1",
+        session_id: "session_1",
+        timestamp: "2025-02-01 09:00:00",
+        url: "/landing-page",
+        event_name: "Page View"
+    },
+    {
+        user_id: "user_1",
+        session_id: "session_1",
+        timestamp: "2025-02-01 09:05:00",
+        url: "/signup",
+        event_name: "Sign Up"
+    },
+    {
+        user_id: "user_1",
+        session_id: "session_1",
+        timestamp: "2025-02-01 09:10:00",
+        url: "/onboarding",
+        event_name: "Onboarding Complete"
+    },
+    {
+        user_id: "user_1",
+        session_id: "session_2",
+        timestamp: "2025-02-02 10:00:00",
+        url: "/dashboard",
+        event_name: "First Login"
+    },
+    {
+        user_id: "user_1",
+        session_id: "session_3",
+        timestamp: "2025-02-03 11:00:00",
+        url: "/subscription",
+        event_name: "Subscription Purchased"
+    },
+    {
+        user_id: "user_1",
+        session_id: "session_4",
+        timestamp: "2025-02-04 12:00:00",
+        url: "/feature-usage",
+        event_name: "Feature Engaged"
+    },
+
+    // User 2: Cross-session completion (sign up + subscription in different sessions)
+    {
+        user_id: "user_2",
+        session_id: "session_a",
+        timestamp: "2025-02-01 12:00:00",
+        url: "/landing-page",
+        event_name: "Page View"
+    },
+    {
+        user_id: "user_2",
+        session_id: "session_a",
+        timestamp: "2025-02-01 12:05:00",
+        url: "/signup",
+        event_name: "Sign Up"
+    },
+    {
+        user_id: "user_2",
+        session_id: "session_b",
+        timestamp: "2025-02-05 14:00:00",
+        url: "/subscription",
+        event_name: "Subscription Purchased"
+    },
+
+    // User 3: Drops off after onboarding (no subscription)
+    {
+        user_id: "user_3",
+        session_id: "session_x",
+        timestamp: "2025-02-01 15:00:00",
+        url: "/landing-page",
+        event_name: "Page View"
+    },
+    {
+        user_id: "user_3",
+        session_id: "session_x",
+        timestamp: "2025-02-01 15:05:00",
+        url: "/signup",
+        event_name: "Sign Up"
+    },
+    {
+        user_id: "user_3",
+        session_id: "session_x",
+        timestamp: "2025-02-01 15:10:00",
+        url: "/onboarding",
+        event_name: "Onboarding Complete"
+    },
+
+    // User 4: Out-of-order completion (sign up → feature usage → subscription)
+    {
+        user_id: "user_4",
+        session_id: "session_alpha",
+        timestamp: "2025-02-01 16:00:00",
+        url: "/landing-page",
+        event_name: "Page View"
+    },
+    {
+        user_id: "user_4",
+        session_id: "session_alpha",
+        timestamp: "2025-02-01 16:05:00",
+        url: "/signup",
+        event_name: "Sign Up"
+    },
+    {
+        user_id: "user_4",
+        session_id: "session_beta",
+        timestamp: "2025-02-02 10:00:00",
+        url: "/feature-usage",
+        event_name: "Feature Engaged"
+    },
+    {
+        user_id: "user_4",
+        session_id: "session_gamma",
+        timestamp: "2025-02-03 11:00:00",
+        url: "/subscription",
+        event_name: "Subscription Purchased"
+    },
+
+    // User 5: Multiple sign-ups (should only count once)
+    {
+        user_id: "user_5",
+        session_id: "session_foo",
+        timestamp: "2025-02-01 17:00:00",
+        url: "/landing-page",
+        event_name: "Page View"
+    },
+    {
+        user_id: "user_5",
+        session_id: "session_foo",
+        timestamp: "2025-02-01 17:05:00",
+        url: "/signup",
+        event_name: "Sign Up"
+    },
+    {
+        user_id: "user_5",
+        session_id: "session_foo",
+        timestamp: "2025-02-01 17:10:00",
+        url: "/signup",
+        event_name: "Sign Up" // Duplicate
+    },
+    {
+        user_id: "user_5",
+        session_id: "session_bar",
+        timestamp: "2025-02-02 12:00:00",
+        url: "/subscription",
+        event_name: "Subscription Purchased"
+    },
+
+    // User 6: Only first step (landing page view)
+    {
+        user_id: "user_6",
+        session_id: "session_z",
+        timestamp: "2025-02-01 18:00:00",
+        url: "/landing-page",
+        event_name: "Page View"
+    },
+
+    // User 7: Engages with feature but doesn't subscribe
+    {
+        user_id: "user_7",
+        session_id: "session_y",
+        timestamp: "2025-02-01 19:00:00",
+        url: "/landing-page",
+        event_name: "Page View"
+    },
+    {
+        user_id: "user_7",
+        session_id: "session_y",
+        timestamp: "2025-02-01 19:05:00",
+        url: "/signup",
+        event_name: "Sign Up"
+    },
+    {
+        user_id: "user_7",
+        session_id: "session_y",
+        timestamp: "2025-02-01 19:10:00",
+        url: "/onboarding",
+        event_name: "Onboarding Complete"
+    },
+    {
+        user_id: "user_7",
+        session_id: "session_y2",
+        timestamp: "2025-02-02 10:00:00",
+        url: "/feature-usage",
+        event_name: "Feature Engaged"
+    }
+];
+
+
+export const mockDataFunnelSteps = [
+    {
+        name: "Landing Page View",
+        value: "/landing-page",
+        color: "#be185d",
+        type: "url"
+    },
+    {
+        name: "Sign Up",
+        value: "Sign Up",
+        color: "#4CAF50",
+        type: "event"
+    },
+    {
+        name: "Onboarding Complete",
+        value: "Onboarding Complete",
+        color: "#2196F3",
+        type: "event"
+    },
+    {
+        name: "First Login",
+        value: "First Login",
+        color: "#FFC107",
+        type: "event"
+    },
+    {
+        name: "Subscription Purchased",
+        value: "Subscription Purchased",
+        color: "#9C27B0",
+        type: "event"
+    },
+    {
+        name: "Feature Engaged",
+        value: "Feature Engaged",
+        color: "#FF5722",
+        type: "event"
+    }
+];

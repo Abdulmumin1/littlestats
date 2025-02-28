@@ -122,7 +122,7 @@
 	</button>
 
 	<div
-		class="drawer bg-{$color}-50 mx-auto max-w-7xl dark:bg-stone-900"
+		class="drawer bg-{$color}-100 mx-auto max-w-7xl dark:bg-stone-900"
 		style="height: {height}px; bottom: {$position}px;"
 		use:clickOutside
 		onclick_outside={() => {
@@ -148,7 +148,7 @@
 				type="text"
 				placeholder="Search"
 				oninput={searchQuery}
-				class="z-50 w-full rounded-lg bg-white/30 p-2 dark:bg-stone-800/30"
+				class="z-50 w-full rounded-lg bg-white/80 p-2 dark:bg-stone-800/30"
 				style="z-index: 1000 !important;"
 			/>
 

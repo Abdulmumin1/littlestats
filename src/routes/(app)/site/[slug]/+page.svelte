@@ -1,9 +1,10 @@
 <script>
+	import { formatDate } from '$lib/utils.js';
 	import { color } from '$lib/colors/mixer.js';
 	import { formatNumber } from '$lib/slug/helpers.js';
 	import { onMount } from 'svelte';
 	import DashboardChart from '$lib/components/analytics/graphStuff/dashboardChart.svelte';
-	import { Link, Activity, Clock, Eye, ArrowUpRight } from 'lucide-svelte';
+	import { Link, Activity, Clock, Eye, ArrowUpRight, Calendar } from 'lucide-svelte';
 	import { deserialize } from '$app/forms';
 	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
 	import {
@@ -19,71 +20,85 @@
 	import RetnsionOld from '$lib/components/analytics/retnsionOld.svelte';
 	import Seo from '../../../../lib/components/generals/seo.svelte';
 	import Funnels from '../../../../lib/components/analytics/funnels.svelte';
+	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
+	import { defaultRange } from '../../../../lib/globalstate.svelte';
 
 	let { data = { records: [] } } = $props();
 
 	let page_data = $state(data.records);
 	let loading = $state(false);
 
-
-	let sortInterval = $state(globalRange.getRange());
+	let sortInterval = $derived(globalRange.getSingle());
 
 	$effect(() => {
 		page_data = data.records;
 	});
 
-	async function handleDateChange(event) {
-		const date = event.detail.value;
-		await fetchFromDefaultDates(date);
-		sortInterval = parseInt(date);
-		globalRange.setRange(sortInterval);
-		// if (filters.length > 0) applyFilter(filters);
-		// await fetchSpikes(date);
+	async function fetchFromDefaultDates(date, isRange, start = null, end = null) {
+	
+		try {
+			if (!isRange) {
+				console.log('not -range fdlfds.')
+				let cache = datacache.getCache(`dashboard-${date}-${data.domain_id}`);
+				if (cache) {
+					page_data = cache;
+					data.records = cache;
+					return;
+				}
+				const form = new FormData();
+				form.append('defaultRange', date);
+				form.append('domain_id', data.domain_id);
+
+				const response = await fetch('?/fetchDate', { method: 'POST', body: form });
+				if (response.ok) {
+					const result = deserialize(await response.text());
+					console.log(result.date);
+					page_data = result.data.records;
+					data.records = page_data;
+					datacache.setCach(`dashboard-${date}-${data.domain_id}`, result.data.records);
+				}
+			} else {
+				const form = new FormData();
+				form.append('start', new Date(start).toISOString());
+				form.append('end', new Date(end).toISOString());
+				form.append('domain_id', data.domain_id);
+
+				const response = await fetch('?/fetchRange', { method: 'POST', body: form });
+				if (response.ok) {
+					const result = deserialize(await response.text());
+					console.log(result.data);
+					page_data = result.data.records;
+					
+				}
+			}
+		} catch (error) {
+			console.log(error)
+		} finally {
+		
+		}
+		
 	}
 
-	async function fetchFromDefaultDates(date) {
-		loading = true;
-		let cache = datacache.getCache(`dashboard-${date}-${data.domain_id}`);
-		if (cache) {
-			page_data = cache;
-			data.records = cache;
-			loading = false
-			return;
-		}
+	let dau = $derived(page_data?.dau ?? {});
+	let wau = $derived(page_data?.wau ?? {});
+	let retension = $derived(page_data?.retension ?? {});
+	let [selectedStartDate, selectedEndDate] = $derived(globalRange.getRange());
+	let isCustom = $derived(globalRange.getCustom());
 
-		const form = new FormData();
-		form.append('defaultRange', date);
-		form.append('domain_id', data.domain_id);
-
-		const response = await fetch('?/fetchDate', { method: 'POST', body: form });
-		if (response.ok) {
-			const result = deserialize(await response.text());
-			page_data = result.data.records;
-			data.records = page_data;
-			datacache.setCach(`dashboard-${date}-${data.domain_id}`, result.data.records);
-		}
-		loading = false;
-	}
-
-	let dau = $derived(calculateDailyActiveUsers(page_data));
-	let wau = $derived(calculateWeeklyActiveUsers(page_data));
-	let retension = $derived(calculateRetension(page_data));
-
-	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
 	const current_domain = data.domains.find((e) => e.id === data.domain_id);
-
-	onMount(async () => {
-		console.log(globalRange);
-		let date = globalRange.getRange();
-		await fetchFromDefaultDates(date);
-		sortInterval = parseInt(date);
-	});
 
 	// $effect(() => {
 	// 	console.log('Retension: ', retension);
 	// });
-</script>
 
+	$effect(async () => {
+		// $inspect.trace();
+		// console.log((sortInterval, isCustom, selectedStartDate, selectedEndDate))
+		loading = true
+		await fetchFromDefaultDates(sortInterval, isCustom, selectedStartDate, selectedEndDate);
+		loading = false
+	});
+</script>
 
 <svelte:head>
 	<Seo title={`${current_domain.name} - analytics dashboard`} />
@@ -95,24 +110,6 @@
 	{/if}
 
 	<div class="container mx-auto flex flex-col gap-4 dark:text-white">
-		<nav class="flex flex-wrap justify-between gap-4 py-2">
-			<div class="flex flex-wrap items-center gap-4 md:gap-5">
-				<Dropdown
-					on:change={(e) => (window.location.href = `/site/${e.detail.value}`)}
-					title=""
-					value={data.domain_id}
-					options={domain_options}
-				>
-					<a href="/settings">+ add domain</a>
-				</Dropdown>
-			</div>
-			<Dropdown on:change={handleDateChange} title="Filter" options={optis} value={sortInterval}>
-				<button onclick={() => (isOpen = !isOpen)} class="flex items-center gap-1">
-					<Calendar size={16} /> Custom Date
-				</button>
-			</Dropdown>
-		</nav>
-
 		<section class="flex min-h-[300px] w-full flex-col gap-4 md:flex-row">
 			<section class=" flex flex-1 flex-col rounded-lg py-4">
 				<DashboardChart
@@ -121,7 +118,9 @@
 					type={'line'}
 					sortInterval={7}
 				/>
-				<p class="mt-2 flex justify-between rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 px-4 py-2">
+				<p
+					class="mt-2 flex justify-between rounded-xl bg-{$color}-200 bg-opacity-35 px-4 py-2 dark:bg-stone-800"
+				>
 					Daily Active Visitors {sortInterval} days
 					<span>
 						Average
@@ -137,7 +136,9 @@
 					sortInterval={30}
 				/>
 
-				<p class="mt-2 flex justify-between rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 px-4 py-2">
+				<p
+					class="mt-2 flex justify-between rounded-xl bg-{$color}-200 bg-opacity-35 px-4 py-2 dark:bg-stone-800"
+				>
 					Weekly Active Visitors {sortInterval} days
 					<span>
 						Average
@@ -148,9 +149,9 @@
 		</section>
 
 		{#key page_data}
-			<Retension events={page_data} />
+			<Retension events={retension} />
 			<!-- <RetnsionOld events={page_data}/> -->
-			{/key}
-		</div>
-		<!-- <Funnels data={page_data} {funnelSteps}/> -->
+		{/key}
+	</div>
+	<!-- <Funnels data={page_data} {funnelSteps}/> -->
 </div>

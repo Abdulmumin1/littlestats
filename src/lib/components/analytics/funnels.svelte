@@ -5,9 +5,9 @@
 	import { calculateFunnel } from '$lib/funnels/helpers.js';
 	import { DivideCircle } from 'lucide-svelte';
 
-	let { data, funnelStepsContext } = $props();
+	let { data, funnelStepsContext, funnelCounts } = $props();
 
-	let funnelCounts = $state({});
+	// let funnelCounts = $state({});
 	let chart = $state(null);
 
 	let funnelSteps = $derived($funnelStepsContext.steps.map((step) => step.value));
@@ -90,6 +90,7 @@
 						borderColor: $funnelStepsContext.steps.map((step) => step.color),
 						borderWidth: 1,
 						borderRadius: 10,
+						color:'#000'
 
 					}
 				]
@@ -107,10 +108,6 @@
 
 	async function updateChart() {
 		if (!chart) return;
-		let objs = $state.snapshot(data);
-		let steps = $state.snapshot($funnelStepsContext.steps);
-		// console.log(objs)
-		funnelCounts = await executeInWorker(calculateFunnel, objs, steps, $funnelStepsContext.type);
 		chart.data.labels = $funnelStepsContext.steps.map((step) => step.name);
 		let data_ = funnelSteps.map((step) => funnelCounts[step]);
 		chart.data.datasets[0].label = $funnelStepsContext.name;

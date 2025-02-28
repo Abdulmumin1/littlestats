@@ -1,4 +1,5 @@
 <script>
+	import { formatDate } from '$lib/utils.js';
 	import { run } from 'svelte/legacy';
 
 	import { onMount } from 'svelte';
@@ -20,7 +21,8 @@
 		bar = false,
 		line = false,
 		showChart = false,
-		sortInterval = 1
+		sortInterval = 1,
+		sorted = false
 	} = $props();
 
 	let chartCanvas = $state(null);
@@ -58,7 +60,7 @@
 			if (recordDate < twentyFourHoursAgo) return;
 
 			const hoursAgo = (now - recordDate) / (60 * 60 * 1000);
-			console.log(hoursAgo)
+			console.log(hoursAgo);
 
 			// Find the matching interval.
 			for (const interval of intervals) {
@@ -76,61 +78,41 @@
 
 		return counts;
 	}
+	export function sortViewsByDays(viewRecords) {
+		if (viewRecords.length === 0) return {};
 
-	function sortViewsBy7Days(viewRecords) {
-		return sortViewsByDays(viewRecords, 7);
-	}
+		let minTime = Infinity,
+			maxTime = -Infinity;
+		const dateCounts = new Map();
 
-	function sortViewsBy14Days(viewRecords) {
-		return sortViewsByDays(viewRecords, 14);
-	}
-
-	function sortViewsBy21Days(viewRecords) {
-		return sortViewsByDays(viewRecords, 21);
-	}
-
-	function sortViewsBy30Days(viewRecords) {
-		return sortViewsByDays(viewRecords, 30);
-	}
-
-	function sortViewsByDays(viewRecords, totalDays) {
-		const now = new Date();
-		const startDate = new Date(now - totalDays * 24 * 60 * 60 * 1000);
-		const intervals = Array.from({ length: totalDays }, (_, i) => ({
-			label: i === 0 ? 'Today' : `${i} days ago`,
-			min: i,
-			max: i + 1
-		})).reverse(); // Reverse to check from oldest to newest
-
-		const counts = new Map(intervals.map((i) => [i.label, 0]));
-
-		viewRecords.forEach((record) => {
-			const recordDate = new Date(record.timestamp);
-			if (isNaN(recordDate.getTime())) {
+		for (const record of viewRecords) {
+			const time = new Date(record.timestamp).getTime();
+			if (isNaN(time)) {
 				console.warn(`Invalid date encountered: ${record.timestamp}`);
-				return;
+				continue;
 			}
+			minTime = Math.min(minTime, time);
+			maxTime = Math.max(maxTime, time);
 
-			if (recordDate < startDate) {
-				return; // Skip records older than the start date
-			}
+			const dateKey = new Date(time).toISOString().split('T')[0];
+			dateCounts.set(dateKey, (dateCounts.get(dateKey) || 0) + 1);
+		}
 
-			const daysAgo = Math.floor((now - recordDate) / (24 * 60 * 60 * 1000));
+		if (minTime === Infinity || maxTime === -Infinity) return {};
 
-			for (const interval of intervals) {
-				if (daysAgo >= interval.min && daysAgo < interval.max) {
-					counts.set(interval.label, counts.get(interval.label) + 1);
-					break;
-				}
-			}
-		});
+		const results = {};
+		for (let time = minTime; time <= maxTime; time += 86400000) {
+			// Increment by one day
+			const dateKey = new Date(time).toISOString().split('T')[0];
+			results[dateKey] = dateCounts.get(dateKey) || 0;
+		}
 
-		return Object.fromEntries(intervals.map((i) => [i.label, counts.get(i.label)]));
+		return results;
 	}
 
 	function transformViewDataForGraph(viewData) {
 		return Object.entries(viewData).map(([key, value]) => ({
-			myX: key,
+			myX: formatDate(key, false),
 			myY: value
 		}));
 	}
@@ -179,7 +161,7 @@
 				scales: {
 					x: {
 						ticks: {
-							display: false,
+							display: true,
 							grid: {
 								display: false
 							}
@@ -191,7 +173,7 @@
 					y: {
 						beginAtZero: true,
 						ticks: {
-							stepSize: 1000,
+							// stepSize: 1000,
 							grid: {
 								display: false
 							}
@@ -247,7 +229,11 @@
 	let viewRecords = $derived(chartD.data);
 	let chartData = $derived(
 		transformViewDataForGraph(
-			sortInterval <= 1 ? sortViewsByHour(viewRecords) : sortViewsByDays(viewRecords, sortInterval)
+			sorted
+				? viewRecords
+				: sortInterval <= 1
+					? sortViewsByHour(viewRecords)
+					: sortViewsByDays(viewRecords, sortInterval)
 		)
 	);
 	let c = $derived(chartData.map((d) => d.myX));
@@ -275,7 +261,7 @@
 				<ChevronUp size={16} />
 			{:else}
 				<ChevronDown size={16} />
-			{/if} Chart</button
+			{/if} </button
 		>
 		<!-- Toggle between Line and Bar chart -->
 		{#if !(bar || line)}
@@ -301,14 +287,14 @@
 	{#if showChart}
 		<div class="mt-6 flex flex-col items-center justify-center rounded-xl">
 			<canvas bind:this={chartCanvas} class="max-h-[300px]"></canvas>
-			<div class="flex w-full justify-between text-xs">
+			<!-- <div class="flex w-full justify-between text-xs">
 				<span>
 					{c[0]}
 				</span>
 				<span>
 					{c[c.length - 1]}
 				</span>
-			</div>
+			</div> -->
 		</div>
 	{/if}
 </div>

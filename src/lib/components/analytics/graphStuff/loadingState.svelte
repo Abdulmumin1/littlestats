@@ -6,7 +6,7 @@
 
 <div
 	transition:fade
-	class="fixed bottom-0 left-0 right-0 top-0 z-50 m-auto grid h-screen w-screen place-content-center backdrop-blur-md backdrop-brightness-95"
+	class="fixed bottom-0 left-0 right-0 top-0 z-50 m-auto grid h-screen w-screen place-content-center backdrop-blur backdrop-brightness-95"
 >
 	<LoaderPinwheel size={53} class="m-auto text-{$color}-700 animate-spin" />
 </div>

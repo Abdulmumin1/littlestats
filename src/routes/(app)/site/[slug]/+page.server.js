@@ -1,8 +1,9 @@
 import { fail } from '@sveltejs/kit';
+import { env } from '$env/dynamic/private';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
-	days = days <= 0 ?1 :days
+	days = days <= 0 ? 1 : days
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
@@ -63,14 +64,50 @@ export const actions = {
 			const filterToUse = getDateRange(
 				selectedDate
 			);
-			const dataset = await fetchRecords(ch, domain_id, filterToUse);
+			let url = `${env.DASHBOARD_WORKER}dash/${domain_id}/${selectedDate}`
+
+			// const dataset = await fetchRecords(ch, domain_id, filterToUse);
+			const req = await fetch(url)
+			if (req.ok){
+				const dataset = await req.json()
+				
+				return { records: dataset };
+			}
 			// console.log(dataset)
-			return {records:[...dataset]};
 		} catch (error) {
 			console.error('Error fetching date:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
 		}
 	},
+
+	fetchRange: async ({ locals: { pb, ch }, request }) => {
+			const data = await request.formData();
+			const selectedStart = data.get('start');
+			const selectedEnd = data.get('end')
+			const domain_id = data.get('domain_id');
+	
+			if (!selectedStart || !selectedEnd || !domain_id) {
+				return fail(400, { fail: true, message: 'Range and domain ID are required' });
+			}
+	
+			try {
+				// const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
+				// const dataset = await fetchRecords(ch, domain_id, start, end);
+				let url = `${env.DASHBOARD_WORKER}dash-range/${domain_id}/${selectedStart}/${selectedEnd}`
+				let res = await fetch(url)
+				if (res.ok) {
+					let result = await res.json();
+					return {records: result}
+				}else {
+					return {error:true}
+				}
+				// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
+				// return { results: dataset, cache: false };
+			} catch (error) {
+				console.error('Error fetching spikes:', error);
+				return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+			}
+		},
 
 	fetchSpikes: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();

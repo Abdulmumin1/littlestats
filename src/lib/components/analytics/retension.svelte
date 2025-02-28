@@ -64,16 +64,16 @@
 	}
 
 	export function calculateRetention(raw) {
-	    const keys = Object.keys(raw).sort();
-	    const weeklyCounts = {};
+		const keys = Object.keys(raw).sort();
+		const weeklyCounts = {};
 
-	    keys.forEach((baseKey, i) => {
-	        weeklyCounts[baseKey] = {};
-	        keys.slice(i).forEach(otherKey => {
-	            weeklyCounts[baseKey][otherKey] = raw[baseKey].intersection(raw[otherKey]).size;
-	        });
-	    });
-	    return weeklyCounts;
+		keys.forEach((baseKey, i) => {
+			weeklyCounts[baseKey] = {};
+			keys.slice(i).forEach((otherKey) => {
+				weeklyCounts[baseKey][otherKey] = raw[baseKey].intersection(raw[otherKey]).size;
+			});
+		});
+		return weeklyCounts;
 	}
 
 	// export function calculateRetention(raw) {
@@ -113,26 +113,46 @@
 	function getColor(percentage) {
 		return `hsl(${percentage * 1.2}, 70%, 85%)`;
 	}
+	const tailwindHexColors = [
+  "#2563EB", // blue-600
+  "#CA8A04", // yellow-600
+  "#9333EA", // purple-600
+  "#16A34A", // green-600
+  "#DC2626", // red-600
+  "#0891B2", // cyan-600
+  "#EA580C", // orange-600
+  "#4F46E5", // indigo-600
+  "#65A30D", // lime-600
+  "#C026D3", // fuchsia-600
+  "#059669", // emerald-600
+  "#E11D48", // rose-600
+  "#0D9488", // teal-600
+  "#D97706", // amber-600
+  "#7C3AED", // violet-600
+  "#DB2777"  // pink-600
+];
 
-	let lastColor = null;
 
-	function getRandomColor() {
-		let hue;
-		do {
-			hue = Math.floor(Math.random() * 360);
-		} while (hue === lastColor);
+	let colorIndex = $state(0);
 
-		lastColor = hue;
-		return `hsl(${hue}, 100%, 30%)`; // Higher saturation & lower lightness for better contrast
+	function getNextColor(i) {
+		if (i <= tailwindHexColors.length){
+			return tailwindHexColors[i]
+		}else{
+			return getRandomHexColor()
+		}
 	}
 
-	let {
-		events = []
-	} = $props();
+	function getRandomHexColor() {
+		return `#${Math.floor(Math.random() * 16777215)
+			.toString(16)
+			.padStart(6, '0')}`;
+	}
+	let { events = [] } = $props();
 
-	const weeklyUsersRaw = calculateWeeklyUsersRaw(events);
-	const retention = calculateRetention(weeklyUsersRaw);
-	const sortedWeeks = Object.keys(retention);
+	// const weeklyUsersRaw = calculateWeeklyUsersRaw(events);
+	let retention = $derived(events);
+	let sortedWeeks = $derived(Object.keys(retention));
 
 	let randomColors = $state({});
 	// Generate chart when data changes
@@ -141,8 +161,8 @@
 			if (chartInstance) chartInstance.destroy();
 
 			const datasets = sortedWeeks.map((baseWeek, i) => {
-				const baseTotal = weeklyUsersRaw[baseWeek].size;
-				let randomColor = getRandomColor();
+				const baseTotal = retention[baseWeek][baseWeek];
+				let randomColor = getNextColor(i);
 				randomColors[baseWeek] = randomColor;
 				return {
 					label: getWeekDateRangeFormatted(baseWeek),
@@ -189,17 +209,17 @@
 		<canvas id="retentionChart" class="max-h-[500px]"></canvas>
 	</div>
 
-	<h2 class="text-xl font-inter">Weekly Retention</h2>
+	<h2 class="font-inter text-xl">Weekly Retention</h2>
 
 	<table class="text-white">
 		<thead class="z-10">
 			<tr class="">
 				<th class="z-40 rounded-xl" style="padding:0px !important;">
-					<div class="relative h-full w-full py-2 flex px-3">
+					<div class="relative flex h-full w-full px-3 py-2">
 						<div
 							class="absolute inset-0 -z-0 m-auto bg-{$color}-600 h-full w-full rounded-lg"
 						></div>
-						<span class="relative text-">Cohort</span>
+						<span class="text- relative">Cohort</span>
 					</div>
 				</th>
 				{#each sortedWeeks as week, index}
@@ -239,36 +259,33 @@
 							class="absolute inset-0 -z-0 m-auto h-full w-full rounded-lg bg-{$color}-600"
 						></div>
 						<!-- {JSON.stringify(randomColors)} -->
-						<div class="flex items-center  gap-4">
-							<div class='w-4 h-4 relative border-white border-2 rounded-full' style='background-color:{randomColors[baseWeek]};'>
-
-							</div>
+						<div class="flex items-center gap-2 px-1">
+							<div
+								class="relative h-4 w-4 rounded-md border border-white"
+								style="background-color:{randomColors[baseWeek]};"
+							></div>
 							<span class="relative"> {getWeekDateRangeFormatted(baseWeek)}</span>
 						</div>
 					</td>
 
 					{#each Object.entries(retentionData) as [otherWeek, count], index}
-						<td class="relative" title="{count}">
+						<td class="relative" title={count}>
 							<div
 								class="absolute inset-0 bg-{$color}-600 -z-0 m-auto h-full w-full rounded-lg"
-								style="opacity: {((count / weeklyUsersRaw[baseWeek].size) * 100).toFixed(
-									0
-								)}%; b"
+								style="opacity: {((count / retention[baseWeek][baseWeek]) * 100).toFixed(0)}%; b"
 							></div>
 							<div
 								class="bg-{$color}-600 absolute inset-0 -z-0 my-auto h-full rounded-lg"
-								style=" width:{(
-									(count / weeklyUsersRaw[baseWeek].size) *
-									100
-								).toFixed(0)}%;"
+								style=" width:{((count / retention[baseWeek][baseWeek]) * 100).toFixed(0)}%;"
 							></div>
 							<!-- style="background-color: {getColor()}" -->
 							<!-- {JSON.stringify()} -->
-							<span class="relative {(
-								(count / weeklyUsersRaw[baseWeek].size) *
-								100
-							).toFixed(0) < 59?'text-black dark:text-white':''}" >
-								{((count / weeklyUsersRaw[baseWeek].size) * 100).toFixed(0)}%</span
+							<span
+								class="relative {((count / retention[baseWeek][baseWeek]) * 100).toFixed(0) < 59
+									? 'text-black dark:text-white'
+									: ''}"
+							>
+								{((count / retention[baseWeek][baseWeek]) * 100).toFixed(0)}%</span
 							>
 						</td>
 					{/each}

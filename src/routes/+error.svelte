@@ -19,8 +19,8 @@
 	{:else if status == 500}
 		<p class="bg-{$color}-200 rounded-full px-2 py-1">An error occured from our end</p>
 	{/if}
-	<a href="/" class="mt-4 flex flex-col items-center">
+	<a href="/" class="mt-10 flex flex-col items-center">
 		<Logo />
-		<div class="pb-6 text-2xl font-bold text-{$color}-400 sm:mb-0 sm:text-3xl">Littlestats</div>
+		<h4 class="pb-6 text-2xl font-bold text-{$color}-400 sm:mb-0 sm:text-3xl">Littlestats.click</h4>
 	</a>
 </div>

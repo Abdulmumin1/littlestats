@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { generateRandomEvents, randomInt } from '../lib/mockData';
+import { env } from '$env/dynamic/private';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
@@ -57,7 +58,7 @@ async function fetchCache(pb, date, domain_id) {
 
 /** @type {import('./$types').Actions} */
 export const actions = {
-	fetchDate: async ({ locals: { pb, ch }, request }) => {
+	fetchTraffic: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();
 		const selectedDate = parseInt(data.get('defaultRange'));
 		const domain_id = data.get('domain_id');
@@ -67,51 +68,81 @@ export const actions = {
 		}
 
 		try {
-			const filterToUse = getDateRange(
-				selectedDate
-			);
+			let url = `${env.DASHBOARD_WORKER}traffic/${domain_id}/${selectedDate ?? 1}`
+			let res = await fetch(url)
+			// console.log(res.ok)
+			if (res.ok) {
+				let result = await res.json();
+				return {records:result}
+			}
+			// const filterToUse = getDateRange(
+			// 	selectedDate
+			// );
 			// const dataset = await fetchRecords(ch, domain_id, filterToUse);
 			// console.log(dataset)
-			return { records: generateRandomEvents(3000, filterToUse, new Date())};
+			return { records: [...dataset] };
 		} catch (error) {
 			console.error('Error fetching date:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
 		}
 	},
-
-	fetchSpikes: async ({ locals: { pb, ch }, request }) => {
-		const data = await request.formData();
-		const selectedDate = parseInt(data.get('defaultRange'));
-		const domain_id = data.get('domain_id');
-
-		if (!selectedDate || !domain_id) {
-			return fail(400, { fail: true, message: 'Range and domain ID are required' });
-		}
-
-		const cacheData = await fetchCache(pb, selectedDate, domain_id);
-		if (cacheData) {
-			return { results: cacheData, cache: true };
-		}
-
-		try {
-			const now = new Date();
-			const ranges = {
-				30: { start: getDateRange(60), end: getDateRange(30) },
-				21: { start: getDateRange(30), end: getDateRange(21) },
-				14: { start: getDateRange(21), end: getDateRange(14) },
-				7: { start: getDateRange(14), end: getDateRange(7) },
-				default: { start: getDateRange(2), end: getDateRange(1) }
-			};
-
-			const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
-			const dataset = await fetchRecords(ch, domain_id, start, end);
-			return { results: dataset, cache: false };
-		} catch (error) {
-			console.error('Error fetching spikes:', error);
-			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
-		}
-	},
-
+	
+	fetchTrafficRange: async ({ locals: { pb, ch }, request }) => {
+			const data = await request.formData();
+			const selectedStart = data.get('start');
+			const selectedEnd = data.get('end')
+			const domain_id = data.get('domain_id');
+	
+			if (!selectedStart || !selectedEnd || !domain_id) {
+				return fail(400, { fail: true, message: 'Range and domain ID are required' });
+			}
+	
+			try {
+				// const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
+				// const dataset = await fetchRecords(ch, domain_id, start, end);
+				let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${selectedStart}/${selectedEnd}`
+				let res = await fetch(url)
+				if (res.ok) {
+					let result = await res.json();
+					return {records: result}
+				}else {
+					return {error:true}
+				}
+				// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
+				// return { results: dataset, cache: false };
+			} catch (error) {
+				console.error('Error fetching spikes:', error);
+				return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+			}
+		},
+	
+		fetchSpikes: async ({ locals: { pb, ch }, request }) => {
+			const data = await request.formData();
+			const selectedDate = parseInt(data.get('defaultRange'));
+			const domain_id = data.get('domain_id');
+	
+			if (!selectedDate || !domain_id) {
+				return fail(400, { fail: true, message: 'Range and domain ID are required' });
+			}
+	
+			try {
+				const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
+				// const dataset = await fetchRecords(ch, domain_id, start, end);
+				let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${start}/${end}`
+				let res = await fetch(url)
+				if (res.ok) {
+					let result = await res.json();
+					return {records: result}
+				}else {
+					return {error:true}
+				}
+				// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
+				// return { results: dataset, cache: false };
+			} catch (error) {
+				console.error('Error fetching spikes:', error);
+				return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+			}
+		},
 	updateSpikes: async ({ locals: { pb }, request }) => {
 		const data = await request.formData();
 		const selectedDate = parseInt(data.get('defaultRange'));

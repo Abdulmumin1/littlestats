@@ -4,6 +4,7 @@
 	import { formatNumber } from '$lib/slug/helpers.js';
 	import { createEventDispatcher } from 'svelte';
 	import { fly, slide } from 'svelte/transition';
+	import { defaultRange as globalRange } from '$lib/globalstate.svelte.js';
 
 	const dispatch = createEventDispatcher();
 
@@ -84,7 +85,7 @@
 
 <div
 	onclick={sendFilter}
-	class="views cursor-pointer bg-{$color}-200 bg-opacity-35 px-6 dark:bg-stone-800/50"
+	class="views cursor-pointer bg-{$color}-200 dark:bg-stone-800/50 bg-opacity-35 px-6 "
 	class:red={increase == 'down'}
 >
 	<p class="text-gray-800 dark:text-white">{name}</p>
@@ -98,7 +99,7 @@
 	{#if !filter_on}
 		<p
 			transition:slide={{ duration: 100 }}
-			title="{percentange}% compare to last x days"
+			title="{percentange}% compare to last {globalRange.getRange()} days"
 			class="m-0 text-sm flex w-fit items-center gap-1 rounded-md p-0 {type != 'percent'
 				? increase == 'up'
 					? `bg-${$color}-50 text-green-700 dark:bg-stone-900 dark:text-green-500`

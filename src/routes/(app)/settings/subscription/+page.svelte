@@ -133,7 +133,7 @@
 							</div>
 							<div class="flex gap-2">
 								<a
-									href="https://polar.sh/purchases/subscriptions/{data.user.sub_id}"
+									href="https://polar.sh/abdulmuminyqn/portal"
 									class="mt-2 flex gap-2 self-end rounded-2xl border-b-4 border-{$color}-800 border bg-{$color}-600 dark:bg-{$color}-700 p-2 text-sm text-white hover:bg-{$color}-800"
 								>
 									<Settings size={20} />

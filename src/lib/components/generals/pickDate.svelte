@@ -1,11 +1,12 @@
 <script>
+	import { defaultRange as DateRange } from './../../globalstate.svelte.js';
 	import { run } from 'svelte/legacy';
 
 	import { DatePicker } from '@svelte-plugins/datepicker';
 	import { format } from 'date-fns';
 	import { Calendar, CalendarRange } from 'lucide-svelte';
 	import { onMount, createEventDispatcher } from 'svelte';
-	import { color } from '$lib/colors/mixer.js';
+	import { color, colorList } from '$lib/colors/mixer.js';
 	import { clickOutside } from '$lib/index.js';
 	import { fade } from 'svelte/transition';
 
@@ -30,6 +31,7 @@
 	let {
 		startDate = $bindable(getDateFromToday(29)),
 		endDate = $bindable(today),
+
 		isOpen = $bindable(false)
 	} = $props();
 
@@ -60,10 +62,35 @@
 		}
 	}
 
-	run(() => {
+	$effect(() => {
 		if (startDate || endDate) {
 			dispatch('dateChange', { startDate, endDate });
 		}
+	});
+
+	function save() {
+		DateRange.setCustom(true);
+		DateRange.setRange(startDate, endDate);
+		closeModal();
+	}
+
+	onMount(() => {
+		let unsubscribe = color.subscribe((c) => {
+			const root = document.documentElement;
+			const theme = colorList[c];
+			console.log('cdlkafdka color DSSSS color DDSADFA color')
+			root.style.setProperty('--datepicker-container-border', `1px solid ${theme.primary}`);
+			root.style.setProperty('--datepicker-calendar-range-selected-background', theme.primary);
+			root.style.setProperty(
+				'--datepicker-calendar-header-month-nav-background-hover',
+				theme.primary
+			);
+			root.style.setProperty('--datepicker-presets-button-background-active', theme.primary);
+		});
+
+		return () => {
+			unsubscribe();
+		};
 	});
 </script>
 
@@ -75,13 +102,24 @@
 			use:clickOutside
 			onclick_outside={closeModal}
 		>
-			<!-- <DatePicker bind:startDate bind:endDate isRange showPresets alwaysShow bind:isOpen /> -->
-			<p class="w-fit text-5xl text-white bg-{$color}-500">Feature incoming...</p>
-			<div class="mt-96 flex w-full items-end justify-end gap-2">
-				<button onclick={closeModal} class=" text-black bg-{$color}-200 rounded-full px-3 py-2"
-					>close</button
+			<DatePicker
+				theme="custom-datepicker"
+				bind:startDate
+				bind:endDate
+				isRange
+				showPresets
+				alwaysShow
+				bind:isOpen
+			/>
+			<!-- <p class="w-fit text-5xl text-white bg-{$color}-500">Feature incoming...</p> -->
+			<div class="mt-96 flex w-full  items-end justify-end gap-2 px-5">
+				<button
+					onclick={() => {
+						closeModal();
+					}}
+					class=" text-black bg-{$color}-100 rounded-xl border-b-2 border border-{$color}-200  px-3 py-1">close</button
 				>
-				<button onclick={closeModal} class=" text-white bg-{$color}-500 rounded-full px-3 py-2"
+				<button onclick={save} class=" text-white bg-{$color}-500 border-b-2 border border-{$color}-800 rounded-xl px-3 py-1"
 					>Select</button
 				>
 			</div>
@@ -93,9 +131,9 @@
 	.modal {
 		padding: 0;
 		border: none;
-		/* background: rgba(0, 0, 0, 0.5); */
-		background-color: transparent;
-		backdrop-filter: blur(4px);
+		background: rgba(0, 0, 0, 0.3);
+		/* background-color: transparent; */
+		/* backdrop-filter: blur(1px); */
 		height: 100vh;
 		width: 100vw;
 		z-index: 9999;
@@ -137,5 +175,9 @@
 		to {
 			opacity: 1;
 		}
+	}
+
+	:global(.datepicker[data-picker-theme='custom-datepicker']) {
+		
 	}
 </style>

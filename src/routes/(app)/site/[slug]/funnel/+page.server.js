@@ -1,9 +1,10 @@
 import { fail } from '@sveltejs/kit';
 import { generateRandomEvents } from '../../../../../lib/mockData';
+import { env } from '$env/dynamic/private';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
-	days = days <= 0 ?1 :days
+	days = days <= 0 ? 1 : days
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
@@ -54,26 +55,74 @@ async function fetchCache(pb, date, domain_id) {
 export const actions = {
 	fetchData: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();
-		const selectedDate = parseInt(data.get('defaultRange'));
+		const funnel = data.get('funnel');
+		const selectedDate = parseInt(data.get('date'));
 		const domain_id = data.get('domain_id');
 
-		if (!selectedDate || !domain_id) {
+		if (!funnel || !domain_id) {
 			return fail(400, { fail: true, message: 'Range and domain ID are required' });
 		}
-
+		console.log(funnel)
 		try {
-			const filterToUse = getDateRange(
-				selectedDate
-			);
-			const dataset = await fetchRecords(ch, domain_id, filterToUse);
-			// console.log(dataset)
-			return {records:[...dataset]};
+			let url = `${env.DASHBOARD_WORKER}funnel/${domain_id}/${selectedDate ?? 1}`
+			let res = await fetch(url, { method: 'POST', body: funnel })
+			// console.log(res.ok)
+			if (res.ok) {
+				let result = await res.json();
+				console.log(result)
+				return result
+			}
+
 		} catch (error) {
 			console.error('Error fetching date:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
 		}
 	},
 
+	fetchRange: async ({ locals: { pb, ch }, request }) => {
+		const data = await request.formData();
+		const funnel = data.get('funnel');
+		const selectedStart = data.get('start');
+		const selectedEnd = data.get('end')
+		const domain_id = data.get('domain_id');
+
+		// console.log('fetching....')
+		if (!funnel || !domain_id) {
+			return fail(400, { fail: true, message: 'Range and domain ID are required' });
+		}
+
+		try {
+			let url = `${env.DASHBOARD_WORKER}funnel-range/${domain_id}/${selectedStart}/${selectedEnd}`
+			let res = await fetch(url, { method: 'POST', body: funnel })
+			if (res.ok) {
+				let result = await res.json();
+				console.log(result)
+				return  result
+			}else {
+				return {error:true}
+			}
+
+		} catch (error) {
+			console.error('Error fetching date:', error);
+			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+		}
+	},
+
+
+	// fetchDistincUrl: async ({ locals: { pb, ch }, request }) => {
+	// 	const data = await request.formData();
+	// 	const domain_id = data.get('domain_id');
+
+	// 	const query = `
+	// 	SELECT DISTINCT url
+	// 	FROM events
+	// 	WHERE domain_id = '${domain_id.replace(' ', '')}'
+	// 	AND timestamp >= '${formattedLast30Days}'
+	// `;
+	// 	const resultSet = await ch.query({ query, format: 'JSONEachRow' });
+	// 	return await resultSet.json();
+
+	// },
 	fetchSpikes: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();
 		const selectedDate = parseInt(data.get('defaultRange'));
@@ -141,8 +190,8 @@ export async function load({ parent, locals: { pb, ch }, params }) {
 		const domains = await parent()
 		// const last24Hours = getDateRange(1);
 		// const dataset = await fetchRecords(ch, params.slug, last24Hours);
-		
-		return {...domains, records:generateRandomEvents(1000)}
+
+		return { ...domains, records: generateRandomEvents(1000) }
 	} catch (error) {
 		console.error('Error loading data:', error);
 		return { fail: true };
