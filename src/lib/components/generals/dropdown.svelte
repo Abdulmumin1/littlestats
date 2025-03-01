@@ -73,7 +73,7 @@
 							{option.label}
 						</li>
 					{/each}
-					<li role="option" class=" px-4 py-2 dark:text-black">{@render btn?.()}</li>
+					<li role="option" class=" px-4 py-2 dark:text-white">{@render btn?.()}</li>
 				</ul>
 			</div>
 		{/if}

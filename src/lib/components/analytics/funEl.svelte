@@ -103,20 +103,20 @@
 
 <button
 	class="flex items-center justify-center gap-1 rounded-xl border-b-4 border-{$color}-800 border text-gray-100 bg-{$color}-600 px-4 py-1 font-bold hover:bg-{$color}-600 dark:bg-{$color}-700"
-	onclick={openModal}>Create Funnel</button
+	onclick={openModal}>+ Create Funnel</button
 >
 
-<dialog bind:this={modal} class=" rounded-md ">
+<dialog bind:this={modal} class=" rounded-xl bg-stone-50 dark:bg-stone-900">
 	{#key change}
-		<div class="relative min-w-full md:min-w-[1200px] rounded-xl bg-stone-50">
-			<header class="sticky top-0 flex items-center gap-3 p-3 flex-wrap bg-stone-100">
+		<div class="relative min-w-full md:min-w-[1200px] rounded-xl bg-stone-50 dark:bg-stone-900">
+			<header class="sticky top-0 flex items-center gap-3 p-3 flex-wrap bg-stone-100  dark:bg-stone-800 dark:text-white">
 				<div class="flex-1">
 					<input
 						type="text"
 						bind:value={funnelName}
 						bind:this={name}
 						placeholder="Enter Funnel Name"
-						class="flex-1 rounded-lg border-0 p-2 text-xl"
+						class="flex-1 rounded-lg border-0 p-2 text-xl dark:bg-stone-700/35"
 					/>
 				</div>
                 <Dropdown
@@ -135,7 +135,7 @@
 						>Save</button
 					>
 
-					<button class="p-2 bg-{$color}-200 rounded-lg bg-opacity-35 px-4" onclick={closeModal}
+					<button class="p-2 bg-{$color}-200 dark:bg-stone-800/50 rounded-lg bg-opacity-35 px-4" onclick={closeModal}
 						>X</button
 					>
 				</div>
@@ -143,14 +143,15 @@
 			<div class="">
 				<div class="flex flex-col md:flex-row gap-8">
 					<!-- Available Steps Pool -->
-					<div class="w-full md:w-1/3 bg-{$color}-200 bg-opacity-15 shadow-sm px-6 flex flex-col gap-3">
+					<div class="w-full md:w-1/3 bg-{$color}-200 dark:bg-stone-800/50 bg-opacity-15 shadow-sm px-6 flex flex-col gap-3">
 						<div class="flex flex-col">
-                            <h2 class="mb-4 text-xl font-bold ">Available Steps</h2>
+                            <h2 class="mb-4 text-xl font-bold dark:text-white ">Available Steps</h2>
                             <div class="flex *:flex-1 *:py-2 *:rounded-lg">
-                                <button class:bg-white={tab} onclick={()=>{
+                                <button class:bg-white={tab} class:dark:bg-stone-900={tab} class="dark:text-white" onclick={()=>{
                                     tab = true
                                 }}> Events </button>
                                 <button class:bg-white={!tab} 
+								class:dark:bg-stone-900={!tab} class="dark:text-white"
                                 onclick={()=>{
                                     tab = false
                                 }}
@@ -164,7 +165,7 @@
 									type="text"
 									bind:value={searchQuery}
 									placeholder="Search steps..."
-									class="mb-3 w-full rounded border p-2"
+									class="mb-3 w-full rounded border p-2 dark:bg-stone-700/35 dark:text-white"
 								/>
 								<div
 									use:dndzone={{
@@ -190,7 +191,7 @@
 									type="text"
 									bind:value={searchQuery}
 									placeholder="Search steps..."
-									class="mb-3 w-full rounded border p-2"
+									class="mb-3 w-full rounded border p-2 dark:bg-stone-700/35 dark:text-white"
 								/>
 								<div
 									use:dndzone={{
@@ -216,8 +217,8 @@
 					</div>
 
 					<!-- Funnel Builder -->
-					<div class="flex-1  rounded-lg bg-stone-50 p-6 shadow-sm">
-						<h2 class="mb-4 text-xl font-bold">Your Funnel</h2>
+					<div class="flex-1  rounded-lg bg-stone-50 dark:bg-stone-900 p-6 shadow-sm">
+						<h2 class="mb-4 text-xl font-bold dark:text-white">Your Funnel</h2>
 						<div
 							use:dndzone={{
 								...dndConfig,

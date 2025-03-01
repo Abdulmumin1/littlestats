@@ -109,8 +109,8 @@
 			<BottomDrawer {searchQuery}>
 				{#snippet handle()}
 					<div>
-						<button class="no-bg mx-auto flex items-center justify-center gap-2 text-right"
-							>more <Maximize size={15} /></button
+						<div class="no-bg mx-auto flex items-center justify-center gap-2 text-right"
+							>more <Maximize size={15} /></div
 						>
 					</div>
 				{/snippet}

@@ -112,7 +112,7 @@
 				bind:isOpen
 			/>
 			<!-- <p class="w-fit text-5xl text-white bg-{$color}-500">Feature incoming...</p> -->
-			<div class="mt-96 flex w-full  items-end justify-end gap-2 px-5">
+			<div class="mt-[26rem] flex w-full  items-end justify-end gap-2 px-5">
 				<button
 					onclick={() => {
 						closeModal();

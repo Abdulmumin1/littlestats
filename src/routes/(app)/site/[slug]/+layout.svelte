@@ -2,7 +2,7 @@
 	import { formatDate } from '$lib/utils.js';
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
-	import { AudioLines, CalendarHeart, CalendarRange, Filter, Gauge, GaugeCircle, LayoutDashboard, MousePointerClick, ScrollText, Settings } from 'lucide-svelte';
+	import { AudioLines, CalendarHeart, CalendarRange, Filter, Gauge, X, LayoutDashboard, MousePointerClick, ScrollText, Settings } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import InsideNav from '../../../../lib/components/generals/insideNav.svelte';
 	import MixerComp from '../../../../lib/colors/mixerComp.svelte';
@@ -164,7 +164,7 @@
 						</Dropdown>
 					</div>
 		
-					<div class="flex gap-2 items-center">
+					<div class="flex gap-2 items-center dark:text-white">
 						{#if isCustom}
 						<button
 						in:fly={{x:10}}
@@ -175,10 +175,10 @@
 					>
 						<CalendarRange size={16} /> {formatDate(new Date(selectedStartDate))} - {formatDate(new Date(selectedEndDate))}
 					</button>
-					<button class="p-1 bg-{$color}-200 rounded-lg bg-opacity-35 px-4" onclick={() => {
+					<button class="" onclick={() => {
 						globalRange.setCustom(false)
 					}}>
-						X
+						<X />
 					</button>
 						{:else}
 						<div 						in:fly={{x:-10}}

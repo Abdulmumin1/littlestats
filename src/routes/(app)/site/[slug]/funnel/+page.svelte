@@ -70,7 +70,7 @@
 	const funnelSteps = $derived($funnelStepsContext.steps);
 
 	async function fetchFromDefaultDates(date, isRange, start = null, end = null, type, funnel) {
-		console.log('calling');
+		// console.log('calling');
 		try {
 			if (!isRange) {
 				// let cache = datacache.getCache(`traffic-${date}-${data.domain_id}`);
@@ -137,7 +137,6 @@
 	// });
 
 	$effect(async () => {
-		$inspect.trace();
 		loading = true;
 		await fetchFromDefaultDates(
 			sortInterval,
@@ -176,7 +175,7 @@
 		<div></div>
 		{/if}
 
-		<div class="flex flex-wrap gap-2 ">
+		<div class="flex flex-wrap gap-2 dark:text-white">
 			{#if $funnelStepsContext.steps.length}
 				<Dropdown
 					on:change={(e) => {

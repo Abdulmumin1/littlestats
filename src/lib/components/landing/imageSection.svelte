@@ -31,48 +31,51 @@
 		steps: mockDataFunnelSteps
 	});
 
-	let { data = $bindable()} = $props();
+	let { data = $bindable() } = $props();
 	let dummyies = generateRandomEvents();
 	let events_dummies = generateRandomEvents(1000);
 
 	const features = [
-	{
-		id: 'retension',
-		title: 'Retention Insights',
-		description: 'Boost user loyalty with actionable insights into retention trends and behavior patterns.',
-		icon: RotateCcw
-	},
-	{
-		id: 'funnels',
-		title: 'Conversion Funnels',
-		description: 'Visualize and optimize your user journey to maximize conversions at every step.',
-		icon: Filter
-	},
-	{
-		id: 'traffic',
-		title: 'Traffic Analytics',
-		description: 'Understand your audience with real-time traffic data and actionable insights.',
-		icon: LineChart
-	},
-	{
-		id: 'events',
-		title: 'Custom Event Tracking',
-		description: 'Track and measure key user actions with fully customizable event parameters.',
-		icon: MousePointer2
-	},
-	{
-		id: 'performance',
-		title: 'Performance Metrics',
-		description: 'Monitor and improve your app’s performance with privacy-focused analytics.',
-		icon: Shield
-	},
-	{
-		id: 'logs',
-		title: 'Log Management',
-		description: 'Easily collect, search, and analyze logs to troubleshoot and optimize your app.',
-		icon: Logs
-	}
-];
+		{
+			id: 'retension',
+			title: 'Retention Insights',
+			description:
+				'Boost user loyalty with actionable insights into retention trends and behavior patterns.',
+			icon: RotateCcw
+		},
+		{
+			id: 'funnels',
+			title: 'Conversion Funnels',
+			description:
+				'Visualize and optimize your user journey to maximize conversions at every step.',
+			icon: Filter
+		},
+		{
+			id: 'traffic',
+			title: 'Traffic Analytics',
+			description: 'Understand your audience with real-time traffic data and actionable insights.',
+			icon: LineChart
+		},
+		{
+			id: 'events',
+			title: 'Custom Event Tracking',
+			description: 'Track and measure key user actions with fully customizable event parameters.',
+			icon: MousePointer2
+		},
+		{
+			id: 'performance',
+			title: 'Performance Metrics',
+			description: 'Monitor and improve your app’s performance with privacy-focused analytics.',
+			icon: Shield
+		},
+		{
+			id: 'logs',
+			title: 'Log Management',
+			description:
+				'Easily collect, search, and analyze logs to troubleshoot and optimize your app.',
+			icon: Logs
+		}
+	];
 	let activeTab = $state(features[0].id);
 	let indicatorWidth = $state(null);
 	let indicatorLeft = $state(null);
@@ -91,7 +94,7 @@
 	let sortInterval = $derived(globalRange.getSingle());
 
 	async function handleDateChange(event) {
-		globalRange.setCustom(false)
+		globalRange.setCustom(false);
 		const date = event.detail.value;
 		globalRange.setSingle(date);
 	}
@@ -119,20 +122,20 @@
 	}
 
 	export function calculateRetention(raw) {
-	    const keys = Object.keys(raw).sort();
-	    const weeklyCounts = {};
+		const keys = Object.keys(raw).sort();
+		const weeklyCounts = {};
 
-	    keys.forEach((baseKey, i) => {
-	        weeklyCounts[baseKey] = {};
-	        keys.slice(i).forEach(otherKey => {
-	            weeklyCounts[baseKey][otherKey] = raw[baseKey].intersection(raw[otherKey]).size;
-	        });
-	    });
-	    return weeklyCounts;
+		keys.forEach((baseKey, i) => {
+			weeklyCounts[baseKey] = {};
+			keys.slice(i).forEach((otherKey) => {
+				weeklyCounts[baseKey][otherKey] = raw[baseKey].intersection(raw[otherKey]).size;
+			});
+		});
+		return weeklyCounts;
 	}
 
-	let retension = $derived(calculateRetention(calculateWeeklyUsersRaw(dummyies)))
-	let funnelData = $derived(calculateFunnel(mockDataFunnel, mockDataFunnelSteps, 'user'))
+	let retension = $derived(calculateRetention(calculateWeeklyUsersRaw(dummyies)));
+	let funnelData = $derived(calculateFunnel(mockDataFunnel, mockDataFunnelSteps, 'user'));
 </script>
 
 <div class="space-y-12 bg-{$color}-600 px-4 py-6 md:px-0 md:py-12">
@@ -154,12 +157,9 @@
 						? `bg-${$color}-100 text-${$color}-700 dark:bg-${$color}-900/30 dark:text-${$color}-300`
 						: 'text-gray-100 hover:text-gray-200'}"
 					on:click={() => {
-
-						activeTab = feature.id
+						activeTab = feature.id;
 						window.trackEvent(`${feature.id} feature viewed`);
-					
-					}
-					}
+					}}
 				>
 					<svelte:component
 						this={feature.icon}
@@ -182,28 +182,32 @@
 	<div class="relative mx-auto max-w-7xl">
 		{#each features as feature}
 			<!-- {#if activeTab === feature.id} -->
-				<div class:hidden={activeTab !== feature.id} class="relative" in:fly={{ y: 30, duration: 300 }}>
-					<div class="space-y-8">
-						<!-- Feature Description -->
-						<div class="">
-							<p class="text-lg text-gray-100">
-								{feature.description}
-							</p>
-						</div>
+			<div
+				class:hidden={activeTab !== feature.id}
+				class="relative"
+				in:fly={{ y: 30, duration: 300 }}
+			>
+				<div class="space-y-8">
+					<!-- Feature Description -->
+					<div class="">
+						<p class="text-lg text-gray-100">
+							{feature.description}
+						</p>
+					</div>
 
-						<!-- Demo Component -->
+					<!-- Demo Component -->
+					<div
+						class="relative rounded-xl border-2 border-{$color}-200 bg-stone-50 p-6 shadow-lg dark:border-{$color}-800 dark:bg-stone-900 dark:text-white"
+					>
+						<p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+							<ArrowRight class="h-4 w-4 text-{$color}-600" />
+							Click any entity to filter
+						</p>
 						<div
-							class="relative rounded-xl border-2 border-{$color}-200 bg-stone-50 p-6 shadow-lg dark:border-{$color}-800 dark:bg-stone-900 dark:text-white"
-						>
-							<p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-								<ArrowRight class="h-4 w-4 text-{$color}-600" />
-								Click any entity to filter
-							</p>
-							<div
-								class=" mt-4
+							class=" mt-4
 							"
-							>
-							<nav class="flex flex-wrap justify-between gap-4 py-2">
+						>
+							<nav class="flex flex-wrap justify-between gap-4 py-2 dark:text-white">
 								<div class="flex flex-wrap items-center gap-4 md:gap-5">yaqeen.me</div>
 								<Dropdown
 									on:change={handleDateChange}
@@ -212,29 +216,32 @@
 									value={sortInterval}
 								></Dropdown>
 							</nav>
-								{#if feature.id == 'traffic'}
-									<DemoComponent {data} />
+							{#if feature.id == 'traffic'}
+								<DemoComponent {data} />
 								<!-- <PerfomanceDemo {data} /> -->
-								{:else if feature.id == 'events'}
-									<Events page_data={events_dummies}/>
-								{:else if feature.id == 'retension'}
-									
-									<!-- {#key sortInterval} -->
+							{:else if feature.id == 'events'}
+								<Events page_data={events_dummies} />
+							{:else if feature.id == 'retension'}
+								<!-- {#key sortInterval} -->
+								<div class="dark:text-white">
 									<Retension events={retension} />
-									<!-- {/key} -->
+								</div>
+								<!-- {/key} -->
 								<!-- <DemoLogComponent data={[]}/> -->
-								{:else if feature.id == 'funnels'}
+							{:else if feature.id == 'funnels'}
+								<div class="dark:text-white">
 									<Funnels funnelCounts={funnelData} {funnelStepsContext} />
-								{:else}
-									<div class="text- flex w-full flex-col items-center justify-center dark:text-white">
-										<Construction size={100} class="rotate-2" />
-										Demo Incoming...
-									</div>
-								{/if}
-							</div>
+								</div>
+							{:else}
+								<div class="text- flex w-full flex-col items-center justify-center dark:text-white">
+									<Construction size={100} class="rotate-2" />
+									Demo Incoming...
+								</div>
+							{/if}
 						</div>
 					</div>
 				</div>
+			</div>
 			<!-- {/if} -->
 		{/each}
 	</div>
