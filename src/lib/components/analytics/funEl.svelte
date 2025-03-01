@@ -41,11 +41,13 @@
 			const seenIds = new Set();
 
 			newItems.forEach((item) => {
-				if (!seenIds.has(item.id)) {
+				 console.log(item)
+				if (!seenIds.has(item.value)) {
 					uniqueItems.push({ ...item });
-					seenIds.add(item.id);
+					seenIds.add(item.value);
 				}
 			});
+			console.log(uniqueItems)
 			funnelSteps = uniqueItems;
 			// filteredSteps = filteredSteps.filter((e) => !funnelSteps?.includes(e));
 		}
@@ -63,7 +65,12 @@
 		modal.close();
 	}
 
+	let name;
 	function save() {
+		if (!funnelName){
+			name.focus()
+			return;
+		}
 		try {
 			funnelContext.set({ name: funnelName, type:funnelType, steps: funnelSteps });
 			closeModal();
@@ -107,6 +114,7 @@
 					<input
 						type="text"
 						bind:value={funnelName}
+						bind:this={name}
 						placeholder="Enter Funnel Name"
 						class="flex-1 rounded-lg border-0 p-2 text-xl"
 					/>

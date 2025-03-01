@@ -121,7 +121,7 @@
 				<p
 					class="mt-2 flex justify-between rounded-xl bg-{$color}-200 bg-opacity-35 px-4 py-2 dark:bg-stone-800"
 				>
-					Daily Active Visitors {sortInterval} days
+					Daily Active Visitors
 					<span>
 						Average
 						<span class="font-bold text-{$color}-500">{calculateAverageValue(dau)}</span>
@@ -139,7 +139,7 @@
 				<p
 					class="mt-2 flex justify-between rounded-xl bg-{$color}-200 bg-opacity-35 px-4 py-2 dark:bg-stone-800"
 				>
-					Weekly Active Visitors {sortInterval} days
+					Weekly Active Visitors
 					<span>
 						Average
 						<span class="font-bold text-{$color}-500">{calculateAverageValue(wau)}</span>

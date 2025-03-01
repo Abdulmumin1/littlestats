@@ -153,7 +153,13 @@
 						{activeTab === feature.id
 						? `bg-${$color}-100 text-${$color}-700 dark:bg-${$color}-900/30 dark:text-${$color}-300`
 						: 'text-gray-100 hover:text-gray-200'}"
-					on:click={() => (activeTab = feature.id)}
+					on:click={() => {
+
+						activeTab = feature.id
+						window.trackEvent(`${feature.id} feature viewed`);
+					
+					}
+					}
 				>
 					<svelte:component
 						this={feature.icon}
@@ -187,7 +193,7 @@
 
 						<!-- Demo Component -->
 						<div
-							class="relative rounded-xl border-2 border-{$color}-200 bg-stone-50 p-6 shadow-lg dark:border-{$color}-800 dark:bg-stone-900"
+							class="relative rounded-xl border-2 border-{$color}-200 bg-stone-50 p-6 shadow-lg dark:border-{$color}-800 dark:bg-stone-900 dark:text-white"
 						>
 							<p class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
 								<ArrowRight class="h-4 w-4 text-{$color}-600" />
