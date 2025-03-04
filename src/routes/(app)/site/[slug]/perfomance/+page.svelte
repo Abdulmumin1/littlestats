@@ -7,7 +7,7 @@
 	import { scale, slide } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
-	import { defaultRange as globalRange, optis,datacache } from '$lib/globalstate.svelte.js';
+	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
 
 	// New filter state
 	let searchQuery = '';
@@ -137,29 +137,23 @@
 	}
 
 	// Component logic
-	export let data = { records: [] };
-	$: page_data = data.records;
-	$: metrics = getPerformanceMetrics(page_data);
-	$: formattedMetrics = {
+	let { data = { records: [] } } = $props();
+	let page_data = $state([]);
+
+	$effect(() => {
+		page_data = data.records;
+	});
+	let metrics = $derived(getPerformanceMetrics(page_data));
+	let formattedMetrics = $derived({
 		avgLoad: metrics.avgLoadTime.toFixed(1),
 		avgMemUsed: (metrics.avgMemory.used / 1024 / 1024).toFixed(2),
 		avgMemTotal: (metrics.avgMemory.total / 1024 / 1024).toFixed(2),
 		avgSession: metrics.avgSessionDuration.toFixed(1),
 		urlMetrics: metrics.urlMetrics
-	};
+	});
 
-	let sortInterval;
-	let loading = false;
-
-
-
-	async function handleDateChange(event) {
-		const date = event.detail.value;
-		await fetchFromDefaultDates(date);
-		sortInterval = parseInt(date);
-		globalRange.setRange(sortInterval)
-
-	}
+	let sortInterval = $derived(globalRange.getSingle());
+	let loading = $state(false);
 
 	// async function fetchFromDefaultDates(date) {
 	// 	loading = true;
@@ -176,7 +170,7 @@
 	// 	}
 	// 	loading = false;
 	// }
-	let showSearch = false;
+	let showSearch = $state(false);
 
 	function startSeach(e) {
 		let query = e.target.value;
@@ -186,8 +180,8 @@
 	// Filter functions
 	const filterFunctions = {
 		search: ([url, _]) => {
-            return url.toLowerCase().includes(searchQuery.toLowerCase())
-        },
+			return url.toLowerCase().includes(searchQuery.toLowerCase());
+		},
 		loadTime: ([_, data]) => {
 			if (loadTimeFilter === 'fast') return data.loadTime < 1000;
 			if (loadTimeFilter === 'slow') return data.loadTime >= 1000;
@@ -209,57 +203,55 @@
 	};
 
 	// Processed URL metrics with error handling
-	$: processedUrlMetrics = (() => {
-		try {
-			return Object.entries(formattedMetrics.urlMetrics || {})
-				.filter(filterFunctions.search)
-				.filter(filterFunctions.loadTime)
-				.filter(filterFunctions.memory)
-				.sort(sortFunctions[currentSort.key]);
-		} catch (error) {
-			console.error('URL metrics processing error:', error);
-			return [];
-		}
-	})();
+	let processedUrlMetrics = $state({});
+
+	$effect(() => {
+		processedUrlMetrics = (() => {
+			try {
+				return Object.entries(formattedMetrics.urlMetrics || {})
+					.filter(filterFunctions.search)
+					.filter(filterFunctions.loadTime)
+					.filter(filterFunctions.memory)
+					.sort(sortFunctions[currentSort.key]);
+			} catch (error) {
+				console.error('URL metrics processing error:', error);
+				return [];
+			}
+		})();
+	});
 
 	// Enhanced fetch with error handling
-	async function fetchFromDefaultDates(date) {
-		loading = true;
-
-		// let cache = datacache.getCache(`traffic-${date}-${data.domain_id}`);
-		// if (cache?.length) {
-		// 	page_data = cache;
-		// 	data.records = cache;
-		// 	loading = false
-
-		// 	return
-		// }
-		
+	async function fetchFromDefaultDates(date, isCustom, selectedStartDate, selectedEndDate) {
 		try {
-			const form = new FormData();
-			form.append('defaultRange', date);
-			form.append('domain_id', data.domain_id);
+			if (!isCustom) {
+				const form = new FormData();
+				form.append('defaultRange', date);
+				form.append('domain_id', data.domain_id);
 
-			const response = await fetch('?/fetchPerfomance', {
-				method: 'POST',
-				body: form
-			});
+				const response = await fetch('?/fetchDate', { method: 'POST', body: form });
+				if (response.ok) {
+					const result = deserialize(await response.text());
+					page_data = result.data.records;
 
-			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+					// data.records = page_data;
+					// datacache.setCach(`events-${date}-${data.domain_id}`, result.data.records);
+				}
+			} else {
+				const form = new FormData();
+				form.append('start', new Date(selectedStartDate).toISOString());
+				form.append('end', new Date(selectedEndDate).toISOString());
+				form.append('domain_id', data.domain_id);
 
-			const result = deserialize(await response.text());
+				const response = await fetch('?/fetchRange', { method: 'POST', body: form });
+				if (response.ok) {
+					const result = deserialize(await response.text());
+					page_data = result.data.records;
 
-			if (!result?.data?.records) {
-				throw new Error('Invalid response structure');
+					// data.records = page_data;
+				}
 			}
-			page_data = result.data.records;
-			data.records = page_data;
-			// datacache.setCach(`traffic-${date}-${data.domain_id}`, result.data.records);
 		} catch (error) {
-			console.error('Fetch failed:', error);
-			// Consider adding user-facing error notification
-		} finally {
-			loading = false;
+			page_data = []
 		}
 	}
 
@@ -272,17 +264,20 @@
 		}
 	}
 
-	onMount(async () => {
-		let date = globalRange.getSingle()
-		await fetchFromDefaultDates(date);
-		sortInterval = parseInt(date);
+	let [selectedStartDate, selectedEndDate] = $derived(globalRange.getRange());
+	let isCustom = $derived(globalRange.getCustom());
+
+
+	$effect(async () => {
+		loading = true;
+		await fetchFromDefaultDates(sortInterval, isCustom, selectedStartDate, selectedEndDate);
+		loading = false;
 		// await fetchSpikes(date);
 	});
 
-	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
 	const current_domain = data.domains.find((e) => e.id === data.domain_id);
-
 </script>
+
 <svelte:head>
 	<title>{current_domain.name} - Peformance Analytics</title>
 </svelte:head>
@@ -290,45 +285,34 @@
 {#if loading}
 	<LoadingState />
 {/if}
-<div class="mx-auto  text-gray-100">
-
-	<nav class="flex flex-wrap justify-between gap-4 py-2">
-		<Dropdown
-			on:change={(e) => (window.location.href = `/site/${e.detail.value}/perfomance`)}
-			title=""
-			value={data.domain_id}
-			options={domain_options}
+<div class="mx-auto text-gray-100">
+	<div class="mt-3 grid grid-cols-1 gap-4 text-black md:grid-cols-3 dark:text-white">
+		<div
+			class="rounded-xl bg-{$color}-200 flex flex-col gap-3 bg-opacity-35 p-4 py-8 text-center dark:bg-stone-800"
 		>
-			<a href="/settings" class="text-blue-500">+ add domain</a>
-		</Dropdown>
-		<Dropdown on:change={handleDateChange} title="Filter" options={optis} value={sortInterval}>
-			<button class="flex items-center gap-1 text-gray-300">
-				<Calendar size={16} /> Custom Date
-			</button>
-		</Dropdown>
-	</nav>
-
-	<div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3 text-black dark:text-white">
-		<div class="rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
-			<h3 class="text-sm ">Avg Page Load</h3>
-			<div class="text-xl font-bold">{(formattedMetrics.avgLoad/1000).toFixed(1)}s</div>
+			<h3 class="text-sm">Avg Page Load</h3>
+			<div class="text-xl font-bold">{(formattedMetrics.avgLoad / 1000).toFixed(1)}s</div>
 		</div>
-		<div class="rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
-			<h3 class="text-sm ">Avg Memory Usage</h3>
+		<div
+			class="rounded-xl bg-{$color}-200 flex flex-col gap-3 bg-opacity-35 p-4 py-8 text-center dark:bg-stone-800"
+		>
+			<h3 class="text-sm">Avg Memory Usage</h3>
 			<div class="text-xl font-bold">
 				{formattedMetrics.avgMemUsed}MB / {formattedMetrics.avgMemTotal}MB
 			</div>
 		</div>
-		<div class="rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4 text-center flex flex-col gap-3 py-8">
-			<h3 class="text-sm ">Avg Session Duration</h3>
+		<div
+			class="rounded-xl bg-{$color}-200 flex flex-col gap-3 bg-opacity-35 p-4 py-8 text-center dark:bg-stone-800"
+		>
+			<h3 class="text-sm">Avg Session Duration</h3>
 			<div class="text-xl font-bold">{formattedMetrics.avgSession}s</div>
 		</div>
 	</div>
 
-	<div class="mt-6 rounded-xl bg-{$color}-200 bg-opacity-35 dark:bg-stone-800 p-4">
-		<div class="mb-4 flex items-center flex-wrap  gap-4 justify-between text-black dark:text-white">
+	<div class="mt-6 rounded-xl bg-{$color}-200 bg-opacity-35 p-4 dark:bg-stone-800">
+		<div class="mb-4 flex flex-wrap items-center justify-between gap-4 text-black dark:text-white">
 			<h3 class="text-lg font-semibold">Performance by Page</h3>
-			<div class="flex items-center gap-2 flex-wrap">
+			<div class="flex flex-wrap items-center gap-2">
 				<!-- <Dropdown
 					title="Load Time"
 					bind:value={loadTimeFilter}
@@ -347,7 +331,7 @@
 						{ value: 'high', label: 'High (≥ 5MB)' }
 					]}
 				/> -->
-               <!-- <div class="flex gap-3 flex-wrap">
+				<!-- <div class="flex gap-3 flex-wrap">
                 <div class="flex gap-1 items-center">
                     <div class="size-4 bg-blue-500">
     
@@ -366,56 +350,52 @@
 				</button>
 			</div>
 		</div>
-        <!-- transition:slide={{}} -->
+		<!-- transition:slide={{}} -->
 		{#if showSearch}
 			<input
-				class="w-full rounded-lg bg-{$color}-100/50 dark:bg-stone-800 p-2 text-black dark:text-gray-200"
+				class="w-full rounded-lg bg-{$color}-100/50 p-2 text-black dark:bg-stone-800 dark:text-gray-200"
 				placeholder="Search pages..."
 				bind:value={searchQuery}
 				type="search"
 			/>
 		{/if}
 
-		<div class="mt-4 flex justify-between gap-4 text-black dark:text-gray-300 py-2 border-b mb-2 border-stone-700">
-            <div>
-                Sort
-            </div>
+		<div
+			class="mb-2 mt-4 flex justify-between gap-4 border-b border-stone-700 py-2 text-black dark:text-gray-300"
+		>
+			<div>Sort</div>
 			<div class="flex gap-3">
-                <button class="flex gap-1 items-center text-left" onclick={() => handleSort('loadTime')}
-                    >
-                    <div class="size-4 bg-blue-500 rounded">
-        
-                    </div>
-                    Load Time {currentSort.key === 'loadTime' ? (currentSort.asc ? '↑' : '↓'):''}</button
-                >
-                <button class="flex gap-1 items-center text-left" onclick={() => handleSort('memory')}
-                    >
-                    <div class="size-4 bg-green-500 rounded">
-        
-                    </div>
-                    Memory {currentSort.key === 'memory' ? (currentSort.asc ? '↑' : '↓'):''}</button
-                >
-            </div>
-		</div>
-<div class="flex flex-col gap-2">
-
-	{#each processedUrlMetrics as [url, data], i (url)}
-	<div animate:flip={{duration:199}} class="url-metric flex flex-col gap-1  bg-{$color}-100/50 dark:bg-stone-700/40 p-2 rounded">
-		<div class="url text-black dark:text-gray-100 truncate">{url}</div>
-		<div class="bars flex flex-col gap-1">
-			<div class="load-bar bg-blue-500" style="width: {Math.min(data.loadTime / 100, 100)}%">
-				{(data.loadTime/1000).toFixed(1)}s
-			</div>
-			<div
-				class="memory-bar bg-green-700"
-				style="width: {Math.min((data.memory.used / data.memory.total) * 100, 100)}%"
-			>
-				{(data.memory.used / 1024 / 1024).toFixed(1)}MB
+				<button class="flex items-center gap-1 text-left" onclick={() => handleSort('loadTime')}>
+					<div class="size-4 rounded bg-blue-500"></div>
+					Load Time {currentSort.key === 'loadTime' ? (currentSort.asc ? '↑' : '↓') : ''}</button
+				>
+				<button class="flex items-center gap-1 text-left" onclick={() => handleSort('memory')}>
+					<div class="size-4 rounded bg-green-500"></div>
+					Memory {currentSort.key === 'memory' ? (currentSort.asc ? '↑' : '↓') : ''}</button
+				>
 			</div>
 		</div>
-	</div>
-{/each}
-</div>
+		<div class="flex flex-col gap-2">
+			{#each processedUrlMetrics as [url, data], i (url)}
+				<div
+					animate:flip={{ duration: 199 }}
+					class="url-metric flex flex-col gap-1 bg-{$color}-100/50 rounded p-2 dark:bg-stone-700/40"
+				>
+					<div class="url truncate text-black dark:text-gray-100">{url}</div>
+					<div class="bars flex flex-col gap-1">
+						<div class="load-bar bg-blue-500" style="width: {Math.min(data.loadTime / 100, 100)}%">
+							{(data.loadTime / 1000).toFixed(1)}s
+						</div>
+						<div
+							class="memory-bar bg-green-700"
+							style="width: {Math.min((data.memory.used / data.memory.total) * 100, 100)}%"
+						>
+							{(data.memory.used / 1024 / 1024).toFixed(1)}MB
+						</div>
+					</div>
+				</div>
+			{/each}
+		</div>
 	</div>
 </div>
 
@@ -431,6 +411,4 @@
 		border-radius: 4px;
 		transition: width 0.3s ease;
 	}
-
-	
 </style>

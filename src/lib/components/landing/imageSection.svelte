@@ -2,7 +2,7 @@
 	import { mockDataFunnel, mockDataFunnelSteps } from './../../mockData.js';
 	import { calculateFunnel } from '$lib/funnels/helpers.js';
 	import { generateRandomEvents } from '$lib/mockData.js';
-	import Funnels from './../analytics/funnels.svelte';
+	import Funnels from '../pages/funnels.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import {
 		ArrowRight,
@@ -23,7 +23,7 @@
 	import Dropdown from '../generals/dropdown.svelte';
 	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
 	import { writable } from 'svelte/store';
-	import Events from '../analytics/events.svelte';
+	import Events from '../pages/events.svelte';
 
 	let funnelStepsContext = writable({
 		name: 'Demo Funnel',

@@ -1,42 +1,17 @@
 <script>
 	import { onMount } from 'svelte';
-	import ViewCard from '$lib/components/analytics/viewCard.svelte';
 	import { color } from '$lib/colors/mixer.js';
-	import ReferrerSection from '$lib/components/analytics/referrerSection.svelte';
-	import TinyChat from '../../../../../lib/components/analytics/graphStuff/tinyChat.svelte';
-	import { flip } from 'svelte/animate';
-	import { getCountry } from '$lib/slug/helpers.js';
-	import EmptyValues from '../../../../../lib/components/analytics/emptyValues.svelte';
-	import Dropdown from '../../../../../lib/components/generals/dropdown.svelte';
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
 	import { deserialize } from '$app/forms';
-	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
 	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
-	import Drawer from '../../../../../lib/components/generals/drawer.svelte';
-	import BottomDrawer from '../../../../../lib/components/generals/bottomDrawer.svelte';
-	import { MoreVertical } from 'lucide-svelte';
-	import PageItem from '../../../../../lib/components/analytics/pageItem.svelte';
-	import {
-		bucketEventsByName,
-		mergeEventData,
-		sortReferals,
-		sortCountryData,
-		sumData
-	} from '$lib/events/helpers.js';
-	import { generateRandomEvents } from '$lib/mockData.js';
-	import { executeInWorker } from '$lib/utils';
-	import Events from '../../../../../lib/components/analytics/events.svelte';
+	import Events from '../../../../../lib/components/pages/events.svelte';
 
 	let { data } = $props();
 	let page_data = $state([]);
 	let sortInterval = $derived(globalRange.getSingle());
-
-	// Use the provided records
-
 	
 	let loading = $state(false);
 	
-
 	async function fetchFromDefaultDates(date, isCustom, selectedStartDate, selectedEndDate) {
 		try {
 			if (!isCustom) {
@@ -86,14 +61,7 @@
 		loading = false;
 	});
 
-	// onMount(async () => {
-	// 	let date = globalRange.getRange();
-	// 	await fetchFromDefaultDates(date);
-	// 	sortInterval = parseInt(date);
-	// 	// await fetchSpikes(date);
-	// });
 
-	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
 	const current_domain = data.domains.find((e) => e.id === data.domain_id);
 	
 </script>

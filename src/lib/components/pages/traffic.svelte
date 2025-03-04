@@ -1,34 +1,23 @@
 <script>
-import { onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
-	import PageItem from '$lib/components/analytics/pageItem.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { deserialize } from '$app/forms';
 	import PagesSection from '$lib/components/analytics/pagesSection.svelte';
 	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
-	import Seo from '$lib/components/generals/seo.svelte';
 	import ReferrerSection from '$lib/components/analytics/referrerSection.svelte';
 	import BrowserSection from '$lib/components/analytics/browserSection.svelte';
 	import OsSection from '$lib/components/analytics/OsSection.svelte';
-	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
-	import { X, Calendar } from 'lucide-svelte';
+	import { X } from 'lucide-svelte';
 	import { scale, slide } from 'svelte/transition';
 	import CountrySection from '$lib/components/analytics/CountrySection.svelte';
-	import Dropdown from '$lib/components/generals/dropdown.svelte';
-	import PickDate from '$lib/components/generals/pickDate.svelte';
+
 	import { derived } from 'svelte/store';
 	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
-	import { fetchUpdates } from '$lib/slug/liveFetch.js';
-	import {
-		getUniqueUserAgents,
-		filterView,
-		createFilter,
-		calculateAverageDuration,
-		calculateBounceRate
-	} from '$lib/traffic/helpers.js';
+	import { createFilter } from '$lib/traffic/helpers.js';
 	import { executeInWorker } from '$lib/utils';
 
-    let empty = {
+	let empty = {
 		views: 0,
 		bounce_rate: {
 			bounceRate: '0.00',
@@ -48,11 +37,9 @@ import { onMount } from 'svelte';
 		domain_id: ''
 	};
 
+	let { page_data, current_domain, domain_id } = $props();
 
-
-    let { page_data, current_domain, domain_id } = $props();
-
-    	// $effect(() => {
+	// $effect(() => {
 
 	// 	console.log([...page_data.splice(0,10)])
 	// });
@@ -174,27 +161,14 @@ import { onMount } from 'svelte';
 		chartFilter = event.detail.query;
 	}
 
-    $effect(async ()=>{
-        let x = page_data;
-        console.log('changed')
-        await fetchSpikes();
-    })
-
+	$effect(async () => {
+		let x = page_data;
+		console.log('changed');
+		await fetchSpikes();
+	});
 </script>
+
 <div class="min-h-screen p-2 text-black">
-	<!-- <PickDate
-		bind:this={datePickerModal}
-		bind:startDate={selectedStartDate}
-		bind:endDate={selectedEndDate}
-		bind:isOpen
-		on:dateChange={handleCustomDateChange}
-		on:clear={() => {
-			selectedStartDate = null;
-			selectedEndDate = null;
-		}}
-	/> -->
-
-
 	<div class="container mx-auto flex flex-col gap-4 dark:text-white">
 		{#if filters.length > 0}
 			<div in:slide={{ duration: 230 }} class="flex w-full flex-row flex-wrap gap-1">

@@ -1,13 +1,12 @@
 <script>
 	import { deserialize } from '$app/forms';
-	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
 	import { derived } from 'svelte/store';
 	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
 	import { fetchUpdates } from '$lib/slug/liveFetch.js';
-
-	import Traffic from '$lib/components/analytics/traffic.svelte';
-	import { Inspect } from 'lucide-svelte';
+	import Traffic from '$lib/components/pages/traffic.svelte';
 	import DemoLoadingState from '../analytics/graphStuff/demoLoadingState.svelte';
+
+	
 	let empty = {
 		views: 0,
 		bounce_rate: {
@@ -39,7 +38,6 @@
 		// console.log(data.records)
 	});
 
-
 	let fetchUpdatesInterval = null;
 	async function fetchUpdateFunction() {
 		if (!lastEvent?.timestamp) return;
@@ -55,7 +53,6 @@
 	async function fetchFromDefaultDates(date, isRange, start = null, end = null) {
 		try {
 			if (!isRange) {
-				
 				const form = new FormData();
 				form.append('defaultRange', date);
 				form.append('domain_id', data.domain_id);
@@ -69,7 +66,6 @@
 					}
 					page_data = result.data.records;
 					data.records = page_data;
-					
 				}
 			} else {
 				const form = new FormData();
@@ -96,8 +92,8 @@
 
 	let [selectedStartDate, selectedEndDate] = $derived(globalRange.getRange());
 	let isCustom = $derived(globalRange.getCustom());
-	let loading = $state(false)
-	
+	let loading = $state(false);
+
 	$effect(async () => {
 		$inspect.trace();
 		loading = true;
@@ -107,9 +103,8 @@
 	});
 </script>
 
-
 {#if loading}
-<DemoLoadingState />
+	<DemoLoadingState />
 {/if}
 
-<Traffic {page_data} current_domain={'yaqeen.me'} domain_id={data.domain_id}/>
+<Traffic {page_data} current_domain={'yaqeen.me'} domain_id={data.domain_id} />

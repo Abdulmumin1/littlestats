@@ -184,7 +184,6 @@ export function calculateActiveUsersLast24Hours(events) {
 }
 
 export function calculateAverageValue(values) {
-	console.log(values);
 	let a = Array.from(Object.values(values));
 	if (a.length < 1) return 0;
 	let average = a.reduce((a, b) => a + b) / a.length;

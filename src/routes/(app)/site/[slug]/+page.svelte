@@ -15,13 +15,8 @@
 		calculateRetension
 	} from '$lib/slug/activeUsersUtils.js';
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
-	import Dropdown from '$lib/components/generals/dropdown.svelte';
 	import Retension from '$lib/components/analytics/retension.svelte';
-	import RetnsionOld from '$lib/components/analytics/retnsionOld.svelte';
 	import Seo from '../../../../lib/components/generals/seo.svelte';
-	import Funnels from '../../../../lib/components/analytics/funnels.svelte';
-	import PickDate from '../../../../lib/components/generals/pickDate.svelte';
-	import { defaultRange } from '../../../../lib/globalstate.svelte';
 
 	let { data = { records: [] } } = $props();
 

@@ -51,7 +51,7 @@ async function fetchCache(pb, date, domain_id) {
 
 /** @type {import('./$types').Actions} */
 export const actions = {
-	fetchPerfomance: async ({ locals: { pb, ch }, request }) => {
+	fetchDate: async ({ locals: { pb, ch }, request }) => {
 		const data = await request.formData();
 		const selectedDate = parseInt(data.get('defaultRange'));
 		const domain_id = data.get('domain_id');
@@ -67,6 +67,40 @@ export const actions = {
 			const dataset = await fetchRecords(ch, domain_id, filterToUse);
 			// console.log(dataset)
 			return {records:[...dataset]};
+		} catch (error) {
+			console.error('Error fetching date:', error);
+			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+		}
+	},
+
+	fetchRange: async ({ locals: { pb, ch }, request }) => {
+		const data = await request.formData();
+		const startDate = data.get('start');
+		const endDate = data.get('end');
+		const domain_id = data.get('domain_id');
+
+		if (!startDate || !domain_id) {
+			return fail(400, { fail: true, message: 'Range and domain ID are required' });
+		}
+
+		try {
+			const formattedStartDate = new Date(startDate).toISOString().slice(0, 19).replace('T', ' ');
+			const formattedEndDate = new Date(endDate).toISOString().slice(0, 19).replace('T', ' ');
+			// console.log(formattedStartDate, formattedEndDate)
+
+			const query = `
+	  SELECT *
+	  FROM events
+	  WHERE domain_id = '${domain_id.replace(' ', '')}' 
+	  AND event_type IN ('pageview', 'pageExit')
+	  AND timestamp >= '${formattedStartDate}' 
+	  AND timestamp < '${formattedEndDate}'
+	`;
+
+			const resultSet = await ch.query({ query, format: 'JSONEachRow' });
+			let dataset = await resultSet.json();
+			return { records: dataset }
+
 		} catch (error) {
 			console.error('Error fetching date:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });

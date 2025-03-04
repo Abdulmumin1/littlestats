@@ -5,14 +5,13 @@
 	import { deserialize } from '$app/forms';
 	import Dropdown from '../../../../../lib/components/generals/dropdown.svelte';
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
-	import Funnels from '../../../../../lib/components/analytics/funnels.svelte';
+	import Funnels from '../../../../../lib/components/pages/funnels.svelte';
 	import FunEl from '../../../../../lib/components/analytics/funEl.svelte';
 	import { writable } from 'svelte/store';
-	import { executeInWorker } from '$lib/utils';
-	import { generateRandomEvents } from '$lib/mockData.js';
-	import { bucketEventsByName } from '$lib/funnels/helpers.js';
 	import { calctypeoptions } from '$lib/funnels/helpers.js';
 	import { Filter } from 'lucide-svelte';
+
+
 	let { data } = $props();
 
 	let page_data = $state({});
@@ -124,17 +123,6 @@
 		}
 	}
 
-	// onMount(async () => {
-
-	// 	let unsubscribe = funnelStepsContext.subscribe(async (_) => {
-	// 		// console.log(_)
-	// 		await fetchFromDefaultDates(sortInterval, isCustom, selectedStartDate. selectedEndDate);
-	// 	});
-
-	// 	return () => {
-	// 		unsubscribe();
-	// 	};
-	// });
 
 	$effect(async () => {
 		loading = true;

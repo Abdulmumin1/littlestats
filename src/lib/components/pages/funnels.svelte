@@ -1,10 +1,7 @@
 <script>
 	import { onDestroy, onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
-	import { executeInWorker } from '$lib/utils';
-	import { calculateFunnel } from '$lib/funnels/helpers.js';
-	import { DivideCircle } from 'lucide-svelte';
-
+	
 	let { data, funnelStepsContext, funnelCounts } = $props();
 
 	// let funnelCounts = $state({});
