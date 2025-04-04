@@ -123,3 +123,8 @@ export function sortCountryData(events) {
 export function sumData(d) {
 	return Math.max(...d.map((item) => item[1]));
 }
+
+
+export function sortData(events){
+    return [sortReferals(events), sortCountryData(events)]
+}

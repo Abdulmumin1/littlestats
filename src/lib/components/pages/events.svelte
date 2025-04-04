@@ -13,6 +13,7 @@
 		bucketEventsByName,
 		mergeEventData,
 		sortReferals,
+		sortData,
 		sortCountryData,
 		sumData
 	} from '$lib/events/helpers.js';
@@ -40,8 +41,7 @@
 
 	$effect(async () => {
 		let dataSnapshot = $state.snapshot(activeEventData);
-		sortedReferals = await executeInWorker(sortReferals, dataSnapshot);
-		sortedCountryData = await executeInWorker(sortCountryData, dataSnapshot);
+		sortedReferals, sortedCountryData = await executeInWorker(sortData, dataSnapshot);
 		// console.log(dataSnapshot);
 	});
 

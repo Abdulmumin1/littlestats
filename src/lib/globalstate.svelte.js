@@ -4,7 +4,7 @@ export let dashboardInterval = 30
 export class DateRange {
   isCustom = $state(false);
   range = $state([new Date().toISOString(), new Date().toISOString()])
-  single = $state(7);
+  single = $state(30);
 
   getSingle() {
     return this.single;
