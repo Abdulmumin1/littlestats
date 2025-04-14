@@ -37,7 +37,7 @@ export const actions = {
 	updateDomain: async ({ locals: { pb, user }, request }) => {
 		const domain_recs = await pb.collection('domain').getFullList();
 
-		if (domain_recs.length >= 5) {
+		if (domain_recs.length >= 8) {
 			return fail(400, { message: 'Domain Limit reached!' });
 		}
 		const data = await request.formData();
