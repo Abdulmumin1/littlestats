@@ -41,11 +41,8 @@
 
 	$effect(async () => {
 		let dataSnapshot = $state.snapshot(activeEventData);
-		// console.log(dataSnapshot)
 		sortedReferals = await executeInWorker(sortReferals, dataSnapshot)
 		sortedCountryData = await executeInWorker(sortCountryData, dataSnapshot)
-		// sortedCountryData = await executeInWorker(sortData, [sortReferals, sortCountryData], dataSnapshot);
-		// console.log(dataSnapshot);
 	});
 
 	// $effect(() => {
