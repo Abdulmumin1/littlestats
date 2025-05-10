@@ -86,12 +86,15 @@ const campaigns = ['summer-sale', 'winter-discount', 'spring-offer', 'autumn-pro
 const interactionTypes = ['click', 'hover', 'drag', 'drop', 'input', 'keypress'];
 const formIds = ['signup-form', 'contact-form', 'survey-form', 'feedback-form', 'checkout-form'];
 
+const endDated = new Date();
+const startDated = new Date(endDated);
+startDated.setDate(endDated.getDate() - 35); // 5 weeks = 35 days
 
 // Function to generate random events
 export function generateRandomEvents(
 	num = 1000,
-	startDate = new Date('2025-01-03T00:00:00'),
-	endDate = new Date()
+	startDate = startDated,
+	endDate = endDated
 ) {
 	let dummy = [];
 	for (let i = 0; i < num; i++) {

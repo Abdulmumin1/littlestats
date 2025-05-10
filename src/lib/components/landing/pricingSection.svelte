@@ -53,7 +53,18 @@
 </script>
 
 <div id="pricing"></div>
-<div class="mt-16 sm:mt-20 lg:mt-24 font-inter">
+<div class="relative">
+	<div
+		class="absolute  font-inter font-extrabold inset-0 flex z-50  h-full flex-col w-full items-center justify-center bg-black/70 text-balance px-4 text-5xl md:text-7xl text-white"
+	>
+		Free until 200 users
+		<button 
+		class="rounded-full text-base mt-6  text-white bg-{$color}-600  px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
+		
+		>Get started for free</button>
+	</div>
+<div class="mt-16 *:line-through sm:mt-20 lg:mt-24 font-inter relative py-12">
+
 	<div
 		class="border-w mx-auto mb-5 h-4 w-11 outline outline-[7px] outline-white bg-{$color}-600  rounded-full dark:text-white"
 	></div>
@@ -75,17 +86,17 @@
 				class="rounded-l-full px-3 py-2 font-medium {!isYearly
 					? `bg-${$color}-600  text-white`
 					: `bg-${$color}-50/50 dark:bg-stone-100`}"
-				class:text-{$color}-600={isYearly < 0.5}
 				onclick={() => toggleSubscription(false)}>Monthly</button
-			>
+				>
+				<!-- class:text-{$color}-600={isYearly < 0.5} -->
 
 			<button
 				class="relative rounded-r-full px-3 py-2 font-medium {isYearly
 					? `bg-${$color}-600  text-white`
 					: `bg-${$color}-50/50 dark:bg-stone-100`}"
-				class:text-{$color}-600={isYearly > 0.5}
 				onclick={() => toggleSubscription(true)}
 				>
+				<!-- class:text-{$color}-600={isYearly > 0.5} -->
 				Yearly
 				<span
 					class="absolute -top-4 border-{$color}-300 left-10 text-gray-100 bg-{$color}-600  flex w-16 items-center justify-center rounded-full p-1 text-xs"
@@ -192,3 +203,9 @@
 		</div>
 	</div>
 </div>
+
+</div>
+
+<style>
+	
+</style>
