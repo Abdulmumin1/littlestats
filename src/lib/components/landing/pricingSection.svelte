@@ -58,10 +58,11 @@
 		class="absolute  font-inter font-extrabold inset-0 flex z-50  h-full flex-col w-full items-center justify-center bg-black/70 text-balance px-4 text-5xl md:text-7xl text-white"
 	>
 		Free until 200 users
-		<button 
+		<a
+		href="/signin"
 		class="rounded-full text-base mt-6  text-white bg-{$color}-600  px-4 py-2 text-center font-semibold text-black transition duration-300 hover:bg-{$color}-500"
 		
-		>Get started for free</button>
+		>Get started for free</a>
 	</div>
 <div class="mt-16 *:line-through sm:mt-20 lg:mt-24 font-inter relative py-12">
 
