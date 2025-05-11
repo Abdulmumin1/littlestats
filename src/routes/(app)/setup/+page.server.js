@@ -10,10 +10,10 @@ export async function load({ locals: { pb }, url }) {
 	if (user?.account_activated) {
 		throw redirect(303, '/sites');
 	}
-	if (!user) {
-		throw redirect(303, '/signup');
-	}
-	return { user };
+	// if (!user) {
+	// 	throw redirect(303, '/signup');
+	// }
+	return { user:{} };
 }
 
 /** @type {import('./$types').Actions} */

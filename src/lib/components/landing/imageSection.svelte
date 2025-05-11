@@ -32,8 +32,8 @@
 	});
 
 	let { data = $bindable() } = $props();
-	let dummyies = generateRandomEvents();
-	let events_dummies = generateRandomEvents(1000);
+	let dummyies = generateRandomEvents(300);
+	let events_dummies = dummyies;
 
 	const features = [
 		{

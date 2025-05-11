@@ -47,7 +47,7 @@ const unprotectedPrefix = [
 	'/confirm',
 	'/oauth',
 	'/sitemap.xml',
-	'/robots.txt'
+	'/robots.txt',
 ];
 
 export const authorization = async ({ event, resolve }) => {
