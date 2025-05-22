@@ -65,6 +65,16 @@
 	let loading = $state(false);
 
 	let expanded = $state(null);
+
+	function getReferrerHost(referrer) {
+  try {
+    const url = new URL(referrer);
+    return url.hostname;
+  } catch {
+    // If it's not a valid URL, just return the raw referrer string
+    return referrer || 'Direct';
+  }
+}
 </script>
 
 <div class="min-h-screen p-4 text-black dark:text-white">
@@ -225,6 +235,7 @@
 					</thead>
 					<tbody class="divide-y divide-stone-200 bg-white dark:divide-stone-700 dark:bg-stone-900">
 						{#each activeEventData as event (event.timestamp)}
+							
 							<tr
 								class="group cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50"
 								onclick={() => (expanded = expanded === event.timestamp ? null : event.timestamp)}
@@ -241,7 +252,7 @@
 								<td class="truncate px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
 									<!-- {@const user = event.user_id?.slice(0, 8)} -->
 									<!-- {event.user_id?.slice(0, 8) || 'Anonymous'} -->
-									{event.referrer ? new URL(event.referrer).hostname : 'Direct'}
+									{getReferrerHost(event.referrer)}
 								</td>
 								<td class="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
 									{new Date(event.timestamp).toLocaleDateString()}<br />

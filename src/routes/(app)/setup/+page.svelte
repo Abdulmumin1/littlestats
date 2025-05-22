@@ -160,7 +160,7 @@
 				</div>
 			</div>
 		</div>
-			{#if data.user.sub_id}
+			<!-- {#if data.user.sub_id}
 				<div class="rounded-md bg-{$color}-200 p-4">
 					<h2 class="mb-4 flex items-center text-xl font-semibold">
 						<CreditCard class="mr-2" /> Subscription Information
@@ -187,7 +187,7 @@
 						using our service without loss of any analytics data.
 					</p>
 				</div>
-			{/if}
+			{/if} -->
 
 			<div class="flex justify-end">
 				<button

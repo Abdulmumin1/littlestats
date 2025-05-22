@@ -66,7 +66,9 @@ export function sortReferals(events) {
                         uniquePages.set(direct, uniquePages.get(direct) + 1);
                     }
                 }
-            } catch (error) {}
+            } catch (error) {
+                uniquePages.set(ref, uniquePages.get(ref) + 1);
+            }
         } else {
             if (!uniquePages.has(direct)) {
                 uniquePages.set(direct, 1);
@@ -1498,10 +1500,6 @@ export function sortCountryData(events) {
                 u: 480,
                 c: ['BN']
             },
-            'Asia/Calcutta': {
-                a: 'Asia/Kolkata',
-                r: 1
-            },
             'Asia/Chita': {
                 u: 540,
                 c: ['RU']
@@ -1629,6 +1627,10 @@ export function sortCountryData(events) {
                 c: ['RU']
             },
             'Asia/Kolkata': {
+                u: 330,
+                c: ['IN']
+            },
+            'Asia/Calcutta':{
                 u: 330,
                 c: ['IN']
             },

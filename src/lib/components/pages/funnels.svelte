@@ -141,7 +141,7 @@
 
 <canvas id="funnelChart" class="w-full"></canvas>
 {#if funnelCounts && funnelSteps}
-	<h2 class="text-xl  py-4">Funnel Analysis</h2>
+	<h2 class="text-xl dark:text-white  py-4">Funnel Analysis</h2>
 	<!-- <div class="flex w-full">
 		<p>Steps</p>
 		<p>Counts</p>
