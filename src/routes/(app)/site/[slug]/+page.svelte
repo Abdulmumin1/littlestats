@@ -76,7 +76,8 @@
 
 	let dau = $derived(page_data?.dau ?? {});
 	let wau = $derived(page_data?.wau ?? {});
-	let retension = $derived(page_data?.retension ?? {});
+	let retension = $derived(page_data?.retention ?? {});
+
 	let [selectedStartDate, selectedEndDate] = $derived(globalRange.getRange());
 	let isCustom = $derived(globalRange.getCustom());
 

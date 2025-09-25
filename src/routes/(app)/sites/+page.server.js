@@ -53,7 +53,7 @@ export const actions = {
 		const tzOffset = data.get('tzOffset');
 
 		let url = `${env.DASHBOARD_WORKER}dash/${domain_id}/${dashboardInterval}?tzOffset=${tzOffset}`;
-		console.log(url);
+		// console.log(url);
 		let res = await fetch(url);
 		if (res.ok) {
 			let data = await res.json();

@@ -70,6 +70,8 @@ export const actions = {
 			const req = await fetch(url)
 			if (req.ok){
 				const dataset = await req.json()
+
+				// console.log(dataset.retention)
 				
 				return { records: dataset };
 			}
