@@ -6,6 +6,7 @@
 	import { Link, Activity, Clock, Eye, ArrowUpRight } from 'lucide-svelte';
 	import { deserialize } from '$app/forms';
 	import { dashboardInterval as globalRange } from '$lib/globalstate.svelte.js';
+	import { show_toast } from '$lib/toast.js';
 	import {
 		calculateActiveUsersLastXDays,
 		calculateDailyActiveUsers,
@@ -80,15 +81,25 @@
 
 	async function fetchFromDefaultDates() {
 		loading = true;
+		const tzOffset = -new Date().getTimezoneOffset() / 60;
 		const form = new FormData();
 		form.append('domain_id', domain.id);
+		form.append('tzOffset', tzOffset);
 
 		const response = await fetch('?/getData', { method: 'POST', body: form });
-		if (response.ok) {
-			const result = deserialize(await response.text());
-			// console.log(result)
-			views = result.data.data;
+		if (!response.ok) {
+			show_toast.set({ message: 'Failed to fetch data', type: 'error' });
+			loading = false;
+			return;
 		}
+		const result = deserialize(await response.text());
+		if (result.type === 'failure') {
+			show_toast.set({ message: result.data?.message || 'Failed to fetch data', type: 'error' });
+			loading = false;
+			return;
+		}
+		// console.log(result)
+		views = result.data.data;
 		loading = false;
 	}
 

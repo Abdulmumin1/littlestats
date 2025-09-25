@@ -10,7 +10,7 @@
 	import { writable } from 'svelte/store';
 	import { calctypeoptions } from '$lib/funnels/helpers.js';
 	import { Filter } from 'lucide-svelte';
-
+	import { show_toast } from '$lib/toast.js';
 
 	let { data } = $props();
 
@@ -71,6 +71,7 @@
 	async function fetchFromDefaultDates(date, isRange, start = null, end = null, type, funnel) {
 		// console.log('calling');
 		try {
+			const tzOffset = -new Date().getTimezoneOffset() / 60;
 			if (!isRange) {
 				// let cache = datacache.getCache(`traffic-${date}-${data.domain_id}`);
 				// if (cache) {
@@ -82,47 +83,62 @@
 				form.append('funnel', JSON.stringify({ type, funnel }));
 				form.append('date', date);
 				form.append('domain_id', data.domain_id);
+				form.append('tzOffset', tzOffset);
 
 				const response = await fetch('?/fetchData', { method: 'POST', body: form });
-				if (response.ok) {
-					const result = deserialize(await response.text());
-					if (result.data?.error) {
-						page_data = {};
-						return;
-					}
-					page_data = result.data.funnelResult;
-					funnelCounts = page_data;
-					unique_urls = result.data.pages;
-					unique_events = result.data.events;
-					// datacache.setCach(`traffic-${date}-${data.domain_id}`, result.data.funnelResult);
+				if (!response.ok) {
+					show_toast.set({ message: 'Failed to fetch data', type: 'error' });
+					page_data = {};
+					return;
 				}
+				const result = deserialize(await response.text());
+				if (result.type === 'failure') {
+					show_toast.set({
+						message: result.data?.message || 'Failed to fetch data',
+						type: 'error'
+					});
+					page_data = {};
+					return;
+				}
+				page_data = result.data.funnelResult;
+				funnelCounts = page_data;
+				unique_urls = result.data.pages;
+				unique_events = result.data.events;
+				// datacache.setCach(`traffic-${date}-${data.domain_id}`, result.data.funnelResult);
 			} else {
 				const form = new FormData();
 				form.append('start', new Date(start).toISOString());
 				form.append('end', new Date(end).toISOString());
 				form.append('domain_id', data.domain_id);
 				form.append('funnel', JSON.stringify({ type, funnel }));
+				form.append('tzOffset', tzOffset);
 
 				const response = await fetch('?/fetchRange', { method: 'POST', body: form });
-				if (response.ok) {
-					const result = deserialize(await response.text());
-					if (result.data?.error) {
-						page_data = {};
-						return;
-					}
-					page_data = result.data.funnelResult;
-					funnelCounts = page_data;
-					unique_urls = result.data.pages;
-					unique_events = result.data.events;
+				if (!response.ok) {
+					show_toast.set({ message: 'Failed to fetch data', type: 'error' });
+					page_data = {};
+					return;
 				}
+				const result = deserialize(await response.text());
+				if (result.type === 'failure') {
+					show_toast.set({
+						message: result.data?.message || 'Failed to fetch data',
+						type: 'error'
+					});
+					page_data = {};
+					return;
+				}
+				page_data = result.data.funnelResult;
+				funnelCounts = page_data;
+				unique_urls = result.data.pages;
+				unique_events = result.data.events;
 			}
 		} catch (error) {
-			console.log(error);
+			show_toast.set({ message: 'Network error', type: 'error' });
 			page_data = {};
 		} finally {
 		}
 	}
-
 
 	$effect(async () => {
 		loading = true;
@@ -151,7 +167,7 @@
 	<section class="flex flex-wrap items-center justify-between gap-3">
 		<!-- {fsteps.name} -->
 		{#if $funnelStepsContext.steps.length}
-			<div class="flex items-center gap-3 bg-stone-700 px-4 py-2 rounded-md dark:text-white">
+			<div class="flex items-center gap-3 rounded-md bg-stone-700 px-4 py-2 dark:text-white">
 				<div class="flex">
 					{#each fsteps.steps as step}
 						<div class="-m-1 h-4 w-4 rounded-xl" style="background:{step.color};"></div>
@@ -160,7 +176,7 @@
 				{fsteps.name}
 			</div>
 		{:else}
-		<div></div>
+			<div></div>
 		{/if}
 
 		<div class="flex flex-wrap gap-2 dark:text-white">
@@ -176,8 +192,7 @@
 					options={calctypeoptions}
 				></Dropdown>
 			{/if}
-			<div class="self-end justify-self-end ml-auto">
-
+			<div class="ml-auto self-end justify-self-end">
 				<FunEl uniquePages={urls_page} availableSteps={steps_events} />
 			</div>
 		</div>

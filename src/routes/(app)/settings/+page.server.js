@@ -1,4 +1,6 @@
 import { fail } from '@sveltejs/kit';
+import {env} from '$env/dynamic/private';
+
 
 function generateHash(text) {
 	// Convert the text to a Uint8Array
@@ -37,7 +39,7 @@ export const actions = {
 	updateDomain: async ({ locals: { pb, user }, request }) => {
 		const domain_recs = await pb.collection('domain').getFullList();
 
-		if (domain_recs.length >= 2) {
+		if (domain_recs.length >= 12) {
 			return fail(400, { message: 'Domain Limit reached!' });
 		}
 		const data = await request.formData();
@@ -61,6 +63,13 @@ export const actions = {
 			};
 			// console.log(user);
 			const record = await pb.collection('domain').create(domain_data);
+			console.log(record)
+			const table = await fetch(`${env.DASHBOARD_WORKER}create_user_table`, {
+				method:"POST",
+				body:JSON.stringify({
+					domain_key: record.id
+				})
+			})
 			return { ...record };
 		} catch (error) {
 			console.error(error);

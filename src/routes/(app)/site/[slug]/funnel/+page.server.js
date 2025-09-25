@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/private';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
-	days = days <= 0 ? 1 : days
+	days = days <= 0 ? 1 : days;
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
@@ -58,21 +58,23 @@ export const actions = {
 		const funnel = data.get('funnel');
 		const selectedDate = parseInt(data.get('date'));
 		const domain_id = data.get('domain_id');
+		const tzOffset = data.get('tzOffset');
 
 		if (!funnel || !domain_id) {
 			return fail(400, { fail: true, message: 'Range and domain ID are required' });
 		}
-		console.log(funnel)
+		console.log(funnel);
 		try {
-			let url = `${env.DASHBOARD_WORKER}funnel/${domain_id}/${selectedDate ?? 1}`
-			let res = await fetch(url, { method: 'POST', body: funnel })
+			let url = `${env.DASHBOARD_WORKER}funnel/${domain_id}/${selectedDate ?? 1}?tzOffset=${tzOffset}`;
+			let res = await fetch(url, { method: 'POST', body: funnel });
 			// console.log(res.ok)
 			if (res.ok) {
 				let result = await res.json();
-				console.log(result)
-				return result
+				console.log(result);
+				return result;
+			} else {
+				return fail(400, { fail: true, message: 'Failed to fetch funnel data' });
 			}
-
 		} catch (error) {
 			console.error('Error fetching date:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
@@ -83,8 +85,9 @@ export const actions = {
 		const data = await request.formData();
 		const funnel = data.get('funnel');
 		const selectedStart = data.get('start');
-		const selectedEnd = data.get('end')
+		const selectedEnd = data.get('end');
 		const domain_id = data.get('domain_id');
+		const tzOffset = data.get('tzOffset');
 
 		// console.log('fetching....')
 		if (!funnel || !domain_id) {
@@ -92,22 +95,20 @@ export const actions = {
 		}
 
 		try {
-			let url = `${env.DASHBOARD_WORKER}funnel-range/${domain_id}/${selectedStart}/${selectedEnd}`
-			let res = await fetch(url, { method: 'POST', body: funnel })
+			let url = `${env.DASHBOARD_WORKER}funnel-range/${domain_id}/${selectedStart}/${selectedEnd}?tzOffset=${tzOffset}`;
+			let res = await fetch(url, { method: 'POST', body: funnel });
 			if (res.ok) {
 				let result = await res.json();
-				console.log(result)
-				return  result
-			}else {
-				return {error:true}
+				console.log(result);
+				return result;
+			} else {
+				return fail(400, { fail: true, message: 'Failed to fetch funnel range data' });
 			}
-
 		} catch (error) {
 			console.error('Error fetching date:', error);
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
 		}
 	},
-
 
 	// fetchDistincUrl: async ({ locals: { pb, ch }, request }) => {
 	// 	const data = await request.formData();
@@ -187,11 +188,11 @@ export const actions = {
 /** @type {import('./$types').PageLoad} */
 export async function load({ parent, locals: { pb, ch }, params }) {
 	try {
-		const domains = await parent()
+		const domains = await parent();
 		// const last24Hours = getDateRange(1);
 		// const dataset = await fetchRecords(ch, params.slug, last24Hours);
 
-		return { ...domains, records: generateRandomEvents(1000) }
+		return { ...domains, records: generateRandomEvents(1000) };
 	} catch (error) {
 		console.error('Error loading data:', error);
 		return { fail: true };

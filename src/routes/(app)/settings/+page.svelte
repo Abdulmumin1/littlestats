@@ -73,10 +73,9 @@
 	};
 
 	let { data = $bindable() } = $props();
-	run(() => {
-		data = data;
-	});
-	run(() => {
+	
+	
+	$effect(() => {
 		domains = [...data.records];
 	});
 

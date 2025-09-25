@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/private';
 
 // Helper function to calculate date ranges
 function getDateRange(days) {
-	days = days <= 0 ?1 :days
+	days = days <= 0 ? 1 : days;
 	const now = new Date();
 	return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 }
@@ -43,12 +43,14 @@ async function fetchCache(pb, date, domain_id) {
 		// const updatedAt = new Date(record.updated).getTime();
 
 		// if (updatedAt >= cutoffDate.getTime()) {
-			return { record:{
+		return {
+			record: {
 				views: randomInt(20, 3000),
-				bounce_rate:randomInt(20, 100),
-				visit_duration:randomInt(10, 50),
-				visitors:randomInt(20, 300),
-			} };
+				bounce_rate: randomInt(20, 100),
+				visit_duration: randomInt(10, 50),
+				visitors: randomInt(20, 300)
+			}
+		};
 		// }
 	} catch (error) {
 		console.error(`Cache fetch error for ${collection}:`, error);
@@ -62,18 +64,21 @@ export const actions = {
 		const data = await request.formData();
 		const selectedDate = parseInt(data.get('defaultRange'));
 		const domain_id = data.get('domain_id');
+		const tzOffset = data.get('tzOffset');
 
 		if (!selectedDate || !domain_id) {
 			return fail(400, { fail: true, message: 'Range and domain ID are required' });
 		}
 
 		try {
-			let url = `${env.DASHBOARD_WORKER}traffic/${domain_id}/${selectedDate ?? 1}`
-			let res = await fetch(url)
+			let url = `${env.DASHBOARD_WORKER}traffic/${domain_id}/${selectedDate ?? 1}?tzOffset=${tzOffset}`;
+			let res = await fetch(url);
 			// console.log(res.ok)
 			if (res.ok) {
 				let result = await res.json();
-				return {records:result}
+				return { records: result };
+			} else {
+				return fail(400, { fail: true, message: 'Failed to fetch traffic data' });
 			}
 			// const filterToUse = getDateRange(
 			// 	selectedDate
@@ -86,63 +91,68 @@ export const actions = {
 			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
 		}
 	},
-	
+
 	fetchTrafficRange: async ({ locals: { pb, ch }, request }) => {
-			const data = await request.formData();
-			const selectedStart = data.get('start');
-			const selectedEnd = data.get('end')
-			const domain_id = data.get('domain_id');
-	
-			if (!selectedStart || !selectedEnd || !domain_id) {
-				return fail(400, { fail: true, message: 'Range and domain ID are required' });
+		const data = await request.formData();
+		const selectedStart = data.get('start');
+		const selectedEnd = data.get('end');
+		const domain_id = data.get('domain_id');
+		const tzOffset = data.get('tzOffset');
+
+		if (!selectedStart || !selectedEnd || !domain_id) {
+			return fail(400, { fail: true, message: 'Range and domain ID are required' });
+		}
+
+		try {
+			// const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
+			// const dataset = await fetchRecords(ch, domain_id, start, end);
+			let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${selectedStart}/${selectedEnd}?tzOffset=${tzOffset}`;
+			let res = await fetch(url);
+			if (res.ok) {
+				let result = await res.json();
+				return { records: result };
+			} else {
+				return fail(400, { fail: true, message: 'Failed to fetch traffic range data' });
 			}
-	
-			try {
-				// const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
-				// const dataset = await fetchRecords(ch, domain_id, start, end);
-				let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${selectedStart}/${selectedEnd}`
-				let res = await fetch(url)
-				if (res.ok) {
-					let result = await res.json();
-					return {records: result}
-				}else {
-					return {error:true}
-				}
-				// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
-				// return { results: dataset, cache: false };
-			} catch (error) {
-				console.error('Error fetching spikes:', error);
-				return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+			// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
+			// return { results: dataset, cache: false };
+		} catch (error) {
+			console.error('Error fetching spikes:', error);
+			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+		}
+	},
+
+	fetchSpikes: async ({ locals: { pb, ch }, request }) => {
+		const data = await request.formData();
+		const selectedDate = parseInt(data.get('defaultRange'));
+		const domain_id = data.get('domain_id');
+		const tzOffset = data.get('tzOffset');
+
+		if (!selectedDate || !domain_id) {
+			return fail(400, { fail: true, message: 'Range and domain ID are required' });
+		}
+
+		try {
+			const { start, end } = {
+				start: getDateRange(selectedDate * 2),
+				end: getDateRange(selectedDate)
+			};
+			// const dataset = await fetchRecords(ch, domain_id, start, end);
+			let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${start}/${end}?tzOffset=${tzOffset}`;
+			let res = await fetch(url);
+			if (res.ok) {
+				let result = await res.json();
+				return { records: result };
+			} else {
+				return fail(400, { fail: true, message: 'Failed to fetch traffic spikes data' });
 			}
-		},
-	
-		fetchSpikes: async ({ locals: { pb, ch }, request }) => {
-			const data = await request.formData();
-			const selectedDate = parseInt(data.get('defaultRange'));
-			const domain_id = data.get('domain_id');
-	
-			if (!selectedDate || !domain_id) {
-				return fail(400, { fail: true, message: 'Range and domain ID are required' });
-			}
-	
-			try {
-				const { start, end } = { start: getDateRange(selectedDate * 2), end: getDateRange(selectedDate) };
-				// const dataset = await fetchRecords(ch, domain_id, start, end);
-				let url = `${env.DASHBOARD_WORKER}traffic-range/${domain_id}/${start}/${end}`
-				let res = await fetch(url)
-				if (res.ok) {
-					let result = await res.json();
-					return {records: result}
-				}else {
-					return {error:true}
-				}
-				// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
-				// return { results: dataset, cache: false };
-			} catch (error) {
-				console.error('Error fetching spikes:', error);
-				return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
-			}
-		},
+			// traffic-range/mwn1qyxs2n8ha58/2025-02-01/2025-02-25
+			// return { results: dataset, cache: false };
+		} catch (error) {
+			console.error('Error fetching spikes:', error);
+			return fail(400, { fail: true, message: error?.data?.message || 'Failed to fetch data' });
+		}
+	},
 	updateSpikes: async ({ locals: { pb }, request }) => {
 		const data = await request.formData();
 		const selectedDate = parseInt(data.get('defaultRange'));
@@ -174,14 +184,11 @@ export const actions = {
 /** @type {import('./$types').PageLoad} */
 export async function load({ locals: { pb, ch }, params }) {
 	try {
-
 		const domain_id = 'ilei2nc1shxp58w';
 
-		return { records: [],  domain_id };
+		return { records: [], domain_id };
 	} catch (error) {
 		console.error('Error loading data:', error);
 		return { fail: true };
 	}
 }
-
-

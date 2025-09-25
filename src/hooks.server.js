@@ -7,12 +7,12 @@ import { createClient } from '@clickhouse/client-web';
 
 export const authentication = async ({ event, resolve }) => {
 	event.locals.pb = new PocketBase(env.PB_URL);
-	const client = createClient({
-		url: env.CLICKHOUSE_HOST ?? 'http://localhost:8123',
-		username: env.CLICKHOUSE_USER ?? 'default',
-		password: env.CLICKHOUSE_PASSWORD
-	});
-	event.locals.ch = client;
+	// const client = createClient({
+	// 	url: env.CLICKHOUSE_HOST ?? 'http://localhost:8123',
+	// 	username: env.CLICKHOUSE_USER ?? 'default',
+	// 	password: env.CLICKHOUSE_PASSWORD
+	// });
+	event.locals.ch = null;
 	// console.log(event.locals.pb);/
 
 	// load the store data from the request cookie string
