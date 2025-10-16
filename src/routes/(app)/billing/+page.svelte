@@ -87,7 +87,7 @@
 		LemonSqueezy.Url.Open(new URL(checkoutUrl).href);
 	}
 
-	let setupComplete = false;
+	let setupComplete = $state(false);
 
 	let checkoutUrl = $state(data.checkout[0]);
 
@@ -116,7 +116,11 @@
 <div class="" style="max-width:1400px; padding:20px; margin-inline:auto;">
 	<div class=" flex flex-1 flex-col gap-6">
 		<h1 class="px-2 text-2xl font-bold dark:text-gray-100">
-			{!data.user.sub_id ? 'Free trial expired! Update Billing' : 'Billing Info'}
+			{!data.user.sub_id
+				? 'Free trial expired! Update Billing'
+				: data.isCancelled
+					? 'Subscription Cancelled - Update Billing'
+					: 'Billing Info'}
 		</h1>
 
 		<form use:enhance={handleUpdate} action="?/updateUser" method="POST" class="space-y-6">
@@ -195,10 +199,43 @@
 								<span class="uppercase"> {checkoutUrl[1]}</span>
 							</a>
 						</div>
-					{:else}
+					{:else if user.sub_status == 'active'}
 						<p class="mt-4 text-xl dark:text-gray-100">
 							Looks like you already have a subscription. would you like to give us more money 🤑??
 						</p>
+					{:else}
+						<p class="mt-4 text-xl dark:text-gray-100">
+							Your subscription is cancelled. Renew below.
+						</p>
+						<h1 class="flex items-center gap-1 text-2xl font-bold dark:text-gray-100">
+							<DollarSign size={24} /> Prices
+						</h1>
+						<div class="flex gap-2">
+							{#each data.checkout as checkout}
+								<button
+									class:border={checkoutUrl[3] == checkout[3]}
+									type="button"
+									class="flex bg-{$color}-300 w-fit flex-col border-{$color}-700 rounded-xl px-5 py-4 text-3xl dark:bg-stone-700/50 dark:text-gray-100"
+									onclick={() => {
+										checkoutUrl = checkout;
+									}}
+								>
+									<span class="font-bold uppercase"
+										>{parseInt(checkout[0]) / 100} {checkout[1]}</span
+									>
+									<span class="text-sm">/{checkout[2] || 'Lifetime'}</span>
+								</button>
+							{/each}
+						</div>
+						<div>
+							<a
+								disabled={!user.name}
+								href={checkoutUrl[3]}
+								class="flex w-full items-center justify-center gap-1 rounded-full border-2 border-black text-white bg-{$color}-500 px-6 py-2 font-bold text-black hover:bg-{$color}-600 dark:bg-{$color}-700"
+								>Checkout - Pay {parseInt(checkoutUrl[0]) / 100}
+								<span class="uppercase"> {checkoutUrl[1]}</span>
+							</a>
+						</div>
 					{/if}
 				</div>
 			</div>
@@ -208,6 +245,11 @@
 					<h2 class="mb-4 flex items-center text-xl font-semibold dark:text-gray-100">
 						<CreditCard class="mr-2" /> Subscripiton Information
 					</h2>
+					{#if data.isCancelled}
+						<p class="mb-2 text-sm text-red-600 dark:text-red-400">
+							<strong>Subscription Cancelled</strong>
+						</p>
+					{/if}
 					<p class="mb-2 text-sm text-gray-800 dark:text-gray-100">
 						Choosen plan: <strong class="capitalize">{data.user.variant_name}</strong>
 					</p>

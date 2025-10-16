@@ -5,6 +5,7 @@ import { fail } from '@sveltejs/kit';
 import { calculateTrialDaysLeft } from '../../../lib/utils';
 import { Polar } from '@polar-sh/sdk';
 import { env } from '$env/dynamic/private';
+import { getSubscriptionStatus, isSubscriptionCancelled } from '../../../lib/subscription';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ locals: { pb }, url }) {
@@ -22,65 +23,87 @@ export async function load({ locals: { pb }, url }) {
 		throw redirect(303, '/signup');
 	}
 
+	// console.log('User subscription ID:', user);
+
+	let subscription = null;
+	let isCancelled = false;
+
+	
+	if (user.sub_id) {
+		subscription = await getSubscriptionStatus(user.sub_id);
+		isCancelled = user.sub_cancelled;
+	}
+
 	// console.log(env.POLAR_TEST_ACCESS);
 	const polar = new Polar({
 		accessToken: env.POLAR_ACCESS,
 		server: import.meta.env.DEV ? 'sandbox' : 'production'
 	});
 
-	const checkoutMonthly = await polar.checkouts.custom.create({
-		productPriceId: import.meta.env.DEV
-			? 'bf3e128e-b776-49e4-8586-91e4d65a4ff8'
-			: 'fe82208e-2d27-483f-beaa-519b2eba8621',
-		customerName: user.name,
+	const checkoutMonthly = await polar.checkouts.create({
 		customerEmail: user.email,
+		products: [
+			import.meta.env.DEV
+				? 'f7558b81-a18e-4aad-8271-feb1bbb55de5'
+				: '9f3b93d6-752a-4425-811c-d9046d78ac5c'
+		],
 		successUrl: `${url.origin}/billing/success?checkout_id={CHECKOUT_ID}`,
 		metadata: {
 			userId: user.id
 		}
 	});
-	const checkoutYearly = await polar.checkouts.custom.create({
-		productPriceId: import.meta.env.DEV
-			? 'de7ca2c3-9f9a-42d2-ad3f-fdf3d56e2cb2'
-			: '26ae3ef2-3e43-431f-b411-3d9bd574c816',
-		customerName: user.name,
+	const checkoutYearly = await polar.checkouts.create({
 		customerEmail: user.email,
+		products: [
+			import.meta.env.DEV
+				? 'f7558b81-a18e-4aad-8271-feb1bbb55de5'
+				: '0efa24ea-e2e8-447b-b8ca-e84fe2cb6744'
+		],
 		successUrl: `${url.origin}/billing/success?checkout_id={CHECKOUT_ID}`,
 		metadata: {
 			userId: user.id
 		}
 	});
-	const checkoutLifetime = await polar.checkouts.custom.create({
-		productPriceId: import.meta.env.DEV
-			? '6e5fa896-4406-4440-b32f-aeacf3850e34'
-			: 'e13a3ca8-edb1-4dd4-8de5-7afa84e45d4e',
-		customerName: user.name,
+	const checkoutLifetime = await polar.checkouts.create({
 		customerEmail: user.email,
+		products: [
+			import.meta.env.DEV
+				? 'ec890102-67a8-4fb2-a1f7-6222323d8788'
+				: 'fbac1c4e-5fe9-43d0-aa22-4a49c3f50d9b'
+		],
 		successUrl: `${url.origin}/billing/success?checkout_id={CHECKOUT_ID}`,
 		metadata: {
 			userId: user.id
 		}
 	});
 
+	// console.log('Checkout URLs:', {
+	// 	checkoutMonthly: checkoutMonthly.amount,
+	// 	checkoutYearly: checkoutYearly.url,
+	// 	checkoutLifetime: checkoutLifetime.url
+	// });
+	
 	return {
 		user,
+		subscription,
+		isCancelled,
 		checkout: [
 			[
-				checkoutMonthly.product.prices[0].priceAmount,
-				checkoutMonthly.product.prices[0].priceCurrency,
-				checkoutMonthly.product.prices[0].recurringInterval,
+				checkoutMonthly.productPrice.priceAmount,
+				checkoutMonthly.productPrice.priceCurrency,
+				checkoutMonthly.productPrice.recurringInterval,
 				checkoutMonthly.url
 			],
 			[
-				checkoutYearly.product.prices[1].priceAmount,
-				checkoutYearly.product.prices[1].priceCurrency,
-				checkoutMonthly.product.prices[1].recurringInterval,
+				checkoutYearly.productPrice.priceAmount,
+				checkoutYearly.productPrice.priceCurrency,
+				checkoutMonthly.productPrice.recurringInterval,
 				checkoutYearly.url
 			],
 			[
-				checkoutLifetime.product.prices[0].priceAmount,
-				checkoutLifetime.product.prices[0].priceCurrency,
-				checkoutLifetime.product.prices[0].recurringInterval,
+				checkoutLifetime.productPrice.priceAmount,
+				checkoutLifetime.productPrice.priceCurrency,
+				checkoutLifetime.productPrice.recurringInterval,
 				checkoutLifetime.url
 			]
 		]

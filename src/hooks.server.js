@@ -4,6 +4,7 @@ import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { calculateTrialDaysLeft } from './lib/utils';
 import { createClient } from '@clickhouse/client-web';
+import { getSubscriptionStatus, isSubscriptionCancelled } from './lib/subscription';
 
 export const authentication = async ({ event, resolve }) => {
 	event.locals.pb = new PocketBase(env.PB_URL);
@@ -47,7 +48,7 @@ const unprotectedPrefix = [
 	'/confirm',
 	'/oauth',
 	'/sitemap.xml',
-	'/robots.txt',
+	'/robots.txt'
 ];
 
 export const authorization = async ({ event, resolve }) => {
@@ -67,11 +68,19 @@ export const authorization = async ({ event, resolve }) => {
 			);
 		} else if (!loggedIn?.account_activated && !event.url.pathname.startsWith('/setup')) {
 			throw redirect(303, '/setup');
-		} else if (!loggedIn?.sub_id) {
-			const daysLeft = calculateTrialDaysLeft(loggedIn.date_activated);
+		} else {
+			let hasActiveSubscription = false;
+			if (loggedIn?.sub_id) {
+				// const subscription = await getSubscriptionStatus(loggedIn.sub_id);
+				hasActiveSubscription = true;
+			}
 
-			if (!event.url.pathname.startsWith('/billing') && daysLeft <= 0) {
-				throw redirect(303, '/billing');
+			if (!hasActiveSubscription) {
+				const daysLeft = calculateTrialDaysLeft(loggedIn.date_activated);
+
+				if (!event.url.pathname.startsWith('/billing') && daysLeft <= 0) {
+					throw redirect(303, '/billing');
+				}
 			}
 		}
 
