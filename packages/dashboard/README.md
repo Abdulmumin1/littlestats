@@ -99,6 +99,7 @@ littlestats.destroy();
 ```
 
 ### API Endpoints
+/ds
 
 ### Tracking
 - `POST /api/v2/track/:siteId` - Track events
