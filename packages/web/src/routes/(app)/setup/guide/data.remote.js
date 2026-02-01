@@ -25,13 +25,11 @@ export const getVerificationStatus = query(VerifySiteSchema, async ({ siteId, do
 // Command to verify site DNS
 export const verifySite = command(VerifySiteSchema, async ({ siteId, domain }) => {
 	try {
-
-        const cookies =  getRequestEvent().cookies;
-
-		const sessionToken = cookies.get('better-auth.session_token');
+		const request = getRequestEvent().request;
+		const cookieHeader = request.headers.get('cookie');
 		const headers = { 'Content-Type': 'application/json' };
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 
 		const response = await fetch(`${API_BASE_URL}/api/v2/sites/${siteId}/verify`, {
@@ -71,10 +69,11 @@ export const checkSiteHasData = command(
 	v.object({ siteId: v.string() }),
 	async ({ siteId }, { cookies }) => {
 		try {
-			const sessionToken = cookies.get('better-auth.session_token');
+			const request = getRequestEvent().request;
+			const cookieHeader = request.headers.get('cookie');
 			const headers = { 'Content-Type': 'application/json' };
-			if (sessionToken) {
-				headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+			if (cookieHeader) {
+				headers['Cookie'] = cookieHeader;
 			}
 
 			const response = await fetch(`${API_BASE_URL}/api/v2/sites/${siteId}/stats`, {

@@ -13,11 +13,11 @@ const OnboardSchema = v.object({
 
 export const onboard = command(OnboardSchema, async ({ name, domain, plan, email }) => {
 	try {
-		const cookies = getRequestEvent().cookies;
-		const sessionToken = cookies.get('better-auth.session_token');
+		const request = getRequestEvent().request;
+		const cookieHeader = request.headers.get('cookie');
 		const headers = { 'Content-Type': 'application/json' };
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 
 		// 1. Create the site

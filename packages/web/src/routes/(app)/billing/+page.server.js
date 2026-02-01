@@ -4,7 +4,7 @@ import { env } from '$env/dynamic/private';
 const API_BASE_URL = env.DASHBOARD_URL || 'http://localhost:8787';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ locals, url, cookies, fetch }) {
+export async function load({ locals, url, cookies, fetch, request }) {
 	const user = locals.user;
 
 	if (!user) {
@@ -12,10 +12,10 @@ export async function load({ locals, url, cookies, fetch }) {
 	}
 
 	try {
-		const sessionToken = cookies.get('better-auth.session_token');
+		const cookieHeader = request.headers.get('cookie');
 		const headers = { 'Content-Type': 'application/json' };
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 
 		// Fetch checkout options from Dodo API
@@ -66,10 +66,10 @@ export const actions = {
 		}
 
 		try {
-			const sessionToken = cookies.get('better-auth.session_token');
+			const cookieHeader = request.headers.get('cookie');
 			const headers = { 'Content-Type': 'application/json' };
-			if (sessionToken) {
-				headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+			if (cookieHeader) {
+				headers['Cookie'] = cookieHeader;
 			}
 
 			const response = await fetch(`${API_BASE_URL}/api/v2/billing/checkout`, {

@@ -10,11 +10,11 @@ const SiteIdSchema = v.object({
 
 export const verifySite = command(SiteIdSchema, async ({ siteId }) => {
 	try {
-		const cookies = getRequestEvent().cookies;
-		const sessionToken = cookies.get('better-auth.session_token');
+		const request = getRequestEvent().request;
+		const cookieHeader = request.headers.get('cookie');
 		const headers = { 'Content-Type': 'application/json' };
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 
 		const response = await fetch(`${API_BASE_URL}/api/v2/sites/${siteId}/verify`, {
@@ -51,11 +51,11 @@ export const verifySite = command(SiteIdSchema, async ({ siteId }) => {
 
 export const deleteSite = command(SiteIdSchema, async ({ siteId }) => {
 	try {
-		const cookies = getRequestEvent().cookies;
-		const sessionToken = cookies.get('better-auth.session_token');
+		const request = getRequestEvent().request;
+		const cookieHeader = request.headers.get('cookie');
 		const headers = { 'Content-Type': 'application/json' };
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 
 		const response = await fetch(`${API_BASE_URL}/api/v2/sites/${siteId}`, {

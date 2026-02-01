@@ -4,12 +4,12 @@ import { error, redirect } from '@sveltejs/kit';
 const API_BASE_URL = env.DASHBOARD_URL || 'http://localhost:8787';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ params, fetch, cookies }) {
+export async function load({ params, fetch, cookies, request }) {
 	try {
-		const sessionToken = cookies.get('better-auth.session_token');
+		const cookieHeader = request.headers.get('cookie');
 		const headers = { 'Content-Type': 'application/json' };
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 
 		// Fetch all sites to find the current one (since we don't have a direct get-site endpoint that returns tokens yet, but the list does)

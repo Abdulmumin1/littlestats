@@ -4,18 +4,17 @@
 const API_BASE_URL = process.env.DASHBOARD_URL || 'http://localhost:8787';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ params, fetch, cookies }) {
+export async function load({ params, fetch, cookies, request }) {
 	try {
-		// Get session token for authentication
-		const sessionToken = cookies.get('better-auth.session_token');
+		const cookieHeader = request.headers.get('cookie');
 		
 		// Fetch sites directly using native fetch
 		const headers = {
 			'Content-Type': 'application/json',
 		};
 		
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 		
 		const response = await fetch(`${API_BASE_URL}/api/v2/sites`, {

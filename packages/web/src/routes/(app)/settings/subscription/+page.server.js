@@ -4,7 +4,7 @@ import { redirect } from '@sveltejs/kit';
 const API_BASE_URL = env.DASHBOARD_URL || 'http://localhost:8787';
 
 /** @type {import('./$types').PageLoad} */
-export async function load({ locals, cookies, fetch }) {
+export async function load({ locals, cookies, fetch, request }) {
 	const user = locals.user;
 	
 	if (!user) {
@@ -12,10 +12,10 @@ export async function load({ locals, cookies, fetch }) {
 	}
 
 	try {
-		const sessionToken = cookies.get('better-auth.session_token');
+		const cookieHeader = request.headers.get('cookie');
 		const headers = { 'Content-Type': 'application/json' };
-		if (sessionToken) {
-			headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+		if (cookieHeader) {
+			headers['Cookie'] = cookieHeader;
 		}
 
 		// Fetch subscription data from Dodo API
@@ -56,12 +56,12 @@ export async function load({ locals, cookies, fetch }) {
 /** @type {import('./$types').Actions} */
 export const actions = {
 	// Action to redirect to customer portal
-	portal: async ({ cookies, fetch }) => {
+	portal: async ({ cookies, fetch, request }) => {
 		try {
-			const sessionToken = cookies.get('better-auth.session_token');
+			const cookieHeader = request.headers.get('cookie');
 			const headers = { 'Content-Type': 'application/json' };
-			if (sessionToken) {
-				headers['Cookie'] = `better-auth.session_token=${sessionToken}`;
+			if (cookieHeader) {
+				headers['Cookie'] = cookieHeader;
 			}
 
 			// Fetch portal URL from API
