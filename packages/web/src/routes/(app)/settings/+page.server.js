@@ -1,7 +1,8 @@
 // Server-side load function - uses direct fetch instead of API client
 // The API client is browser-only
+import { env } from '$env/dynamic/private';
 
-const API_BASE_URL = process.env.DASHBOARD_URL || 'http://localhost:8787';
+const API_BASE_URL = env.DASHBOARD_URL || 'http://localhost:8787';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ fetch, cookies, request }) {

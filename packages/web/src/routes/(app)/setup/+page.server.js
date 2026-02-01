@@ -20,14 +20,14 @@ export async function load({ locals, fetch, cookies, request }) {
 			headers['Cookie'] = cookieHeader;
 		}
 
-		// const response = await fetch(`${API_BASE_URL}/api/v2/sites`, { headers });
-		// if (response.ok) {
-		// 	const data = await response.json();
-		// 	if (data.sites?.length > 0) {
-		// 		// User already has sites, onboarding complete
-		// 		throw redirect(303, '/sites');
-		// 	}
-		// }
+		const response = await fetch(`${API_BASE_URL}/api/v2/sites`, { headers });
+		if (response.ok) {
+			const data = await response.json();
+			if (data.sites?.length > 0) {
+				// User already has sites, onboarding complete
+				throw redirect(303, '/sites');
+			}
+		}
 	} catch (error) {
 		console.error('Setup load error:', error);
 	}
