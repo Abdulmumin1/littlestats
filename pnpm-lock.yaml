@@ -59,7 +59,7 @@ importers:
         specifier: ^3.109.2
         version: 3.114.17(@cloudflare/workers-types@4.20260131.0)
 
-  packages/statrig:
+  packages/web:
     dependencies:
       '@clickhouse/client-web':
         specifier: ^1.16.0
