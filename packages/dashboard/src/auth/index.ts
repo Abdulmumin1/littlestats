@@ -39,10 +39,12 @@ export function createAuth(env: Env) {
       google: env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET ? {
         clientId: env.GOOGLE_CLIENT_ID,
         clientSecret: env.GOOGLE_CLIENT_SECRET,
+        redirectURI: `${env.BETTER_AUTH_URL}/api/auth/callback/google`,
       } : undefined,
       github: env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET ? {
         clientId: env.GITHUB_CLIENT_ID,
         clientSecret: env.GITHUB_CLIENT_SECRET,
+        redirectURI: `${env.BETTER_AUTH_URL}/api/auth/callback/github`,
       } : undefined,
     },
     
@@ -61,8 +63,9 @@ export function createAuth(env: Env) {
       defaultCookieAttributes: {
         secure: env.ENVIRONMENT === 'production', // Secure in production (HTTPS)
         httpOnly: true,
-        sameSite: "lax", // Allow redirects between domains
+        sameSite: env.ENVIRONMENT === 'production' ? "none" : "lax", // 'none' for cross-domain in production
         path: "/",
+        domain: env.ENVIRONMENT === 'production' ? '.littlestats.click' : undefined, // Share across subdomains
       },
     },
     
@@ -73,6 +76,7 @@ export function createAuth(env: Env) {
       "http://localhost:3000",    // Alternative frontend port
       "https://littlestats.click",
       "https://www.littlestats.click",
+      "https://stats.littlestats.click", // Auth API domain
     ],
   });
 }
