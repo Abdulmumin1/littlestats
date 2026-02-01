@@ -1,0 +1,47 @@
+{
+	"name": "@littlestats/statrig",
+	"version": "0.0.1",
+	"private": true,
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^3.3.1",
+		"@sveltejs/adapter-cloudflare": "^4.9.0",
+		"@sveltejs/kit": "^2.50.1",
+		"@sveltejs/vite-plugin-svelte": "^4.0.4",
+		"@tailwindcss/postcss": "^4.1.18",
+		"@tailwindcss/typography": "^0.5.19",
+		"@types/eslint": "^9.6.1",
+		"eslint": "^9.39.2",
+		"eslint-config-prettier": "^9.1.2",
+		"eslint-plugin-svelte": "^2.46.1",
+		"globals": "^15.15.0",
+		"prettier": "^3.8.1",
+		"prettier-plugin-svelte": "^3.4.1",
+		"prettier-plugin-tailwindcss": "^0.6.14",
+		"svelte": "^5.49.1",
+		"tailwindcss": "^4.1.18",
+		"vite": "^5.4.21"
+	},
+	"type": "module",
+	"dependencies": {
+		"@clickhouse/client-web": "^1.16.0",
+		"@lemonsqueezy/lemonsqueezy.js": "^3.3.1",
+		"@neoconfetti/svelte": "^2.2.2",
+		"@polar-sh/sdk": "^0.36.2",
+		"@svelte-plugins/datepicker": "^1.0.11",
+		"better-auth": "^1.4.18",
+		"chart.js": "^4.5.1",
+		"date-fns": "^4.1.0",
+		"layercake": "8.4.0-beta.1",
+		"lucide-svelte": "^0.563.0",
+		"pocketbase": "^0.21.5",
+		"svelte-dnd-action": "^0.9.69",
+		"workerize": "^0.1.8"
+	}
+}

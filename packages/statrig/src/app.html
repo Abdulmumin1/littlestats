@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en" class="dark">
+	<head>
+		<meta charset="utf-8" />
+		<!-- <title>Littlestats - The Analytics Tool With the Right Metrics</title> -->
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+		<meta
+			name="description"
+			content="Littlestats gives you the right metrics to help you grow."
+		/>
+		<meta name="keywords" content="" />
+		<meta name="author" content="Littlestats" />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://littlestats.click" />
+		<meta property="og:title" content="Littlestats - The Analytics Tool With the Right Metrics" />
+		<meta
+			property="og:description"
+			content="Littlestats gives you the right metrics to help you grow."
+		/>
+		<meta property="og:image" content="https://littlestats.click/littlestats.png" />
+		<meta property="og:site_name" content="Littlestats" />
+		<meta property="og:locale" content="en_US" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content="@abdulmuminyqn" />
+		<meta name="twitter:creator" content="@abdulmuminyqn" />
+		<meta name="twitter:url" content="https://littlestats.click" />
+		<meta name="twitter:title" content="Littlestats - The Analytics Tool With the Right Metrics" />
+		<meta
+			name="twitter:description"
+			content="Littlestats gives you the right metrics to help you grow."
+		/>
+		<meta name="twitter:image" content="https://littlestats.click/littlestats.png" />
+		<meta
+			name="robots"
+			content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+		/>
+		<!-- <link rel="icon" href="%sveltekit.assets%/favicon.png" /> -->
+		<link rel="apple-touch-icon" sizes="180x180" href="%sveltekit.assets%/apple-touch-icon.png" />
+		<link rel="icon" type="image/png" sizes="32x32" href="%sveltekit.assets%/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="%sveltekit.assets%/favicon-16x16.png" />
+		<link rel="manifest" href="%sveltekit.assets%/site.webmanifest" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- <script src="https://cdn.littlestats.click/embed/nxl38k4sp7a31rd"></script> -->
+      <script src="http://localhost:8787/tracker.js" data-site-id="0005386f-9ef6-408c-9b9d-c9eb12edda5d"  data-host="http://localhost:8787"></script>
+
+		%sveltekit.head%
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+			@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+			body {
+				font-family: 'Lato', sans-serif;
+				background-color: black;
+				color: white;
+			}
+			button:disabled {
+				opacity: 0.5;
+			}
+
+			.cool-scrollbar::-webkit-scrollbar {
+				display: block;
+				width: var(--sds, 14px);
+				/* /.cool-scrollbar position: absolute; .cool-scrollbar/ */
+			}
+
+			.cool-scrollbar::-webkit-scrollbar-button {
+				display: none;
+			}
+
+			.cool-scrollbar::-webkit-scrollbar-track {
+				background-color: transparent;
+			}
+
+			.cool-scrollbar::-webkit-scrollbar-track-piece {
+				background-color: #00000000;
+			}
+
+			.cool-scrollbar::-webkit-scrollbar-thumb {
+				background-color: #00000040;
+				border: 1px solid #ffffff40;
+				border-radius: 24px;
+			}
+
+			:is(.dark) {
+				--scroll-bg: #333;
+			}
+
+			/* box-sizing: /; */
+			.cool-scrollbar::-webkit-scrollbar-thumb {
+				background-color: #00000000;
+				border: 5px solid transparent;
+
+				border-radius: 24px;
+				box-shadow: 4px 0px 0px 4px var(--scroll-bg, #c0c0c086) inset;
+			}
+
+			.no-scrollbar {
+				overflow: auto;
+				scrollbar-width: none; /* For Firefox */
+			}
+
+			.no-scrollbar::-webkit-scrollbar {
+				display: none; /* For Chrome, Safari, and Edge */
+			}
+		</style>
+		<script>
+			let greenColors = {
+				primary: '#16a34a',
+				secondary: '#4ade80',
+				complement: '#bbf7d0'
+			};
+
+			let stoneColor = {
+				primary: '#57534e',
+				secondary: '#d6d3d1',
+				complement: '#e7e5e4'
+			};
+
+			let redColors = {
+				primary: '#dc2626',
+				secondary: '#f87171',
+				complement: '#fecaca'
+			};
+
+			let orangeColors = {
+				primary: '#ea580c',
+				secondary: '#fb923c',
+				complement: '#fed7aa'
+			};
+
+			let amberColors = {
+				primary: ' 	#d97706',
+				secondary: '#fbbf24',
+				complement: '#fde68a'
+			};
+
+			let yellowColors = {
+				primary: '#ca8a04',
+				secondary: '#facc15',
+				complement: ' #fef08a'
+			};
+
+			let limeColors = {
+				primary: '#65a30d',
+				secondary: '#a3e635',
+				complement: '#d9f99d'
+			};
+
+			let emeraldColors = {
+				primary: '#059669',
+				secondary: '#34d399',
+				complement: '#a7f3d0'
+			};
+
+			let tealColors = {
+				primary: '#0d9488',
+				secondary: ' #2dd4bf',
+				complement: '#99f6e4'
+			};
+
+			let cyanColors = {
+				primary: '#0891b2',
+				secondary: '#22d3ee',
+				complement: '#a5f3fc'
+			};
+
+			let skyColors = {
+				primary: '#0284c7',
+				secondary: '#38bdf8',
+				complement: '#bae6fd'
+			};
+
+			let blueColors = {
+				primary: '#2563eb',
+				secondary: '#60a5fa',
+				complement: '#bfdbfe'
+			};
+
+			let indigoColors = {
+				primary: '#4f46e5',
+				secondary: '#818cf8',
+				complement: '#c7d2fe'
+			};
+
+			let violetColors = {
+				primary: '#7c3aed',
+				secondary: '#a78bfa',
+				complement: '#ddd6fe'
+			};
+
+			let purpleColors = {
+				primary: '#9333ea',
+				secondary: '#c084fc',
+				complement: '#e9d5ff'
+			};
+
+			let fuchsiaColors = {
+				primary: '	#c026d3',
+				secondary: '#e879f9',
+				complement: '#f5d0fe'
+			};
+
+			let pinkColors = {
+				primary: '#db2777',
+				secondary: '#f472b6',
+				complement: ' #fbcfe8'
+			};
+
+			let roseColors = {
+				primary: '#e11d48',
+				secondary: '#fb7185',
+				complement: '#fecdd3'
+			};
+			let xColors = {
+				primary: '',
+				secondary: '',
+				complement: ''
+			};
+
+			// let greenColors = {
+			// 	primary: '#059669',
+			// 	secondary: '#10b981',
+			// 	complement: '#22c55e'
+			// };
+
+			const colorList = {
+				stone: stoneColor,
+				red: redColors,
+				orange: orangeColors,
+				amber: amberColors,
+				yellow: yellowColors,
+				lime: limeColors,
+				green: greenColors,
+				cyan: cyanColors,
+				sky: skyColors,
+				blue: blueColors,
+				indigo: indigoColors,
+				violet: violetColors,
+				purple: purpleColors,
+				fuchsia: fuchsiaColors,
+				pink: pinkColors,
+				rose: roseColors,
+				green: greenColors,
+				emerald: emeraldColors,
+				teal: tealColors
+			};
+
+			// Check localStorage and system preference
+			const theme = (() => {
+				if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+					return localStorage.getItem('theme');
+				}
+				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+					return 'dark';
+				}
+				return 'light';
+			})();
+
+			const c = localStorage.getItem('little_stat_color');
+			let color = c ?? 'lime';
+			document
+				.querySelector('meta[name="theme-color"]')
+				.setAttribute('content', colorList[color].primary);
+
+			// Apply theme immediately
+			if (theme === 'dark') {
+				document.documentElement.classList.add('dark');
+			} else {
+				document.documentElement.classList.remove('dark');
+			}
+
+			document.querySelector('html').classList.add(`bg-${color}-50`, `dark:bg-stone-900`);
+			try {
+				document.querySelector('body').classList.add(`bg-${color}-50`, `dark:bg-stone-900`);
+			} catch (error) {}
+
+			// Listen for system theme changes
+			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+				if (localStorage.getItem('theme')) {
+					// Only if no manual preference is set
+					if (e.matches) {
+						document.documentElement.classList.add('dark');
+					} else {
+						document.documentElement.classList.remove('dark');
+					}
+				}
+			});
+		</script>
+		<!-- <script src="https://littlestats-backend.fly.dev/embed/boza4r5wbk3mh9q"></script> -->
+		<!-- https://littlestats-backend.fly.dev/mwn1qyxs2n8ha58 -->
+		<!-- -->
+		<!-- <script src="https://cdn.littlestats.click/embed/"></script> -->
+		<!-- <script async src="http://0.0.0.0:8000/embed/lksb47tqu246236"></script> -->
+		<!-- <script defer src="http://0.0.0.0:8000/embed/mwn1qyxs2n8ha58"></script> -->
+		<!-- <script defer src="https://cdn.littlestats.click/embed/mwn1qyxs2n8ha58"></script> -->
+		<!-- <script src="https://littlestats-backend.fly.dev/embed/boza4r5wbk3mh9q"></script> -->
+	</head>
+	<body data-sveltekit-preload-data="hover" class="text-black dark:bg-stone-900">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

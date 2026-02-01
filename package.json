@@ -1,46 +1,21 @@
 {
-	"name": "statrig",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
-	},
-	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/adapter-cloudflare": "^4.7.2",
-		"@sveltejs/kit": "^2.5.27",
-		"@sveltejs/vite-plugin-svelte": "^4.0.0",
-		"@tailwindcss/typography": "^0.5.14",
-		"@types/eslint": "^9.6.0",
-		"autoprefixer": "^10.4.20",
-		"eslint": "^9.0.0",
-		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-svelte": "^2.45.1",
-		"globals": "^15.0.0",
-		"prettier": "^3.1.1",
-		"prettier-plugin-svelte": "^3.2.6",
-		"prettier-plugin-tailwindcss": "^0.6.5",
-		"svelte": "^5.20.4",
-		"tailwindcss": "^3.4.9",
-		"vite": "^5.4.4"
-	},
-	"type": "module",
-	"dependencies": {
-		"@clickhouse/client-web": "^1.9.0",
-		"@lemonsqueezy/lemonsqueezy.js": "^3.3.1",
-		"@neoconfetti/svelte": "^2.2.1",
-		"@polar-sh/sdk": "^0.36.1",
-		"@svelte-plugins/datepicker": "^1.0.9",
-		"chart.js": "^4.4.4",
-		"date-fns": "^4.1.0",
-		"layercake": "8.4.0-beta.1",
-		"lucide-svelte": "^0.446.0",
-		"pocketbase": "^0.21.5",
-		"svelte-dnd-action": "^0.9.57",
-		"workerize": "^0.1.8"
-	}
+  "name": "littlestats",
+  "private": true,
+  "scripts": {
+    "dev:dashboard": "pnpm --filter @littlestats/dashboard dev",
+    "dev:statrig": "pnpm --filter @littlestats/statrig dev",
+    "build:dashboard": "pnpm --filter @littlestats/dashboard build",
+    "build:statrig": "pnpm --filter @littlestats/statrig build",
+    "lint:dashboard": "pnpm --filter @littlestats/dashboard lint",
+    "lint:statrig": "pnpm --filter @littlestats/statrig lint"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.30",
+    "drizzle-kit": "^0.31.8"
+  },
+  "dependencies": {
+    "dodopayments": "^2.17.2",
+    "drizzle-orm": "^0.45.1",
+    "valibot": "^1.2.0"
+  }
 }

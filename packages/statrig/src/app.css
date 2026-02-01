@@ -1,0 +1,88 @@
+/* Tailwind CSS v4 Configuration */
+@import "tailwindcss";
+
+/* Content paths for Tailwind to scan */
+@source "./src/**/*.{html,js,svelte,ts}";
+
+/* Custom dark mode variant - uses .dark class */
+@custom-variant dark (&:is(.dark *));
+
+/* Theme configuration - extends default theme */
+@theme inline {
+  /* Font families */
+  --font-inter: "Inter", sans-serif;
+  --font-lato: "Lato", sans-serif;
+
+  /* Custom shadows */
+  --shadow-custom-light: 0 -10px 100px rgba(0, 0, 0, 0.089);
+
+  /* Animation */
+  --animate-spin: spin 1s linear infinite;
+  --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-bounce: bounce 1s infinite;
+}
+
+/* Base layer - button active state */
+@layer base {
+  button:active {
+    border-bottom-width: 0px;
+  }
+}
+
+/* Custom utility for glass morphism effect */
+@utility glass {
+  background-color: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(10px);
+}
+
+/* Custom utility for stat card styling */
+@utility stat-card {
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Animation keyframes */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.ls-shell {
+  background-color: #ffffff;
+  box-shadow: none !important;
+}
+
+.dark .ls-shell {
+  background-color: #0c0a09;
+  box-shadow: none !important;
+}
+
+/* Smooth transition for theme switching */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

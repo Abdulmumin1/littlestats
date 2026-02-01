@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "littlestats-analytics",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-12-10",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "littlestats-2",
+      "database_id": "393725bd-d0fb-4c13-bc2e-c43d36601880",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "ANALYTICS_DO",
+        "class_name": "DomainAnalyticsDO"
+      }
+    ]
+  },
+  
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["DomainAnalyticsDO"]
+    }
+  ],
+  
+  "routes": [
+    {
+      "pattern": "stats.littlestats.click",
+      "custom_domain": true
+    }
+  ],
+  
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

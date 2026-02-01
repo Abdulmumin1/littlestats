@@ -1,0 +1,32 @@
+{
+  "name": "stats-littlestats",
+  "version": "2.0.0",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest",
+    "db:migrate": "wrangler d1 migrations apply littlestats-2",
+    "db:migrate:local": "wrangler d1 migrations apply littlestats-2 --local",
+    "db:migrate:prod": "wrangler d1 migrations apply littlestats-2 --remote",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "migrate:pocketbase": "tsx scripts/migrate-pocketbase.ts",
+    "migrate:v1": "tsx scripts/migrate-v1-to-v2.ts"
+  },
+  "dependencies": {
+    "@polar-sh/sdk": "^0.35.2",
+    "better-auth": "^1.0.0",
+    "hono": "^4.7.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "wrangler": "^3.109.2"
+  }
+}
