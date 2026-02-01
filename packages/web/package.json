@@ -26,7 +26,8 @@
 		"prettier-plugin-tailwindcss": "^0.6.14",
 		"svelte": "^5.49.1",
 		"tailwindcss": "^4.1.18",
-		"vite": "^5.4.21"
+		"vite": "^5.4.21",
+		"@cloudflare/workers-types": "^4.20250214.0"
 	},
 	"type": "module",
 	"dependencies": {
@@ -42,6 +43,8 @@
 		"lucide-svelte": "^0.563.0",
 		"pocketbase": "^0.21.5",
 		"svelte-dnd-action": "^0.9.69",
-		"workerize": "^0.1.8"
+		"workerize": "^0.1.8",
+    "wrangler": "^3.109.2"
+
 	}
 }
