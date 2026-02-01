@@ -55,8 +55,12 @@
 	}
 
 	let pages = $derived(sorted ? views : fetchPages(views));
-	let fullPages = $state([...pages]);
-	let trunaced_pages = $derived([...pages].splice(0, max_page_item_count));
+	let fullPages = $state([]);
+	let truncated_pages = $derived(pages.slice(0, max_page_item_count));
+
+	$effect(() => {
+		fullPages = [...pages];
+	});
 
 	let trottle;
 	function searchQuery(event) {
@@ -97,7 +101,7 @@
     </div> -->
 
 	<div class="flex h-full flex-col gap-1">
-		{#each trunaced_pages as page (page[0])}
+		{#each truncated_pages as page (page[0])}
 			<div animate:flip={{ duration: 150 }} class="w-full">
 				<PageItem {jump} on:filter type="ref" path={page[0]} views={page[1]} />
 			</div>
@@ -105,7 +109,7 @@
 			<EmptyValues />
 		{/each}
 
-		{#if trunaced_pages.length < views.length}
+		{#if truncated_pages.length < views.length}
 			<BottomDrawer {searchQuery}>
 				{#snippet handle()}
 					<div>
@@ -124,7 +128,7 @@
 					</div>
 				{/snippet}
 				{#snippet content()}
-					<div class="no-scrollbar relative flex flex-col gap-1 overflow-y-auto px-[20px] py-2">
+					<div class="no-scrollbar relative flex flex-col gap-1 overflow-y-auto px-5 py-2">
 						{#each fullPages as page (page[0])}
 							<div animate:flip={{ duration: 100 }}>
 								<PageItem {jump} on:filter type="ref" path={page[0]} views={page[1]} />

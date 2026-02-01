@@ -2,7 +2,7 @@
 // This demo page needs to be updated to use the dashboard API or mock data
 // For now, we'll return mock data to break the dependency on PocketBase
 
-import { generateRandomEvents } from '../../../../../lib/mockData.js';
+import { generateRandomEvents } from '$lib/mockData.js';
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params }) {
