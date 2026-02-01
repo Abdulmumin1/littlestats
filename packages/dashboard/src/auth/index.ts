@@ -59,7 +59,7 @@ export function createAuth(env: Env) {
         enabled: true,
       },
       defaultCookieAttributes: {
-        secure: false, // Allow http for localhost
+        secure: env.ENVIRONMENT === 'production', // Secure in production (HTTPS)
         httpOnly: true,
         sameSite: "lax", // Allow redirects between domains
         path: "/",

@@ -35,4 +35,7 @@ export interface Env {
   DODO_PAYMENTS_API_KEY: string;
   DODO_PAYMENTS_ENV?: 'test' | 'live';
   DODO_WEBHOOK_SECRET?: string;
+
+  // Environment
+  ENVIRONMENT?: 'development' | 'production';
 }
