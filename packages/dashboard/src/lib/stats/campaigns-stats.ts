@@ -297,6 +297,43 @@ export class CampaignsStats {
       .map(([key, total]) => ({ key, total }))
       .sort((a, b) => b.total - a.total);
 
-    return { granularity, metric, groupBy, segments, points };
+    const filledPoints = fillMissingIntervals(points, segmentKeys, startDate, endDate, granularity);
+
+    return { granularity, metric, groupBy, segments, points: filledPoints };
   }
+}
+
+function fillMissingIntervals(
+  points: Array<{ timestamp: string; total: number; segments: Record<string, number> }>,
+  segmentKeys: string[],
+  startDate: string,
+  endDate: string,
+  granularity: 'day' | 'hour'
+): Array<{ timestamp: string; total: number; segments: Record<string, number> }> {
+  if (!startDate || !endDate) return points;
+
+  const pointsMap = new Map(points.map((p) => [p.timestamp, p]));
+  const start = new Date(`${startDate}T00:00:00Z`);
+  const end = new Date(`${endDate}T23:00:00Z`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return points;
+
+  const filled: Array<{ timestamp: string; total: number; segments: Record<string, number> }> = [];
+  const cursor = new Date(start);
+  const stepMs = granularity === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+
+  while (cursor.getTime() <= end.getTime()) {
+    const iso = cursor.toISOString();
+    const timestamp = granularity === 'hour' ? `${iso.slice(0, 13)}:00:00` : iso.slice(0, 10);
+    const existing = pointsMap.get(timestamp);
+    if (existing) {
+      filled.push(existing);
+    } else {
+      const segments: Record<string, number> = {};
+      for (const k of segmentKeys) segments[k] = 0;
+      filled.push({ timestamp, total: 0, segments });
+    }
+    cursor.setTime(cursor.getTime() + stepMs);
+  }
+
+  return filled;
 }

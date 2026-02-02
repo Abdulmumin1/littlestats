@@ -12,6 +12,7 @@
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import { Activity, Eye, Globe, Monitor, Smartphone, Tablet } from 'lucide-svelte';
+	import { fade } from 'svelte/transition';
 	
 	let { page_data, current_domain, domain_id, demoData = null } = $props();
 	let siteId = $derived(domain_id);
@@ -498,7 +499,7 @@
 
 	{#if activeModal}
 		<div 
-			class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/20 backdrop-blur-sm p-4 sm:p-6"
+			class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/20 backdrop-blur-sm p-4 sm:p-6 "
 		>
 			<button 
 				type="button"
@@ -507,7 +508,7 @@
 				aria-label="Close modal"
 			></button>
 			<div 
-				class="relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl rounded-none cursor-auto"
+				class="relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full min-h-[40vh] max-w-2xl max-h-[80vh] flex flex-col shadow-2xl rounded-none cursor-auto"
 				role="dialog"
 				aria-modal="true"
 				tabindex="-1"
@@ -539,7 +540,7 @@
 					<div class="flex w-full flex-col gap-0.5">
 						{#if modalLoading}
 							<div class="py-20 text-center">
-								<p class="text-stone-400 italic font-serif text-sm">Loading…</p>
+								<p class="text-stone-400 italic font-serif text-sm ">Loading…</p>
 							</div>
 						{:else if modalError}
 							<div class="py-20 text-center">

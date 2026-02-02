@@ -1,5 +1,5 @@
 <script>
-	import {  Twitter, Mail } from 'lucide-svelte';
+	import { Twitter, Mail, Github } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import Logo from '../lib/components/generals/logo.svelte';
 
@@ -37,6 +37,15 @@ L					</div>
 					>
 						<Mail size={18} />
 					</a>
+
+					<a
+						href="http://github.com/abdulmumin1/littlestats"
+						target="_blank"
+						title="GitHub"
+						class="p-2 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-{$color}-600 hover:text-white dark:hover:bg-{$color}-600 dark:hover:text-white transition-all duration-300"
+					>
+						<Github size={18} />
+					</a>
 				</div>
 			</div>
 
@@ -65,6 +74,13 @@ L					</div>
 			<div>
 				<h3 class="text-xs font-bold uppercase tracking-widest text-stone-500 dark:text-stone-500 mb-6">Resources</h3>
 				<ul class="space-y-4">
+					<li>
+						<a href="http://github.com/abdulmumin1/littlestats" target="_blank" class="text-sm text-stone-600 dark:text-stone-400 hover:text-{$color}-600 dark:hover:text-{$color}-500 transition-colors flex items-center group"
+							>
+							<span class="w-0 group-hover:w-2 h-0.5 bg-{$color}-600 mr-0 group-hover:mr-2 transition-all duration-300"></span>
+							Open Source
+						</a>
+					</li>
 					<li>
 						<a href="/docs" class="text-sm text-stone-600 dark:text-stone-400 hover:text-{$color}-600 dark:hover:text-{$color}-500 transition-colors flex items-center group"
 							>

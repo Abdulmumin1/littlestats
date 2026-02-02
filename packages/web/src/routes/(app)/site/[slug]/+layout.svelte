@@ -104,13 +104,7 @@
 						</div>
 					</div>
 
-					<!-- Theme Selector -->
-					<div class="space-y-2 rounded-none">
-						<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-4">Appearance</p>
-						<div class="px-2 rounded-none">
-							<DarkMode />
-						</div>
-					</div>
+					
 				</div>
 			</aside>
 

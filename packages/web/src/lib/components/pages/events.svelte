@@ -6,12 +6,7 @@
 
 	import { Search, Activity, Globe, Users, MoreVertical, Check, ChevronDown } from 'lucide-svelte';
 	import CustomSelect from '$lib/components/generals/customSelect.svelte';
-	import {
-		sortReferals,
-		sortCountryData,
-		sumData
-	} from '$lib/events/helpers.js';
-	import { executeInWorker } from '$lib/utils';
+	import { runWorker } from '$lib/workers/workerClient.js';
 
 	let { 
 		page_data = [],
@@ -37,9 +32,42 @@
 
 	let sortInterval = $derived.by(() => (rangeDays <= 2 ? 1 : rangeDays));
 
+	const BUSINESS_EVENT_PRIORITY = {
+		'Payment Completed': 100,
+		'Upgrade Plan': 95,
+		'Checkout Started': 90,
+		'Start Free Trial': 85,
+		'Subscription Renewal': 80,
+		'Cancellation': 5,
+		'Churned': 1,
+		'Sign Up': 70,
+		'Login': 60,
+		'Invite Team Member': 55,
+		'Integration Connected': 50,
+		'Feature Used': 40,
+		'Download Report': 35,
+		'Form Submission': 30,
+		'Contact Support': 10,
+		'Feedback Given': 8,
+		'Webinar Registered': 6,
+		'Documentation Visit': 4
+	};
+
 	// Use eventCounts from backend for the event name list (full date range totals)
 	let events = $derived.by(() => {
-		return eventCounts.map(e => [e.name, e.count]);
+		return (eventCounts || [])
+			.map(e => [e.name, e.count])
+			.sort((a, b) => {
+				const aName = String(a?.[0] ?? '');
+				const bName = String(b?.[0] ?? '');
+				const aCount = Number(a?.[1] ?? 0);
+				const bCount = Number(b?.[1] ?? 0);
+				const aPri = BUSINESS_EVENT_PRIORITY[aName] ?? 0;
+				const bPri = BUSINESS_EVENT_PRIORITY[bName] ?? 0;
+				if (bPri !== aPri) return bPri - aPri;
+				if (bCount !== aCount) return bCount - aCount;
+				return aName.localeCompare(bName);
+			});
 	});
 
 	// Active event is determined by selectedEventName or first in list
@@ -48,56 +76,149 @@
 	// For the chart and detail views, use page_data (the paginated event log)
 	let activeEventData = $derived(page_data || []);
 
+	// Normalized data structure - precompute expensive fields ONCE when page_data changes
+	let normalizedEventData = $derived.by(() => {
+		const rows = activeEventData || [];
+		return rows.map((event, i) => {
+			// Extract page path
+			let pagePath = '';
+			if (event?.url) {
+				try {
+					const u = new URL(event.url);
+					pagePath = u.pathname || '/';
+				} catch {
+					pagePath = String(event.url);
+				}
+			}
+
+			// Extract referrer hostname
+			let refHost = 'Direct';
+			if (event?.referrer) {
+				try {
+					const u = new URL(event.referrer);
+					refHost = u.hostname;
+				} catch {
+					refHost = event.referrer || 'Direct';
+				}
+			}
+
+			// Parse JSON once
+			let eventObj = null;
+			if (event?.event_data && typeof event.event_data === 'string') {
+				try {
+					eventObj = JSON.parse(event.event_data);
+				} catch {
+					eventObj = null;
+				}
+			}
+
+			// Precompute summary lines
+			let summaryLines = [];
+			if (eventObj && typeof eventObj === 'object') {
+				summaryLines = Object.entries(eventObj)
+					.filter(([k, v]) => k !== 'memory' && v !== null && v !== undefined)
+					.map(([k, v]) => {
+						if (typeof v === 'string') return `${k}: ${v}`;
+						if (typeof v === 'number' || typeof v === 'boolean') return `${k}: ${String(v)}`;
+						try {
+							return `${k}: ${JSON.stringify(v)}`;
+						} catch {
+							return `${k}: [object]`;
+						}
+					})
+					.sort((a, b) => a.localeCompare(b))
+					.slice(0, 3);
+			}
+
+			// Precompute searchable string
+			const summarySearch = `${pagePath} ${refHost} ${event?.user_id || ''} ${summaryLines.join(' ')}`.toLowerCase();
+
+			// Preformat dates
+			const timestamp = event?.timestamp ? new Date(event.timestamp) : null;
+			const dateStr = timestamp ? timestamp.toLocaleDateString() : '';
+			const timeStr = timestamp ? timestamp.toLocaleTimeString() : '';
+
+			// Unique key
+			const _key = event?.id ?? `${event?.timestamp}-${event?.user_id ?? ''}-${i}`;
+
+			// Has campaign
+			const hasCampaign = !!(eventObj && typeof eventObj === 'object' && (eventObj.campaign || eventObj.utm_campaign));
+
+			return {
+				...event,
+				pagePath,
+				refHost,
+				eventObj,
+				summaryLines,
+				summarySearch,
+				dateStr,
+				timeStr,
+				_key,
+				hasCampaign
+			};
+		});
+	});
+
 	let eventSearch = $state('');
 	let detailSearch = $state('');
 	let filterPage = $state('');
 	let filterReferrer = $state('');
 	let filterHasCampaign = $state(false);
+	
+	// Debounced search values for performance
+	let debouncedEventSearch = $state('');
+	let debouncedDetailSearch = $state('');
+	let searchDebounceTimer = null;
+	
+	$effect(() => {
+		const value = eventSearch;
+		clearTimeout(searchDebounceTimer);
+		searchDebounceTimer = setTimeout(() => {
+			debouncedEventSearch = value;
+		}, 150);
+	});
+	
+	$effect(() => {
+		const value = detailSearch;
+		clearTimeout(searchDebounceTimer);
+		searchDebounceTimer = setTimeout(() => {
+			debouncedDetailSearch = value;
+		}, 150);
+	});
 
 	let visibleEvents = $derived.by(() => {
 		const list = events || [];
-		const q = eventSearch.trim().toLowerCase();
+		const q = debouncedEventSearch.trim().toLowerCase();
 		if (!q) return list;
 		return list.filter(([name]) => String(name || '').toLowerCase().includes(q));
 	});
 
-	function hasCampaign(eventData) {
-		const data = safeJsonParse(eventData);
-		return !!(data && typeof data === 'object' && (data.campaign || data.utm_campaign));
-	}
-
 	let filteredActiveEventData = $derived.by(() => {
-		const rows = activeEventData || [];
-		const q = detailSearch.trim().toLowerCase();
+		const rows = normalizedEventData || [];
+		const q = debouncedDetailSearch.trim().toLowerCase();
 		const pageFilter = String(filterPage || '').trim();
 		const refFilter = String(filterReferrer || '').trim();
 		return rows.filter((event) => {
-			if (filterHasCampaign && !hasCampaign(event?.event_data)) return false;
-			const page = getPagePath(event?.url) || '';
-			const ref = getReferrerHost(event?.referrer) || '';
-			if (pageFilter && page !== pageFilter) return false;
-			if (refFilter && ref !== refFilter) return false;
+			if (filterHasCampaign && !event.hasCampaign) return false;
+			if (pageFilter && event.pagePath !== pageFilter) return false;
+			if (refFilter && event.refHost !== refFilter) return false;
 			if (!q) return true;
-			const user = event?.user_id || '';
-			const props = summarizeEventData(event?.event_data).join(' ');
-			return `${page} ${ref} ${user} ${props}`.toLowerCase().includes(q);
+			return event.summarySearch.includes(q);
 		});
 	});
 
 	let availablePages = $derived.by(() => {
 		const set = new Set();
-		for (const e of activeEventData || []) {
-			const p = getPagePath(e?.url);
-			if (p) set.add(p);
+		for (const e of normalizedEventData || []) {
+			if (e.pagePath) set.add(e.pagePath);
 		}
 		return Array.from(set.values()).sort((a, b) => String(a).localeCompare(String(b)));
 	});
 
 	let availableReferrers = $derived.by(() => {
 		const set = new Set();
-		for (const e of activeEventData || []) {
-			const r = getReferrerHost(e?.referrer);
-			if (r) set.add(r);
+		for (const e of normalizedEventData || []) {
+			if (e.refHost) set.add(e.refHost);
 		}
 		return Array.from(set.values()).sort((a, b) => String(a).localeCompare(String(b)));
 	});
@@ -109,10 +230,8 @@
 		const referrers = new Map();
 		for (const e of rows) {
 			if (e?.user_id) users.add(e.user_id);
-			const page = getPagePath(e?.url);
-			if (page) pages.set(page, (pages.get(page) || 0) + 1);
-			const ref = getReferrerHost(e?.referrer);
-			if (ref) referrers.set(ref, (referrers.get(ref) || 0) + 1);
+			if (e.pagePath) pages.set(e.pagePath, (pages.get(e.pagePath) || 0) + 1);
+			if (e.refHost) referrers.set(e.refHost, (referrers.get(e.refHost) || 0) + 1);
 		}
 		return {
 			triggers: rows.length,
@@ -125,52 +244,97 @@
 	let sortedReferals = $state([]);
 	let sortedCountryData = $state([]);
 
+	let workerRequestId = 0;
+
 	$effect(async () => {
-		let dataSnapshot = $state.snapshot(filteredActiveEventData);
+		const dataSnapshot = $state.snapshot(filteredActiveEventData);
+		workerRequestId += 1;
+		const currentRequestId = workerRequestId;
+		
 		if (!dataSnapshot || dataSnapshot.length === 0) {
 			sortedReferals = [];
 			sortedCountryData = [];
 			return;
 		}
-		sortedReferals = await executeInWorker(sortReferals, dataSnapshot)
-		sortedCountryData = await executeInWorker(sortCountryData, dataSnapshot)
+		
+		try {
+			const [referals, countries] = await Promise.all([
+				runWorker('sortReferals', dataSnapshot),
+				runWorker('sortCountryData', dataSnapshot)
+			]);
+			
+			// Only update if this is still the latest request
+			if (currentRequestId === workerRequestId) {
+				sortedReferals = referals;
+				sortedCountryData = countries;
+			}
+		} catch (err) {
+			console.error('Worker error:', err);
+		}
 	});
-
-	// $effect(() => {
-	// 	$inspect(a);
-	// });
 
 	let sumReferalData = $state(0);
 	let sumCountryData = $state(0);
 
 	$effect(async () => {
-		let dataSnapshot = $state.snapshot(sortedReferals);
+		const dataSnapshot = $state.snapshot(sortedReferals);
 		if (!dataSnapshot || dataSnapshot.length === 0) {
 			sumReferalData = 0;
 			return;
 		}
-		sumReferalData = await executeInWorker(sumData, dataSnapshot);
+		try {
+			sumReferalData = await runWorker('sumData', dataSnapshot);
+		} catch (err) {
+			console.error('Worker error:', err);
+		}
 	});
 
 	$effect(async () => {
-		let dataSnapshot = $state.snapshot(sortedCountryData);
+		const dataSnapshot = $state.snapshot(sortedCountryData);
 		if (!dataSnapshot || dataSnapshot.length === 0) {
 			sumCountryData = 0;
 			return;
 		}
-		sumCountryData = await executeInWorker(sumData, dataSnapshot);
+		try {
+			sumCountryData = await runWorker('sumData', dataSnapshot);
+		} catch (err) {
+			console.error('Worker error:', err);
+		}
 	});
 
 	let expanded = $state(null);
 
-	function getPagePath(url) {
-		if (!url) return '';
-		try {
-			const u = new URL(url);
-			return u.pathname || '/';
-		} catch {
-			return String(url);
+	// Virtual scrolling for large datasets
+	const ROW_HEIGHT = 48; // Approximate row height in pixels
+	const BUFFER_ROWS = 10; // Extra rows to render above/below viewport
+	let tableScrollTop = $state(0);
+	let tableViewportHeight = $state(700); // Default max-h value
+	
+	let virtualWindow = $derived.by(() => {
+		const totalRows = filteredActiveEventData.length;
+		if (totalRows <= 100) {
+			// Small dataset - render all
+			return { start: 0, end: totalRows, topPadding: 0, bottomPadding: 0 };
 		}
+		
+		const startRow = Math.max(0, Math.floor(tableScrollTop / ROW_HEIGHT) - BUFFER_ROWS);
+		const visibleRows = Math.ceil(tableViewportHeight / ROW_HEIGHT) + BUFFER_ROWS * 2;
+		const endRow = Math.min(totalRows, startRow + visibleRows);
+		
+		return {
+			start: startRow,
+			end: endRow,
+			topPadding: startRow * ROW_HEIGHT,
+			bottomPadding: Math.max(0, (totalRows - endRow) * ROW_HEIGHT)
+		};
+	});
+	
+	let visibleTableRows = $derived(
+		filteredActiveEventData.slice(virtualWindow.start, virtualWindow.end)
+	);
+
+	function handleTableScroll(event) {
+		tableScrollTop = event.target.scrollTop;
 	}
 
 	function maxByCount(map) {
@@ -179,42 +343,6 @@
 			if (!best || val > best.count) best = { key, count: val };
 		}
 		return best;
-	}
-
-	function safeJsonParse(str) {
-		if (!str || typeof str !== 'string') return null;
-		try {
-			return JSON.parse(str);
-		} catch {
-			return null;
-		}
-	}
-
-	function summarizeEventData(eventData) {
-		const data = safeJsonParse(eventData);
-		if (!data || typeof data !== 'object') return [];
-		const entries = Object.entries(data)
-			.filter(([k, v]) => k !== 'memory' && v !== null && v !== undefined)
-			.map(([k, v]) => {
-				if (typeof v === 'string') return `${k}: ${v}`;
-				if (typeof v === 'number' || typeof v === 'boolean') return `${k}: ${String(v)}`;
-				try {
-					return `${k}: ${JSON.stringify(v)}`;
-				} catch {
-					return `${k}: [object]`;
-				}
-			})
-			.sort((a, b) => a.localeCompare(b));
-		return entries.slice(0, 3);
-	}
-
-	function getReferrerHost(referrer) {
-		try {
-			const url = new URL(referrer);
-			return url.hostname;
-		} catch {
-			return referrer || 'Direct';
-		}
 	}
 
 	let activeModal = $state(null); // 'referrers' | 'countries' | null
@@ -464,7 +592,7 @@
 						/>
 					</div>
 				</div>
-				<div class="max-h-[700px] overflow-y-auto">
+				<div class="max-h-[700px] overflow-y-auto" onscroll={handleTableScroll}>
 					<table class="min-w-full divide-y divide-stone-200 dark:divide-stone-800">
 						<thead class="bg-white dark:bg-stone-900">
 							<tr>
@@ -478,19 +606,22 @@
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-stone-200 dark:divide-stone-800 bg-white dark:bg-stone-900">
-							{#each filteredActiveEventData as event, i (event.id ?? `${event.timestamp}-${event.user_id ?? ''}-${i}`)}
-								{@const eventKey = event.id ?? `${event.timestamp}-${event.user_id ?? ''}-${i}`}
+							<!-- Virtual scrolling spacer -->
+							{#if virtualWindow.topPadding > 0}
+								<tr style="height: {virtualWindow.topPadding}px"><td colspan="7"></td></tr>
+							{/if}
+							{#each visibleTableRows as event (event._key)}
 								<tr
 									class="group cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50"
-									onclick={() => (expanded = expanded === eventKey ? null : eventKey)}
+									onclick={() => (expanded = expanded === event._key ? null : event._key)}
 								>
 									<td class="px-4 py-3 text-xs font-mono text-stone-600 dark:text-stone-300 truncate max-w-40">{event.user_id?.slice(0, 8) || 'Anonymous'}</td>
-									<td class="max-w-50 truncate px-4 py-3 text-xs font-mono text-stone-600 dark:text-stone-300">{getPagePath(event.url) || 'Unknown'}</td>
-									<td class="truncate px-4 py-3 text-xs font-bold text-stone-900 dark:text-white">{getReferrerHost(event.referrer)}</td>
+									<td class="max-w-50 truncate px-4 py-3 text-xs font-mono text-stone-600 dark:text-stone-300">{event.pagePath || 'Unknown'}</td>
+									<td class="truncate px-4 py-3 text-xs font-bold text-stone-900 dark:text-white">{event.refHost}</td>
 									<td class="px-4 py-3 text-xs text-stone-600 dark:text-stone-300">
-										{#if summarizeEventData(event.event_data).length}
+										{#if event.summaryLines.length}
 											<div class="flex flex-wrap gap-1">
-												{#each summarizeEventData(event.event_data) as line (line)}
+												{#each event.summaryLines as line (line)}
 													<span class="px-2 py-1 rounded-none border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-950/30 font-mono text-[10px] truncate max-w-56">{line}</span>
 												{/each}
 											</div>
@@ -499,15 +630,15 @@
 										{/if}
 									</td>
 									<td class="whitespace-nowrap px-4 py-3 text-xs font-bold text-stone-900 dark:text-white">
-										{new Date(event.timestamp).toLocaleDateString()}<br />
-										<span class="text-[10px] font-black uppercase tracking-widest text-stone-400">{new Date(event.timestamp).toLocaleTimeString()}</span>
+										{event.dateStr}<br />
+										<span class="text-[10px] font-black uppercase tracking-widest text-stone-400">{event.timeStr}</span>
 									</td>
 									<td class="px-4 py-3 text-xs font-bold text-stone-600 dark:text-stone-300">{event.timezone}</td>
 									<td class="px-4 py-3">
 										<MoreVertical size={16} class="text-stone-300 dark:text-stone-600 group-hover:text-stone-900 dark:group-hover:text-white transition-colors" />
 									</td>
 								</tr>
-								{#if expanded === eventKey}
+								{#if expanded === event._key}
 									<tr class="bg-stone-50 dark:bg-stone-800/40">
 										<td colspan="7" class="px-4 py-4 text-xs">
 											<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -515,34 +646,25 @@
 													<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">User</div>
 													<div class="truncate font-bold text-stone-900 dark:text-white">{event.user_id?.slice(0, 8) || 'Anonymous'}</div>
 												</div>
-												{#if event.event_data}
-													{@const data = safeJsonParse(event.event_data)}
-													{#if data?.campaign}
-														<div>
-															<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Campaign</div>
-															<div class="truncate font-bold text-stone-900 dark:text-white">{data.campaign}</div>
-														</div>
-													{/if}
+												{#if event.eventObj?.campaign}
+													<div>
+														<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Campaign</div>
+														<div class="truncate font-bold text-stone-900 dark:text-white">{event.eventObj.campaign}</div>
+													</div>
 												{/if}
 												<div>
 													<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Performance</div>
-													{#if event.event_data}
-														{@const data = safeJsonParse(event.event_data)}
-														<span class={`font-bold ${data?.pageLoadTime > 2000 ? 'text-red-600' : 'text-green-600'}`}>{data?.pageLoadTime ? `${data.pageLoadTime}ms` : 'N/A'}</span>
-													{:else}
-														<span class="font-bold text-stone-400">N/A</span>
-													{/if}
+													<span class={`font-bold ${event.eventObj?.pageLoadTime > 2000 ? 'text-red-600' : 'text-green-600'}`}>{event.eventObj?.pageLoadTime ? `${event.eventObj.pageLoadTime}ms` : 'N/A'}</span>
 												</div>
 												<div>
 													<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Language</div>
 													<div class="font-bold text-stone-900 dark:text-white">{event.language?.split('-')[0]}</div>
 												</div>
-												{#if event.event_data}
-													{@const data = safeJsonParse(event.event_data)}
+												{#if event.eventObj}
 													<div class="sm:col-span-2 lg:col-span-4">
 														<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Event details</div>
 														<div class="space-y-1">
-															{#each Object.entries(data || {}) as [title, dx]}
+															{#each Object.entries(event.eventObj) as [title, dx]}
 																<div class="truncate">
 																	<span class="font-bold text-stone-900 dark:text-white">{title}:</span>
 																	<span class="text-stone-600 dark:text-stone-300"> {dx}</span>
@@ -561,9 +683,13 @@
 								{/if}
 							{:else}
 								<tr>
-									<td colspan="6" class="px-6 py-10 text-center text-sm text-stone-400 italic font-serif">No events recorded</td>
+									<td colspan="7" class="px-6 py-10 text-center text-sm text-stone-400 italic font-serif">No events recorded</td>
 								</tr>
 							{/each}
+							<!-- Virtual scrolling bottom spacer -->
+							{#if virtualWindow.bottomPadding > 0}
+								<tr style="height: {virtualWindow.bottomPadding}px"><td colspan="7"></td></tr>
+							{/if}
 						</tbody>
 					</table>
 				</div>

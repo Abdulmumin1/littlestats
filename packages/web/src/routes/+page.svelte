@@ -21,7 +21,7 @@
     } from '$lib/mockData.js';
 	import Funnels from '$lib/components/pages/funnels.svelte';
 	import Events from '$lib/components/pages/events.svelte';
-	import Retension from '$lib/components/analytics/retension.svelte';
+	import Campaigns from '$lib/components/pages/campaigns.svelte';
     import Traffic from '$lib/components/pages/traffic.svelte'; // Use real Traffic component
     import Dropdown from '$lib/components/generals/dropdown.svelte';
     import DarkMode from '$lib/components/generals/darkMode.svelte';
@@ -30,7 +30,8 @@
     import { writable } from 'svelte/store';
 
     // Icons
-    import { LineChart, Filter, RotateCcw, MousePointer2 } from 'lucide-svelte';
+    import { LineChart, Filter, MousePointer2, Megaphone, Github } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 
     // Data handling for Demo
     let funnelStepsContext = writable({
@@ -40,37 +41,63 @@
 	});
 
     let {data} = $props();
-	let dummyies = $state(generateRandomEvents(5000));
+    
+    // Defer mock data generation using requestIdleCallback
+    let dummyies = $state([]);
+    let dataGenerated = $state(false);
+    
+    $effect(() => {
+        if (typeof requestIdleCallback !== 'undefined') {
+            requestIdleCallback(() => {
+                dummyies = generateRandomEvents(1000);
+                dataGenerated = true;
+            });
+        } else {
+            setTimeout(() => {
+                dummyies = generateRandomEvents(1000);
+                dataGenerated = true;
+            }, 0);
+        }
+    });
+    
 	let events_dummies = $derived(dummyies);
     
-    // Derived Event Counts for the Events Component
-    // This needs to be reactive to the mock data range if we were filtering mock data by globalRange here,
-    // but dummyies is static for now. We can make it reactive if needed.
-    let eventCounts = $derived(getMockEventCounts(events_dummies));
+    // Cache eventCounts - only recompute when events_dummies changes
+    let eventCounts = $derived(activeTab === 'events' && dataGenerated ? getMockEventCounts(events_dummies, dashboardStore.dateRange) : []);
 
-    // Prepare demo data for Traffic component
-    let trafficDemoData = $derived({
-        stats: getMockStatsSummary(events_dummies, dashboardStore.dateRange),
-        timeSeries: getMockTimeSeries(events_dummies, dashboardStore.dateRange, 'day').map(d => ({
-            timestamp: d.timestamp,
-            views: d.views,
-            visits: d.visits,
-            visitors: d.visitors
-        })),
-        pages: getMockPages(events_dummies, dashboardStore.dateRange).slice(0, 5),
-        allPages: getMockPages(events_dummies, dashboardStore.dateRange),
-        referrers: getMockReferrers(events_dummies, dashboardStore.dateRange).slice(0, 5),
-        allReferrers: getMockReferrers(events_dummies, dashboardStore.dateRange),
-        countries: getMockCountries(events_dummies, dashboardStore.dateRange).slice(0, 5),
-        allCountries: getMockCountries(events_dummies, dashboardStore.dateRange),
-        devices: getMockDevices(events_dummies, dashboardStore.dateRange)
+    // Lazy compute trafficDemoData - only when traffic tab is active
+    let trafficDemoData = $derived.by(() => {
+        if (activeTab !== 'traffic' || !dataGenerated) return null;
+        
+        const dateRange = dashboardStore.dateRange;
+        // Compute each list once and reuse for preview and full
+        const allPages = getMockPages(events_dummies, dateRange);
+        const allReferrers = getMockReferrers(events_dummies, dateRange);
+        const allCountries = getMockCountries(events_dummies, dateRange);
+        
+        return {
+            stats: getMockStatsSummary(events_dummies, dateRange),
+            timeSeries: getMockTimeSeries(events_dummies, dateRange, 'day').map(d => ({
+                timestamp: d.timestamp,
+                views: d.views,
+                visits: d.visits,
+                visitors: d.visitors
+            })),
+            pages: allPages.slice(0, 5),
+            allPages,
+            referrers: allReferrers.slice(0, 5),
+            allReferrers,
+            countries: allCountries.slice(0, 5),
+            allCountries,
+            devices: getMockDevices(events_dummies, dateRange)
+        };
     });
 
     // Features List for Sidebar
     const features = [
+		{ id: 'campaigns', label: 'campaigns', component: 'Campaigns', icon: Megaphone },
+        { id: 'funnels', label: 'funnels', component: 'Funnels', icon: Filter },
 		{ id: 'traffic', label: 'traffic', component: 'Traffic', icon: LineChart },
-		{ id: 'funnels', label: 'conversion', component: 'Funnels', icon: Filter },
-        { id: 'retension', label: 'retention', component: 'Retention', icon: RotateCcw },
 		{ id: 'events', label: 'events', component: 'Events', icon: MousePointer2 },
 	];
 
@@ -96,46 +123,12 @@
         dashboardStore.setDateRange(startDate, endDate);
     });
 
-    // Helper functions from ImageSection
-    function getISOWeekNumber(date) {
-		const target = new Date(date.valueOf());
-		const dayNr = (date.getDay() + 6) % 7;
-		target.setDate(target.getDate() - dayNr + 3);
-		const firstThursday = target.valueOf();
-		target.setMonth(0, 1);
-		if (target.getDay() !== 4) {
-			target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
-		}
-		return 1 + Math.ceil((firstThursday - target) / 604800000);
-	}
+    // Lazy compute funnelData - only when funnels tab is active
+	let funnelData = $derived(activeTab === 'funnels' ? calculateFunnel(mockDataFunnel, mockDataFunnelSteps, 'user') : null);
 
-	function calculateWeeklyUsersRaw(events) {
-		const weeklyUsers = {};
-		events.forEach((event) => {
-			if (!event.timestamp || !event.user_id) return;
-			const date = new Date(event.timestamp);
-			const weekKey = `${date.getFullYear()}-W${getISOWeekNumber(date)}`;
-			(weeklyUsers[weekKey] ||= new Set()).add(event.user_id);
-		});
-		return weeklyUsers;
-	}
-
-	function calculateRetention(raw) {
-		const keys = Object.keys(raw).sort();
-		const weeklyCounts = {};
-
-		keys.forEach((baseKey, i) => {
-			weeklyCounts[baseKey] = {};
-			keys.slice(i).forEach((otherKey) => {
-				weeklyCounts[baseKey][otherKey] = raw[baseKey].intersection(raw[otherKey]).size;
-			});
-		});
-		return weeklyCounts;
-	}
-
-	let retensionData = $derived(calculateRetention(calculateWeeklyUsersRaw(dummyies)));
-	let funnelData = $derived(calculateFunnel(mockDataFunnel, mockDataFunnelSteps, 'user'));
-
+    onMount(() => {
+        globalRange.setSingle(90);
+    })
 </script>
 
 <svelte:head>
@@ -152,9 +145,15 @@
         <header class="p-8 md:p-12 border-b border-stone-100 dark:border-stone-800 relative">
             <!-- Minimal Nav Positioned Absolute -->
             <div class="absolute top-4 right-4 md:top-8 md:right-8 flex gap-6 items-center text-sm font-medium text-stone-600 dark:text-stone-400">
+                <a href="http://github.com/abdulmumin1/littlestats" target="_blank" class="hover:text-stone-900 dark:hover:text-white transition-colors flex items-center gap-1.5">
+                    <Github size={14} />
+                    <span>opensource</span>
+                </a>
                 <a href="#pricing" class="hover:text-stone-900 dark:hover:text-white transition-colors">pricing</a>
                 <a href="/signin" class="hover:text-stone-900 dark:hover:text-white transition-colors">login</a>
-                <a href="/signup" class="px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-100 transition-all ">get started</a>
+                <a href="/signup" class="px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-100 transition-all " onclick={()=>{
+                    track("Get startedd", {color:$color})
+                }}>get started</a>
                 <DarkMode />
             </div>
 
@@ -163,7 +162,7 @@
                  <!-- <div class="w-8 h-8 bg-black rounded-none"></div> -->
                  <div class="flex items-center gap-2">
                     <Logo size={28} />
-                    <span class="font-bold text-lg tracking-tight text-stone-900 dark:text-white">LITTLESTATS</span>
+                    <span class="font-bold text-lg tracking-tight text-stone-900 dark:text-white">Littlstats</span>
                  </div>
             </div>
 
@@ -216,29 +215,41 @@
                 <div class="p-4 md:p-8 h-full overflow-y-auto bg-white dark:bg-stone-900">
                     {#if activeTab === 'traffic'}
                         <div in:fade={{duration: 300}}>
-                            <Traffic 
-                                page_data={trafficDemoData} 
-                                current_domain={{name: 'Demo Site'}} 
-                                domain_id="demo" 
-                                demoData={trafficDemoData}
-                            />
+                            {#if trafficDemoData}
+                                <Traffic 
+                                    page_data={trafficDemoData} 
+                                    current_domain={{name: 'Demo Site'}} 
+                                    domain_id="demo" 
+                                    demoData={trafficDemoData}
+                                />
+                            {:else}
+                                <div class="flex items-center justify-center h-64 text-stone-400">Loading...</div>
+                            {/if}
                         </div>
                     {:else if activeTab === 'funnels'}
                          <div in:fade={{duration: 300}}>
                              <Funnels {funnelStepsContext} />
                          </div>
-                    {:else if activeTab === 'retension'}
-                        <div in:fade={{duration: 300}}>
-                             <Retension events={retensionData} />
-                        </div>
+                    {:else if activeTab === 'campaigns'}
+                         <div in:fade={{duration: 300}}>
+                            {#if dataGenerated}
+                                <Campaigns demo={true} events={events_dummies} dateRange={dashboardStore.dateRange} />
+                            {:else}
+                                <div class="flex items-center justify-center h-64 text-stone-400">Loading...</div>
+                            {/if}
+                         </div>
                     {:else if activeTab === 'events'}
                          <div in:fade={{duration: 300}}>
-                            <Events 
-                                page_data={events_dummies} 
-                                {eventCounts} 
-                                loadingLog={false}
-                                totalLogEvents={events_dummies.length}
-                            />
+                            {#if dataGenerated}
+                                <Events 
+                                    page_data={events_dummies} 
+                                    {eventCounts} 
+                                    loadingLog={false}
+                                    totalLogEvents={events_dummies.length}
+                                />
+                            {:else}
+                                <div class="flex items-center justify-center h-64 text-stone-400">Loading...</div>
+                            {/if}
                         </div>
                     {/if}
                 </div>
@@ -249,44 +260,60 @@
         <div id="pricing" class="border-t border-stone-200 dark:border-stone-800 p-8 md:p-12 bg-stone-50/30 dark:bg-stone-950/20">
             <div class="flex flex-col md:flex-row gap-12 items-start justify-between">
                 <div class="max-w-xs">
-                    <h3 class="text-2xl font-bold mb-3 text-stone-900 dark:text-white">Simple Pricing</h3>
-                    <p class="text-stone-500 dark:text-stone-400 leading-relaxed">Transparent pricing that scales with you. No hidden fees or surprise charges.</p>
+                    <h3 class="text-2xl font-bold mb-3 text-stone-900 dark:text-white">Pricing</h3>
+                    <p class="text-stone-500 dark:text-stone-400 leading-relaxed">For chopped founders</p>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-                    <!-- Basic Plan -->
-                    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6  transition-all duration-300">
-                        <div class="flex justify-between items-baseline mb-2">
-                            <span class="font-bold text-lg text-stone-900 dark:text-white">Basic</span>
-                            <span class="text-3xl font-bold tracking-tight text-stone-900 dark:text-white">Free</span>
+                <div class="flex flex-col gap-6 w-full max-w-4xl">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                        <!-- Basic Plan -->
+                        <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6  transition-all duration-300">
+                            <div class="flex justify-between items-baseline mb-2">
+                                <span class="font-bold text-lg text-stone-900 dark:text-white">Basic</span>
+                                <span class="text-3xl font-bold tracking-tight text-stone-900 dark:text-white">Free</span>
+                            </div>
+                            <div class="text-sm text-stone-500 dark:text-stone-400 mb-6"></div>
+                            
+                            <ul class="space-y-3 text-sm text-stone-600 dark:text-stone-300 mb-8">
+                                <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 500k Events/Months</li>
+                                <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 2 Websites</li>
+                                <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 3 Months Retention</li>
+                            </ul>
+                            <a href="/signup" class="block text-center w-full border border-stone-200 dark:border-stone-800 py-2.5  font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 hover:border-stone-300 dark:hover:border-stone-700 transition-colors">Start Free</a>
                         </div>
-                        <div class="text-sm text-stone-500 dark:text-stone-400 mb-6">/</div>
-                        
-                        <ul class="space-y-3 text-sm text-stone-600 dark:text-stone-300 mb-8">
-                             <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 500k Events/Months</li>
-                             <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 2 Websites</li>
-                             <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 3 Months Retention</li>
-                        </ul>
-                         <a href="/signup" class="block text-center w-full border border-stone-200 dark:border-stone-800 py-2.5  font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 hover:border-stone-300 dark:hover:border-stone-700 transition-colors">Select Basic</a>
+
+                        <!-- Pro Plan -->
+                        <div class="bg-white dark:bg-stone-900 border border-{$color}-200  p-6 relative overflow-hidden ">
+                            <div class="absolute top-0 right-0 bg-{$color}-50 dark:bg-{$color}-900/40 text-{$color}-700 dark:text-{$color}-300 text-[10px] font-bold px-3 py-1  uppercase tracking-wider">
+                                Recommended
+                            </div>
+                            <div class="flex justify-between items-baseline mb-2">
+                                <span class="font-bold text-lg text-stone-900 dark:text-white">Pro</span>
+                                <span class="text-3xl font-bold tracking-tight text-stone-900 dark:text-white">$5</span>
+                            </div>
+                            <div class="text-sm text-stone-500 dark:text-stone-400 mb-6">/month</div>
+
+                            <ul class="space-y-3 text-sm text-stone-600 dark:text-stone-300 mb-8">
+                                <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 5M Events/Months</li>
+                                <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 10 Websites</li>
+                                <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 6 Months Retention</li>
+                            </ul>
+                            <a href="/signup" class="block text-center w-full bg-{$color}-600 text-white  py-2.5  font-medium   transition-all">Select Pro</a>
+                        </div>
                     </div>
 
-                     <!-- Pro Plan -->
-                     <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 relative overflow-hidden ring-2 ring-{$color}-500/10 dark:ring-{$color}-500/20 ">
-                         <div class="absolute top-0 right-0 bg-{$color}-50 dark:bg-{$color}-900/40 text-{$color}-700 dark:text-{$color}-300 text-[10px] font-bold px-3 py-1  uppercase tracking-wider">
-                             Recommended
-                         </div>
-                        <div class="flex justify-between items-baseline mb-2">
-                            <span class="font-bold text-lg text-stone-900 dark:text-white">Pro</span>
-                            <span class="text-3xl font-bold tracking-tight text-stone-900 dark:text-white">$3.99</span>
+                    <!-- Self-Hostable (Full Width) -->
+                    <div class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 p-6 transition-all duration-300 flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div class="flex flex-col gap-1 w-full md:w-auto">
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-lg text-stone-900 dark:text-white">Self-Hostable</span>
+                            </div>
+                            <div class="text-sm text-stone-500 dark:text-stone-400">Deploy on your own infrastructure with full data control.</div>
                         </div>
-                        <div class="text-sm text-stone-500 dark:text-stone-400 mb-6">/month</div>
 
-                        <ul class="space-y-3 text-sm text-stone-600 dark:text-stone-300 mb-8">
-                             <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 5M Events/Months</li>
-                             <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 10 Websites</li>
-                             <li class="flex gap-3 items-center"><span class="text-{$color}-600 bg-{$color}-50 dark:bg-{$color}-900/20 p-0.5">✓</span> 6 Months Retention</li>
-                        </ul>
-                         <a href="/signup" class="block text-center w-full bg-stone-900 dark:bg-white text-white dark:text-stone-900 py-2.5  font-medium hover:bg-stone-800 dark:hover:bg-stone-100  transition-all">Select Pro</a>
+                         <a href="http://github.com/abdulmumin1/littlestats" target="_blank" class="w-full md:w-auto px-8 py-2.5 border border-stone-200 dark:border-stone-800 font-medium text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 hover:border-stone-300 dark:hover:border-stone-700 transition-colors whitespace-nowrap">
+                            View GitHub
+                         </a>
                     </div>
                 </div>
             </div>
@@ -296,7 +323,9 @@
 
     <!-- Footer (Outside Board) -->
     <div class="w-full max-w-[1200px] mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm px-4">
-        <div class="text-stone-400 dark:text-stone-500">© {new Date().getFullYear()} Littlestats. All rights reserved.</div>
+        <div class="text-stone-400 dark:text-stone-500"><p class="text-[10px] uppercase tracking-widest text-stone-400 dark:text-stone-600 font-medium">
+					A product of <a href="https://thirdpen.app" target="_blank" class="hover:text-{$color}-600 text-{$color}-600 transition-colors">The Thirdpen Company</a>
+				</p></div>
         <div class="flex gap-6 text-stone-500 dark:text-stone-400">
              <a href="/docs" class="hover:text-stone-900 dark:hover:text-white transition-colors">Documentation</a>
              <a href="/privacy" class="hover:text-stone-900 dark:hover:text-white transition-colors">Privacy</a>

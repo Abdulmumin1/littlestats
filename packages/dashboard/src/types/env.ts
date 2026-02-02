@@ -15,6 +15,8 @@ export interface Env {
   // Better Auth configuration
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
+  TRUSTED_ORIGINS?: string; // Comma-separated list of trusted origins
+  COOKIE_DOMAIN?: string;   // Optional cookie domain
 
   // OAuth credentials
   GOOGLE_CLIENT_ID?: string;

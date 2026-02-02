@@ -6,7 +6,8 @@
 
 	const navItems = [
 		{ href: '/#pricing', label: 'Pricing' },
-		{ href: '/docs', label: 'Docs' }
+		{ href: '/docs', label: 'Docs' },
+		{ href: 'http://github.com/abdulmumin1/littlestats', label: 'GitHub', external: true }
 	];
 </script>
 
@@ -26,6 +27,7 @@
 			{#each navItems as item}
 				<a
 					href={item.href}
+					target={item.external ? '_blank' : ''}
 					class="px-4 py-2 text-xs font-medium text-stone-600 transition-colors hover:text-black dark:text-stone-400 dark:hover:text-white"
 				>
 					{item.label}

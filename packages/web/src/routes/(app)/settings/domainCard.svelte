@@ -69,7 +69,7 @@
 	<a
 		href="https://{domain.name}"
 		target="_blank"
-		class="flex items-center gap-2 font-semibold text-stone-900 dark:text-white"
+		class="flex items-center gap-2 font-semibold text-stone-900 dark:text-white lowercase"
 	>
 		<Globe size={16} />{domain.name}
 	</a>
