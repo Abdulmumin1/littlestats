@@ -29,6 +29,21 @@ export async function load({ params, fetch, cookies, request }) {
 		
 		const data = await response.json();
 		const sites = data.sites || [];
+
+		// Fetch new feedback count for this specific site
+		let newFeedbackCount = 0;
+		try {
+			const feedbackRes = await fetch(`${API_BASE_URL}/api/v2/sites/${params.slug}/feedback?status=new&limit=1`, {
+				method: 'GET',
+				headers
+			});
+			if (feedbackRes.ok) {
+				const feedbackData = await feedbackRes.json();
+				newFeedbackCount = feedbackData.total || 0;
+			}
+		} catch (err) {
+			console.error('Error fetching feedback count:', err);
+		}
 		
 		// Transform to domain format expected by layout
 		const domains = sites.map(site => ({
@@ -43,7 +58,8 @@ export async function load({ params, fetch, cookies, request }) {
 		return { 
 			records: [], 
 			domains, 
-			domain_id: params.slug 
+			domain_id: params.slug,
+			newFeedbackCount
 		};
 	} catch (error) {
 		console.error('Error loading site data:', error);

@@ -169,6 +169,28 @@ export const customEventRegistry = sqliteTable("custom_event_registry", {
   pk: primaryKey({ columns: [table.siteId, table.eventName] }),
 }));
 
+// Feedback table for customer feedback
+export const feedbacks = sqliteTable("feedbacks", {
+  id: text("id").primaryKey(),
+  siteId: text("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
+  visitorId: text("visitor_id"), // Links to analytics visitor
+  sessionId: text("session_id"), // Links to analytics session
+  content: text("content").notNull(), // Feedback message
+  rating: integer("rating"), // 1-5 star rating
+  category: text("category"), // bug, feature, general, etc.
+  email: text("email"), // Optional contact email
+  url: text("url"), // Page URL where feedback was submitted
+  browser: text("browser"), // Browser info
+  os: text("os"), // OS info
+  device: text("device"), // Device type
+  screen: text("screen"), // Screen resolution
+  country: text("country"), // Country code
+  status: text("status").default("new"), // new, reviewed, resolved, archived
+  metadata: text("metadata"), // JSON string for additional data
+  createdAt: integer("created_at", { mode: "timestamp" }).defaultNow(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).defaultNow(),
+});
+
 // Subscriptions table for Dodo Payments and other providers
 export const subscriptions = sqliteTable("subscriptions", {
   id: text("id").primaryKey(),

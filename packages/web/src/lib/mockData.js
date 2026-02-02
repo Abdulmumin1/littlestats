@@ -627,4 +627,44 @@ export function getMockEventCounts(events, range) {
         .sort((a, b) => b.count - a.count);
 }
 
+export function getMockFeedback(count = 50) {
+    const feedback = [];
+    const contents = [
+        "The dashboard is super clean, I love how fast it loads!",
+        "Could you add more custom event tracking options?",
+        "Found a small bug in the funnels view on mobile.",
+        "Your privacy-first approach is exactly what we needed.",
+        "I'm really enjoying the new real-time stats feature.",
+        "The integration with our SvelteKit app was seamless.",
+        "Would be great to have an export to CSV feature for reports.",
+        "Best analytics tool I've used in a while. Simple and effective.",
+        "The dark mode looks amazing, especially on the graphs.",
+        "I had some trouble setting up the tracker script initially."
+    ];
+    const categories = ['general', 'bug', 'feature', 'other'];
+    const statuses = ['new', 'reviewed', 'resolved', 'archived'];
+    const osList = ['Windows', 'MacOS', 'iOS', 'Android', 'Linux'];
+    const browsers = ['Chrome', 'Firefox', 'Safari', 'Edge'];
+    
+    for (let i = 0; i < count; i++) {
+        const timestamp = Math.floor(Date.now() / 1000) - randomInt(0, 604800); // within last week
+        feedback.push({
+            id: randomUUID(),
+            content: randomFromArray(contents),
+            rating: randomInt(1, 5),
+            category: randomFromArray(categories),
+            status: randomFromArray(statuses),
+            email: Math.random() > 0.5 ? `user${i}@example.com` : null,
+            url: `https://demo.site${randomFromArray(['/', '/pricing', '/docs', '/blog'])}`,
+            country: randomFromArray(['US', 'GB', 'DE', 'FR', 'CA']),
+            os: randomFromArray(osList),
+            browser: randomFromArray(browsers),
+            createdAt: timestamp,
+            updatedAt: timestamp
+        });
+    }
+    
+    return feedback.sort((a, b) => b.createdAt - a.createdAt);
+}
+
 

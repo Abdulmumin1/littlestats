@@ -146,6 +146,34 @@ export interface RawEvent {
 	event_data: string | null;
 }
 
+export interface Feedback {
+	id: string;
+	siteId: string;
+	visitorId: string | null;
+	sessionId: string | null;
+	content: string;
+	rating: number | null;
+	category: string | null;
+	email: string | null;
+	url: string | null;
+	browser: string | null;
+	os: string | null;
+	device: string | null;
+	screen: string | null;
+	country: string | null;
+	status: 'new' | 'reviewed' | 'resolved' | 'archived';
+	metadata: Record<string, any> | null;
+	createdAt: number;
+	updatedAt: number;
+}
+
+export interface FeedbackListResponse {
+	feedback: Feedback[];
+	total: number;
+	limit: number;
+	offset: number;
+}
+
 // API Client Class
 export class AnalyticsAPI {
 	private baseUrl: string;
@@ -494,6 +522,36 @@ export class AnalyticsAPI {
 	// Delete site
 	async deleteSite(siteId: string): Promise<{ success: boolean }> {
 		return this.fetch(`/api/v2/sites/${siteId}`, {
+			method: 'DELETE'
+		});
+	}
+
+	// Feedback
+	async getFeedback(
+		siteId: string,
+		options?: { status?: string; category?: string; limit?: number; offset?: number }
+	): Promise<FeedbackListResponse> {
+		const params = new URLSearchParams();
+		if (options?.status) params.set('status', options.status);
+		if (options?.category) params.set('category', options.category);
+		if (options?.limit) params.set('limit', String(options.limit));
+		if (options?.offset) params.set('offset', String(options.offset));
+		return this.fetch(`/api/v2/sites/${siteId}/feedback?${params}`);
+	}
+
+	async updateFeedbackStatus(
+		siteId: string,
+		feedbackId: string,
+		status: 'new' | 'reviewed' | 'resolved' | 'archived'
+	): Promise<{ success: boolean }> {
+		return this.fetch(`/api/v2/sites/${siteId}/feedback/${feedbackId}`, {
+			method: 'PATCH',
+			body: JSON.stringify({ status })
+		});
+	}
+
+	async deleteFeedback(siteId: string, feedbackId: string): Promise<{ success: boolean }> {
+		return this.fetch(`/api/v2/sites/${siteId}/feedback/${feedbackId}`, {
 			method: 'DELETE'
 		});
 	}

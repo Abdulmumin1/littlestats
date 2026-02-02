@@ -3,7 +3,7 @@
 	import { formatDate } from '$lib/utils.js';
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
-	import { CalendarHeart, CalendarRange, LayoutDashboard, Target, Megaphone, Settings, Globe, Plus, GitBranch } from 'lucide-svelte';
+	import { CalendarHeart, CalendarRange, LayoutDashboard, Target, Megaphone, Settings, Globe, Plus, GitBranch, MessageSquare } from 'lucide-svelte';
 	import PickDate from '$lib/components/generals/pickDate.svelte';
 	import Dropdown from '$lib/components/generals/dropdown.svelte';
 	import DarkMode from '$lib/components/generals/darkMode.svelte';
@@ -16,6 +16,7 @@
 		{ href: `/site/${$page.params.slug}/campaigns`, text: 'Campaigns', icon: Megaphone },
 		{ href: `/site/${$page.params.slug}/funnels`, text: 'Funnels', icon: GitBranch },
 		{ href: `/site/${$page.params.slug}/events`, text: 'Events', icon: CalendarHeart },
+		{ href: `/site/${$page.params.slug}/feedback`, text: 'Feedback', icon: MessageSquare },
 		{ href: `/site/${$page.params.slug}/settings`, text: 'Settings', icon: Settings },
 	]);
 
@@ -70,12 +71,20 @@
 								{@const Active = isActive(link.href)}
 								<a
 									href={link.href}
-									class="flex items-center gap-3 px-4 py-2.5 rounded-none text-sm font-bold transition-all duration-200 {Active 
+									class="flex items-center justify-between px-4 py-2.5 rounded-none text-sm font-bold transition-all duration-200 {Active 
 										? `bg-${$color}-600 text-white` 
 										: 'text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'}"
 								>
-									<link.icon size={16} stroke-width={Active ? 2.5 : 2} />
-									{link.text}
+									<div class="flex items-center gap-3">
+										<link.icon size={16} stroke-width={Active ? 2.5 : 2} />
+										{link.text}
+									</div>
+
+									{#if link.text === 'Feedback' && data.newFeedbackCount > 0}
+										<span class="{Active ? 'bg-white/20 text-white' : `bg-${$color}-600 text-white`} text-[10px] font-black px-1.5 py-0.5 rounded-none min-w-[1.2rem] text-center tabular-nums">
+											{data.newFeedbackCount}
+										</span>
+									{/if}
 								</a>
 							{/each}
 						</nav>

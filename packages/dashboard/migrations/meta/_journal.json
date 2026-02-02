@@ -8,6 +8,13 @@
       "when": 1769963258245,
       "tag": "0000_curious_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770057522821,
+      "tag": "0001_fuzzy_nicolaos",
+      "breakpoints": true
     }
   ]
 }

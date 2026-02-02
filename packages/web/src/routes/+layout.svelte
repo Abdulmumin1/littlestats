@@ -63,7 +63,7 @@
 <!-- <LoadProgress /> -->
 <ColorVar/>
 {#if loaded}
-	<div class="min-h-screen bg-stone-50 dark:bg-stone-900 prose-headings:font-inter">
+	<div class="min-h-screen bg-stone-50 dark:bg-stone-900 prose-headings:font-inter text-black dark:text-white">
 		{@render children?.()}
 	</div>
 {/if}

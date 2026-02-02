@@ -17,12 +17,14 @@
         getMockCountries,
         getMockDevices,
         getMockBrowsers,
-        getMockOS
+        getMockOS,
+        getMockFeedback
     } from '$lib/mockData.js';
 	import Funnels from '$lib/components/pages/funnels.svelte';
 	import Events from '$lib/components/pages/events.svelte';
 	import Campaigns from '$lib/components/pages/campaigns.svelte';
     import Traffic from '$lib/components/pages/traffic.svelte'; // Use real Traffic component
+    import Feedback from '$lib/components/pages/feedback.svelte';
     import Dropdown from '$lib/components/generals/dropdown.svelte';
     import DarkMode from '$lib/components/generals/darkMode.svelte';
 	import { defaultRange as globalRange, optis } from '$lib/globalstate.svelte.js';
@@ -30,7 +32,7 @@
     import { writable } from 'svelte/store';
 
     // Icons
-    import { LineChart, Filter, MousePointer2, Megaphone, Github } from 'lucide-svelte';
+    import { LineChart, Filter, MousePointer2, Megaphone, Github, MessageSquare } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
     // Data handling for Demo
@@ -99,12 +101,22 @@
         { id: 'funnels', label: 'funnels', component: 'Funnels', icon: Filter },
 		{ id: 'traffic', label: 'traffic', component: 'Traffic', icon: LineChart },
 		{ id: 'events', label: 'events', component: 'Events', icon: MousePointer2 },
+        { id: 'feedback', label: 'feedback', component: 'Feedback', icon: MessageSquare },
 	];
 
     let activeTab = $state(features[0].id);
 
     // Derived Data
     let sortInterval = $derived(globalRange.getSingle());
+
+    // Mock Feedback Data
+    let mockFeedbackData = $state([]);
+    let newFeedbackCount = $derived(mockFeedbackData.filter(f => f.status === 'new').length);
+    $effect(() => {
+        if (dataGenerated) {
+            mockFeedbackData = getMockFeedback(12);
+        }
+    });
 
     function handleDateChange(event) {
 		globalRange.setCustom(false);
@@ -151,8 +163,8 @@
                 </a>
                 <a href="#pricing" class="hover:text-stone-900 dark:hover:text-white transition-colors">pricing</a>
                 <a href="/signin" class="hover:text-stone-900 dark:hover:text-white transition-colors">login</a>
-                <a href="/signup" class="px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-stone-100 transition-all " onclick={()=>{
-                    track("Get startedd", {color:$color})
+                <a href="/signup" class="px-4 py-2 text-white bg-{$color}-600 hover:bg-{$color}-700 transition-colors " onclick={()=>{
+                    track("Get started", {color:$color})
                 }}>get started</a>
                 <DarkMode />
             </div>
@@ -162,12 +174,12 @@
                  <!-- <div class="w-8 h-8 bg-black rounded-none"></div> -->
                  <div class="flex items-center gap-2">
                     <Logo size={28} />
-                    <span class="font-bold text-lg tracking-tight text-stone-900 dark:text-white">Littlstats</span>
+                    <span class="font-bold text-lg tracking-tight text-stone-900 dark:text-white mt-2">Littlestats</span>
                  </div>
             </div>
 
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight max-w-4xl mt-8 text-stone-900 dark:text-white leading-[1.1]">
-                Data to make <br>
+                Data to make <span class="text-{$color}-400 italic font-serif dark:text-{$color}-200">good</span> <br> 
                 <span class="text-{$color}-600">business decisions</span>
             </h1>
             <p class="mt-6 text-xl text-stone-500 dark:text-stone-400 max-w-2xl font-light">
@@ -185,12 +197,20 @@
                     {#each features as feature}
                         <button 
                             onclick={() => activeTab = feature.id}
-                            class="flex-1 md:flex-none text-left px-3 py-2  flex items-center gap-3
+                            class="flex-1 md:flex-none text-left px-3 py-2  flex items-center justify-between
                             transition-all duration-200 outline-none
                             {activeTab === feature.id ? `bg-{$color}-50 dark:bg-{$color}-900/20 text-{$color}-700 dark:text-{$color}-300` : 'text-stone-500 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-white'}"
                         >
-                            <feature.icon size={18} class={activeTab === feature.id ? `text-{$color}-600` : 'text-stone-400'} />
-                            <span class="text-sm font-medium">{feature.label}</span>
+                            <div class="flex items-center gap-3">
+                                <feature.icon size={18} class={activeTab === feature.id ? `text-{$color}-600` : 'text-stone-400'} />
+                                <span class="text-sm font-medium">{feature.label}</span>
+                            </div>
+                            
+                            {#if feature.id === 'feedback' && newFeedbackCount > 0}
+                                <span class="bg-{$color}-600 text-white text-[10px] font-black px-1.5 py-0.5 rounded-none min-w-[1.2rem] text-center tabular-nums">
+                                    {newFeedbackCount}
+                                </span>
+                            {/if}
                         </button>
                     {/each}
                 </div>
@@ -250,6 +270,15 @@
                             {:else}
                                 <div class="flex items-center justify-center h-64 text-stone-400">Loading...</div>
                             {/if}
+                        </div>
+                    {:else if activeTab === 'feedback'}
+                        <div in:fade={{duration: 300}}>
+                            <Feedback 
+                                demo={true} 
+                                demoData={mockFeedbackData} 
+                                siteId="demo"
+                                current_domain={{name: 'Demo Site'}}
+                            />
                         </div>
                     {/if}
                 </div>
