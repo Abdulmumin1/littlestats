@@ -6,6 +6,7 @@
 	import { CalendarHeart, CalendarRange, LayoutDashboard, Target, Megaphone, Settings, Globe, Plus, GitBranch } from 'lucide-svelte';
 	import PickDate from '$lib/components/generals/pickDate.svelte';
 	import Dropdown from '$lib/components/generals/dropdown.svelte';
+	import DarkMode from '$lib/components/generals/darkMode.svelte';
 	import Logo from '../../../../lib/components/generals/logo.svelte';
 
 	let { children, data } = $props();
@@ -100,6 +101,14 @@
 									{/if}
 								</span>
 							</button>
+						</div>
+					</div>
+
+					<!-- Theme Selector -->
+					<div class="space-y-2 rounded-none">
+						<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-4">Appearance</p>
+						<div class="px-2 rounded-none">
+							<DarkMode />
 						</div>
 					</div>
 				</div>

@@ -88,11 +88,11 @@ const formIds = ['signup-form', 'contact-form', 'survey-form', 'feedback-form', 
 
 const endDated = new Date();
 const startDated = new Date(endDated);
-startDated.setDate(endDated.getDate() - 35); // 5 weeks = 35 days
+startDated.setDate(endDated.getDate() - 90); // 3 months = 90 days
 
 // Function to generate random events
 export function generateRandomEvents(
-	num = 1000,
+	num = 5000,
 	startDate = startDated,
 	endDate = endDated
 ) {
@@ -341,6 +341,7 @@ export const mockDataFunnel = [
 ];
 
 
+
 export const mockDataFunnelSteps = [
     {
         name: "Landing Page View",
@@ -379,3 +380,251 @@ export const mockDataFunnelSteps = [
         type: "event"
     }
 ];
+
+
+// Mock Data Aggregation Helpers
+export function getMockStatsSummary(events, range) {
+    // Basic aggregation logic based on events and range
+    // Ideally filter by range first
+    const filtered = filterEvents(events, range);
+    
+    // Only consider sessions that have at least one pageview for the main stats
+    // This ensures Views >= Visits >= Visitors
+    const pageViewEvents = filtered.filter(e => e.event_type === 'pageview');
+    
+    const uniqueSessions = new Set(pageViewEvents.map(e => e.session_id));
+    const uniqueUsers = new Set(pageViewEvents.map(e => e.user_id));
+    
+    // Calculate bounce rate: sessions with only 1 event total (even if it's the pageview)
+    // We look at ALL events for the identified sessions to check for engagement
+    const sessionEventCounts = {};
+    filtered.forEach(e => {
+        if (uniqueSessions.has(e.session_id)) {
+             sessionEventCounts[e.session_id] = (sessionEventCounts[e.session_id] || 0) + 1;
+        }
+    });
+    
+    const bounces = Object.values(sessionEventCounts).filter(c => c === 1).length;
+    
+    return {
+        views: pageViewEvents.length,
+        visits: uniqueSessions.size,
+        visitors: uniqueUsers.size,
+        bounceRate: uniqueSessions.size ? Math.round((bounces / uniqueSessions.size) * 100) : 0,
+        avgDuration: 120, // Mock average duration
+        change: {
+            views: 12,
+            visits: 8,
+            visitors: 15,
+            bounceRate: -2,
+            avgDuration: 5
+        }
+    };
+}
+
+export function getMockTimeSeries(events, range, granularity = 'day') {
+    const filtered = filterEvents(events, range);
+    const data = {};
+    
+    // Only use pageviews to drive the graph, so it matches the summary
+    filtered.filter(e => e.event_type === 'pageview').forEach(e => {
+        const date = new Date(e.timestamp);
+        let key;
+        if (granularity === 'hour') {
+             key = date.toISOString().slice(0, 13) + ':00:00.000Z';
+        } else {
+             key = date.toISOString().slice(0, 10) + 'T00:00:00.000Z';
+        }
+        
+        if (!data[key]) {
+            data[key] = { timestamp: key, views: 0, visits: new Set(), visitors: new Set() };
+        }
+        
+        data[key].views++;
+        data[key].visits.add(e.session_id);
+        data[key].visitors.add(e.user_id);
+    });
+    
+    return Object.values(data).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).map(d => ({
+        timestamp: d.timestamp,
+        views: d.views,
+        visits: d.visits.size,
+        visitors: d.visitors.size
+    }));
+}
+
+
+export function getMockPages(events, range) {
+    const filtered = filterEvents(events, range);
+    const counts = {};
+    
+    filtered.filter(e => e.event_type === 'pageview').forEach(e => {
+        // Just store count, we will convert to [url, count] array
+        counts[e.url] = (counts[e.url] || 0) + 1;
+    });
+    
+    return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([path, views]) => ({ path, views }));
+}
+
+export function getMockReferrers(events, range) {
+    const filtered = filterEvents(events, range);
+    const counts = {};
+    
+    filtered.filter(e => e.event_type === 'pageview').forEach(e => {
+        let ref = e.referrer || 'Direct';
+        try {
+            if(ref !== 'Direct' && ref !== '') {
+               const url = new URL(ref);
+               ref = url.hostname;
+            } else {
+                ref = 'Direct';
+            }
+        } catch {
+            ref = 'Direct';
+        }
+        
+        counts[ref] = (counts[ref] || 0) + 1;
+    });
+    
+    return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([referrer, views]) => ({ referrer, views }));
+}
+
+export function getMockCountries(events, range) {
+     const filtered = filterEvents(events, range);
+     const countriesList = [
+         { name: 'United States', code: 'US' },
+         { name: 'United Kingdom', code: 'GB' },
+         { name: 'Germany', code: 'DE' },
+         { name: 'France', code: 'FR' },
+         { name: 'Japan', code: 'JP' },
+         { name: 'India', code: 'IN' },
+         { name: 'Canada', code: 'CA' },
+         { name: 'Brazil', code: 'BR' }
+     ];
+     
+     const counts = {};
+     filtered.filter(e => e.event_type === 'pageview').forEach(e => {
+        // Deterministic mock country based on user_id to be consistent
+        const countryInfo = countriesList[e.user_id.charCodeAt(0) % countriesList.length];
+        counts[countryInfo.name] = { 
+            country: countryInfo.name, 
+            code: countryInfo.code, 
+            views: (counts[countryInfo.name]?.views || 0) + 1 
+        };
+     });
+     
+     return Object.values(counts)
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 10);
+}
+
+export function getMockBrowsers(events, range) {
+    const filtered = filterEvents(events, range);
+    const counts = {};
+    
+    filtered.filter(e => e.event_type === 'pageview').forEach(e => {
+        let browser = 'Unknown';
+        const ua = e.user_agent;
+        if (ua.includes('Chrome')) browser = 'Chrome';
+        else if (ua.includes('Firefox')) browser = 'Firefox';
+        else if (ua.includes('Safari')) browser = 'Safari';
+        else if (ua.includes('Edge')) browser = 'Edge';
+        
+        counts[browser] = (counts[browser] || 0) + 1;
+    });
+    
+    return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+}
+
+export function getMockOS(events, range) {
+    const filtered = filterEvents(events, range);
+    const counts = {};
+    
+    filtered.filter(e => e.event_type === 'pageview').forEach(e => {
+        let os = 'Unknown';
+        const ua = e.user_agent;
+        if (ua.includes('Windows')) os = 'Windows';
+        else if (ua.includes('Mac')) os = 'MacOS';
+        else if (ua.includes('Linux')) os = 'Linux';
+        else if (ua.includes('Android')) os = 'Android';
+        else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+        
+        counts[os] = (counts[os] || 0) + 1;
+    });
+    
+    return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+}
+
+
+export function getMockDevices(events, range) {
+     const filtered = filterEvents(events, range);
+     const counts = {};
+     
+     filtered.filter(e => e.event_type === 'pageview').forEach(e => {
+        let device = 'Desktop';
+        if (e.user_agent.includes('Mobile')) device = 'Mobile';
+        else if (e.user_agent.includes('iPad') || e.user_agent.includes('Tablet')) device = 'Tablet';
+        
+        if (!counts[device]) counts[device] = { device, views: 0, visits: new Set() };
+        counts[device].views++;
+        counts[device].visits.add(e.session_id);
+     });
+     
+     return Object.values(counts)
+        .map(d => ({ ...d, visits: d.visits.size }))
+        .sort((a, b) => b.views - a.views);
+}
+
+
+
+
+
+function filterEvents(events, range) {
+    if (!range || !range.startDate || !range.endDate) return events;
+    
+    // Create dates from the strings (assuming YYYY-MM-DD)
+    // We treat the inputs as local dates (YYYY-MM-DD 00:00:00) to match the events
+    const start = new Date(range.startDate);
+    start.setHours(0, 0, 0, 0);
+    
+    const end = new Date(range.endDate);
+    end.setHours(23, 59, 59, 999);
+    
+    const startTime = start.getTime();
+    const endTime = end.getTime();
+
+    return events.filter(e => {
+        const t = new Date(e.timestamp).getTime();
+        return t >= startTime && t <= endTime;
+    });
+}
+
+export function getMockEventCounts(events, range) {
+    const filtered = filterEvents(events, range);
+    // Only count custom events or specific interactions, usually excluding pageviews if looking for "Events"
+    // But for general event log, we might want all.
+    // The events page typically excludes pageviews from the "Event names" list but shows them in log if selected.
+    // Let's count everything that is NOT a pageview for the summary list, matching typical analytics behavior.
+    
+    const counts = {};
+    filtered.filter(e => e.event_type !== 'pageview').forEach(e => {
+        const name = e.event_name || e.event_type;
+        counts[name] = (counts[name] || 0) + 1;
+    });
+    
+    return Object.entries(counts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+}
+
+

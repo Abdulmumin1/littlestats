@@ -3,6 +3,7 @@
 	import CuteCloud from '$lib/components/generals/cuteCloud.svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import InsideNav from '$lib/components/generals/insideNav.svelte';
+	import DarkMode from '$lib/components/generals/darkMode.svelte';
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
 	import { goto } from '$app/navigation';
@@ -71,6 +72,14 @@
 						>
 							<Plus size={12} /> Add Domain
 						</a>
+					</div>
+
+					<!-- Theme Selector -->
+					<div class="pt-8 space-y-2 rounded-none">
+						<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-4">Appearance</p>
+						<div class="px-2 rounded-none">
+							<DarkMode />
+						</div>
 					</div>
 				</div>
 			</aside>

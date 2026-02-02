@@ -7,7 +7,7 @@
 	import { flip } from 'svelte/animate';
 	import MiniSectionWrapper from './miniSectionWrapper.svelte';
 
-	let { views, domain, jump = true, sorted=false } = $props();
+	let { views, domain, jump = true, sorted = false } = $props();
 	let max_page_item_count = 6;
 
 	function parseUserAgent(userAgent) {
@@ -255,9 +255,7 @@
 		clearTimeout(trottle);
 		trottle = setTimeout(() => {
 			let query = event.target.value;
-
 			fullPages = pages.filter((e) => e[0].toLowerCase().search(query.toLowerCase()) !== -1);
-			// console.log(fullPages)
 		});
 	}
 </script>
@@ -272,13 +270,13 @@
 			<EmptyValues />
 		{/each}
 
-		{#if truncated_pages.length < views.length}
+		{#if truncated_pages.length < pages.length}
 			<BottomDrawer {searchQuery}>
 				{#snippet handle()}
 					<div>
-						<button class="no-bg mx-auto flex items-center justify-center gap-2 text-right"
-							>more <Maximize size={15} /></button
-						>
+						<button class="no-bg mx-auto flex items-center justify-center gap-2 text-right">
+							more <Maximize size={15} />
+						</button>
 					</div>
 				{/snippet}
 				{#snippet header()}

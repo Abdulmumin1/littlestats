@@ -1,273 +1,590 @@
 <script>
-	import { onMount } from 'svelte';
-	import ViewCard from '$lib/components/analytics/viewCard.svelte';
+	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
+	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { color } from '$lib/colors/mixer.js';
-	import { deserialize } from '$app/forms';
-	import PagesSection from '$lib/components/analytics/pagesSection.svelte';
-	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
-	import ReferrerSection from '$lib/components/analytics/referrerSection.svelte';
-	import BrowserSection from '$lib/components/analytics/browserSection.svelte';
-	import OsSection from '$lib/components/analytics/OsSection.svelte';
-	import { X } from 'lucide-svelte';
-	import { scale, slide } from 'svelte/transition';
-	import CountrySection from '$lib/components/analytics/CountrySection.svelte';
-
-	import { derived } from 'svelte/store';
-	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
-	import { createFilter } from '$lib/traffic/helpers.js';
-	import { executeInWorker } from '$lib/utils';
 	import { api } from '$lib/api/analytics.ts';
+	import { formatNumber } from '$lib/slug/helpers.js';
+	import ViewCard from '$lib/components/analytics/viewCard.svelte';
+	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
+	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
+	import Seo from '$lib/components/generals/seo.svelte';
+	import { Activity, Eye, Globe, Monitor, Smartphone, Tablet } from 'lucide-svelte';
+	
+	let { page_data, current_domain, domain_id, demoData = null } = $props();
+	let siteId = $derived(domain_id);
+	let isDemo = $derived(!!demoData);
+	
+	// State
+	let loading = $state(true);
+	let error = $state(null);
+	let stats = $state(null);
+	let timeSeries = $state([]);
+	let referrers = $state([]);
+	let pages = $state([]);
+	let countries = $state([]);
+	let devices = $state([]);
+	let realtimeStats = $state(null);
 
-	let empty = {
-		views: 0,
-		bounce_rate: {
-			bounceRate: '0.00',
-			totalVisits: 0,
-			bounceCount: 0
-		},
-		uniqueUserAgents: 0,
-		averageVisitDuration: 0,
-		sortedURls: [],
-		sortedReferrers: [],
-		sortedContries: [],
-		sortedBrowsers: [],
-		sortedOS: [],
-		graph: {},
-		visitorgraph: {},
-		interval: '30',
-		domain_id: ''
-	};
-
-	let { page_data, current_domain, domain_id } = $props();
-
-	// $effect(() => {
-
-	// 	console.log([...page_data.splice(0,10)])
-	// });
-	// Derived state for views, unique user agents, bounces, and average duration
-	let views = $derived(page_data?.views ?? 0);
-	let uniqueUserAgents = $derived(page_data?.uniqueUserAgents ?? 0);
-	let visitorgraph = $derived(page_data?.visitorgraph ?? []);
-	let viewgraph = $derived(page_data?.graph ?? []);
-	let bounces = $derived(
-		page_data?.bounce_rate ?? {
-			bounceRate: '0.00',
-			totalVisits: 0,
-			bounceCount: 0
-		}
-	);
-	let averageVisitDuration = $derived(page_data?.averageVisitDuration ?? 0);
-
-	// Backdate state
-	let backdateRecords = $state([]);
-	let backdateViews = $state(0);
-	let backdateBounces = $state(0);
-	let backdateaverageVisitDuration = $state(0);
-	let backdateuniqueUserAgents = $state([]);
-
-	// Filters and UI state
-	let filters = $state([]);
-	let loading = $state(false);
-	let sortInterval = $derived(globalRange.getSingle());
-	let chartFilter = $state('Views');
-
-	let chartD = $derived({
-		data:
-			chartFilter === 'Visitors'
-				? visitorgraph
-				: chartFilter === 'Views'
-					? viewgraph
-					: [averageVisitDuration],
-		label: chartFilter
+	// Drilldown filters (URL-driven)
+	let drilldown = $derived.by(() => {
+		const sp = $page.url.searchParams;
+		const pagePath = sp.get('page');
+		const referrer = sp.get('referrer');
+		const country = sp.get('country');
+		return {
+			pagePath,
+			referrer,
+			country
+		};
 	});
 
-	async function triggerFilter(e) {
-		let filter = e.detail;
-		// let local_filters = [];
+	// Modal State
+	let activeModal = $state(null); // 'pages' | 'referrers' | 'countries' | null
+	let modalSearch = $state('');
+	let modalLoading = $state(false);
+	let modalError = $state(null);
+	let modalItems = $state([]);
 
-		if (filters.length > 0) {
-			let seqmented = filters;
-			const found = filters.find((value, index) => {
-				return value.type == filter.type;
-			});
-			if (found) {
-				let ind = seqmented.findIndex((e) => e == found);
-				// console.log(found, ind);
-				seqmented[ind] = filter;
-			} else {
-				seqmented = [...seqmented, filter];
-			}
-			filters = seqmented;
-		} else {
-			filters = [...filters, filter];
-		}
-		// await applyFilter(filters);
+	async function openModal(type) {
+		activeModal = type;
+		modalSearch = '';
+		modalError = null;
+		await fetchModalData();
 	}
 
-	async function removeFilter(filter) {
-		filters = filters.filter((e) => e != filter);
-		// await applyFilter(filters);
-	}
-	async function applyFilter(filters) {
-		let dataSnapshot = $state.snapshot(data.records);
-		let filtersSnapshot = $state.snapshot(filters);
-		let filteredData = await executeInWorker(createFilter, dataSnapshot, filtersSnapshot);
-		page_data = filteredData;
+	function closeModal() {
+		activeModal = null;
+		modalSearch = '';
+		modalItems = [];
+		modalError = null;
 	}
 
-	async function updateSpikeCache(date, data) {
-		const form = new FormData();
-		form.append('defaultRange', date);
-		form.append('domain_id', domain_id);
-		form.append('data', JSON.stringify(data));
-
-		const response = await fetch('?/updateSpikes', { method: 'POST', body: form });
-		return response.ok;
-	}
-
-	async function fetchSpikes() {
-		// Since we're using the API, backdate logic needs to be reimplemented properly
-		// For now, we'll just skip the fetch or implement a simplified version if needed
-		// The main data is already passed via props
+	async function fetchModalData() {
+		if (!activeModal || !siteId) return;
 		
-		/*
-		const date = globalRange.getRangeInterval();
-		// console.log(date)
-
-		try {
-			const form = new FormData();
-			form.append('defaultRange', date);
-			form.append('domain_id', domain_id);
-
-			const response = await fetch('?/fetchSpikes', { method: 'POST', body: form });
-			if (response.ok) {
-				const result = deserialize(await response.text());
-				if (result?.status != 200) {
-					backdateViews = empty.views;
-					backdateBounces = { bounceRate: empty.bounce_rate };
-					backdateaverageVisitDuration = empty.averageVisitDuration;
-					backdateuniqueUserAgents = empty.uniqueUserAgents;
-					return;
+		// Use demo data for modals
+		if (isDemo && demoData) {
+			modalLoading = true;
+			modalError = null;
+			try {
+				let items = [];
+				if (activeModal === 'pages') {
+					items = demoData.allPages || demoData.pages || [];
+				} else if (activeModal === 'referrers') {
+					items = demoData.allReferrers || demoData.referrers || [];
+				} else if (activeModal === 'countries') {
+					items = demoData.allCountries || demoData.countries || [];
 				}
-				backdateViews = result.data.records.views;
-				backdateBounces = { bounceRate: result.data.records.bounce_rate };
-				backdateaverageVisitDuration = result.data.records.averageVisitDuration;
-				backdateuniqueUserAgents = result.data.records.uniqueUserAgents;
+				
+				// Filter by search if provided
+				if (modalSearch.trim()) {
+					const search = modalSearch.trim().toLowerCase();
+					items = items.filter(item => {
+						const name = item.path || item.referrer || item.country || '';
+						return name.toLowerCase().includes(search);
+					});
+				}
+				
+				modalItems = items;
+			} catch (err) {
+				console.error('Modal fetch error:', err);
+				modalError = err.message || 'Failed to load data';
+				modalItems = [];
+			} finally {
+				modalLoading = false;
 			}
-		} catch (error) {
-			backdateViews = empty.views;
-			backdateBounces = { bounceRate: empty.bounce_rate };
-			backdateaverageVisitDuration = empty.averageVisitDuration;
-			backdateuniqueUserAgents = empty.uniqueUserAgents;
-			// console.error(error)
+			return;
 		}
-		*/
+		
+		modalLoading = true;
+		modalError = null;
+		try {
+			const filter = {
+				...dashboardStore.dateRange,
+				urlPattern: drilldown.pagePath || undefined,
+				referrerDomain: drilldown.referrer || undefined,
+				country: drilldown.country || undefined
+			};
+
+			if (activeModal === 'pages') {
+				const res = await api.getPages(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined });
+				modalItems = res.pages || [];
+			} else if (activeModal === 'referrers') {
+				const res = await api.getReferrers(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined });
+				modalItems = res.referrers || [];
+			} else if (activeModal === 'countries') {
+				const res = await api.getCountries(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined });
+				modalItems = res.countries || [];
+			}
+		} catch (err) {
+			console.error('Modal fetch error:', err);
+			modalError = err.message || 'Failed to load data';
+			modalItems = [];
+		} finally {
+			modalLoading = false;
+		}
 	}
 
-	function handleChartFilter(event) {
-		chartFilter = event.detail.query;
-	}
-
-	$effect(async () => {
-		let x = page_data;
-		console.log('changed');
-		await fetchSpikes();
+	$effect(() => {
+		if (activeModal) {
+			fetchModalData();
+		}
 	});
+
+	let modalData = $derived.by(() => modalItems);
+
+	let modalTotal = $derived.by(() => {
+		if (activeModal === 'pages') return stats?.views || 0;
+		return modalData.reduce((acc, item) => acc + (item.views || 0), 0);
+	});
+
+	function nextSearchParams(updates) {
+		const url = new URL($page.url);
+		for (const [k, v] of Object.entries(updates)) {
+			if (v == null || v === '') url.searchParams.delete(k);
+			else url.searchParams.set(k, String(v));
+		}
+		return url;
+	}
+
+	function toggleFilter(kind, value) {
+		if (isDemo) {
+			// In demo mode, just log or handle differently since we can't navigate
+			console.log('Demo mode: Filter toggle', kind, value);
+			return;
+		}
+		const current = $page.url.searchParams.get(kind);
+		const nextValue = current === value ? null : value;
+		goto(nextSearchParams({ [kind]: nextValue }), { keepfocus: true, noScroll: true, replaceState: false });
+	}
+
+	let modalSearchTimeout;
+	$effect(() => {
+		if (!activeModal) return;
+		clearTimeout(modalSearchTimeout);
+		modalSearchTimeout = setTimeout(() => {
+			fetchModalData();
+		}, 200);
+	});
+
+	function onKeyDown(e) {
+		if (e.key === 'Escape' && activeModal) {
+			closeModal();
+		}
+	}
+
+	let rangeDays = $derived.by(() => {
+		const start = dashboardStore?.dateRange?.startDate;
+		const end = dashboardStore?.dateRange?.endDate;
+		if (!start || !end) return 1;
+		const startTime = new Date(start).getTime();
+		const endTime = new Date(end).getTime();
+		if (Number.isNaN(startTime) || Number.isNaN(endTime)) return 1;
+		return Math.max(1, Math.ceil((endTime - startTime) / (1000 * 60 * 60 * 24)));
+	});
+
+	let timeSeriesGranularity = $derived.by(() => (rangeDays <= 2 ? 'hour' : 'day'));
+	let chartSortInterval = $derived.by(() => (rangeDays <= 2 ? 1 : rangeDays));
+	
+	// Fetch all data
+	async function fetchDashboardData() {
+		if (!siteId) return;
+		
+		loading = true;
+		error = null;
+		
+		try {
+			// Use demo data if provided
+			if (isDemo && demoData) {
+				stats = demoData.stats;
+				timeSeries = demoData.timeSeries || [];
+				referrers = demoData.referrers || [];
+				pages = demoData.pages || [];
+				countries = demoData.countries || [];
+				devices = demoData.devices || [];
+				loading = false;
+				return;
+			}
+			
+			const filter = {
+				...dashboardStore.dateRange,
+				urlPattern: drilldown.pagePath || undefined,
+				referrerDomain: drilldown.referrer || undefined,
+				country: drilldown.country || undefined
+			};
+
+			const [statsData, seriesData, refsData, pagesData, countriesData, devicesData] = await Promise.all([
+				api.getStatsSummary(siteId, filter),
+				api.getTimeSeries(siteId, filter, timeSeriesGranularity),
+				api.getReferrers(siteId, { limit: 5, filter }),
+				api.getPages(siteId, { limit: 5, filter }),
+				api.getCountries(siteId, { limit: 5, filter }),
+				api.getDevices(siteId)
+			]);
+			
+			stats = statsData;
+			timeSeries = seriesData.data || [];
+			referrers = refsData.referrers || [];
+			pages = pagesData.pages || [];
+			countries = countriesData.countries || [];
+			devices = devicesData.devices || [];
+		} catch (err) {
+			console.error('Dashboard error:', err);
+			error = err.message || 'Failed to load dashboard data';
+		} finally {
+			loading = false;
+		}
+	}
+	
+	// Real-time updates (disabled in demo mode)
+	let disconnectRealtime = $state(null);
+	
+	function setupRealtime() {
+		if (!siteId || !browser || isDemo) return;
+		
+		disconnectRealtime = api.connectRealtime(siteId, (data) => {
+			realtimeStats = data;
+		});
+	}
+	
+	$effect(() => {
+		if (siteId && dashboardStore.dateRange) {
+			fetchDashboardData();
+			setupRealtime();
+		}
+	});
+	
+	
+	onDestroy(() => {
+		if (disconnectRealtime) {
+			disconnectRealtime();
+		}
+	});
+	
+	// Calculate device icon
+	function getDeviceIcon(device) {
+		switch (device?.toLowerCase()) {
+			case 'mobile': return Smartphone;
+			case 'tablet': return Tablet;
+			default: return Monitor;
+		}
+	}
 </script>
 
-<div class="min-h-screen p-2 text-black">
-	<div class="container mx-auto flex flex-col gap-4 dark:text-white">
-		{#if filters.length > 0}
-			<div in:slide={{ duration: 230 }} class="flex w-full flex-row flex-wrap gap-1">
-				{#each filters as filter}
-					<button
-						transition:scale
-						onclick={async () => await removeFilter(filter)}
-						class="flex w-fit items-center gap-1 rounded-full bg-{$color}-600 dark:bg-{$color}-700 p-1 px-2 text-gray-100"
-					>
-						{filter.type}
-						<span
-							class="rounded-full bg-{$color}-100 px-2 text-black dark:bg-stone-800 dark:text-gray-100"
-						>
-							{filter.query}
-						</span>
-						<span><X size={13} /></span>
-					</button>
-				{/each}
+<div class="space-y-8">
+	{#if loading && !stats}
+		<LoadingState />
+	{/if}
+
+	{#if error}
+		<div class="container mx-auto rounded-none">
+			<div class="rounded-none bg-red-100 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-200">
+				<p class="font-semibold rounded-none">Error loading dashboard</p>
+				<p class="text-sm rounded-none">{error}</p>
+				<button 
+					onclick={fetchDashboardData}
+					class="mt-2 rounded-none bg-red-200 px-4 py-2 text-sm font-medium hover:bg-red-300 dark:bg-red-800 dark:hover:bg-red-700"
+				>
+					Retry
+				</button>
 			</div>
-		{/if}
-
-		<header class="grid grid-cols-2 gap-1 divide-gray-500 md:grid-cols-3 lg:grid-cols-5">
-			<ViewCard
-				name="Views"
-				backdateData={backdateViews.length ?? backdateViews}
-				number={views}
-				percentange="434%"
-				on:chart_filter={handleChartFilter}
-				filter_on={filters.length > 0}
-			/>
-			<ViewCard
-				name="Visitors"
-				backdateData={backdateuniqueUserAgents.length ?? backdateuniqueUserAgents}
-				number={uniqueUserAgents}
-				percentange="4%"
-				on:chart_filter={handleChartFilter}
-				filter_on={filters.length > 0}
-			/>
-			<ViewCard
-				name="Visit Duration"
-				backdateData={isNaN(backdateaverageVisitDuration) ? 0 : backdateaverageVisitDuration}
-				number={averageVisitDuration}
-				type="time"
-				percentange="94%"
-				filter_on={filters.length > 0}
-			/>
-			<ViewCard
-				name="Bounce Rate"
-				number={parseInt(bounces.bounceRate)}
-				backdateData={parseInt(isNaN(backdateBounces.bounceRate) ? 0 : backdateBounces.bounceRate)}
-				percentange="14%"
-				increase="down"
-				type="percent"
-				filter_on={filters.length > 0}
-			/>
-		</header>
-
-		<ChartJsGraph {chartD} sorted={true} {sortInterval} showChart={true} line={false} bar={false} />
-		<div class="mt-6 flex flex-wrap gap-6">
-			<PagesSection views={page_data?.sortedURls ?? []} sorted={true} on:filter={triggerFilter} />
-			<ReferrerSection
-				views={page_data?.sortedReferrers ?? []}
-				sorted={true}
-				on:filter={triggerFilter}
-				domain={current_domain}
-			/>
 		</div>
-		<div class="mb-12 mt-12 flex flex-wrap gap-12">
-			<CountrySection
-				views={page_data?.sortedContries ?? []}
-				sorted={true}
-				on:filter={triggerFilter}
-				domain={current_domain}
-			/>
-			<BrowserSection
-				views={page_data?.sortedBrowsers ?? []}
-				sorted={true}
-				on:filter={triggerFilter}
-				domain={current_domain}
-			/>
-			<OsSection
-				views={page_data?.sortedOS ?? []}
-				sorted={true}
-				on:filter={triggerFilter}
-				domain={current_domain}
-			/>
+	{/if}
+
+	{#if stats}
+		<div class="flex flex-wrap gap-2">
+			{#if drilldown.pagePath}
+				<button onclick={() => toggleFilter('page', drilldown.pagePath)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
+					Page: {drilldown.pagePath}
+				</button>
+			{/if}
+			{#if drilldown.referrer}
+				<button onclick={() => toggleFilter('referrer', drilldown.referrer)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
+					Referrer: {drilldown.referrer}
+				</button>
+			{/if}
+			{#if drilldown.country}
+				<button onclick={() => toggleFilter('country', drilldown.country)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
+					Country: {drilldown.country}
+				</button>
+			{/if}
+			{#if drilldown.pagePath || drilldown.referrer || drilldown.country}
+				<button onclick={() => goto(nextSearchParams({ page: null, referrer: null, country: null }), { keepfocus: true, noScroll: true })} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 rounded-none">
+					Clear
+				</button>
+			{/if}
 		</div>
-	</div>
+		<div class="flex flex-col gap-8 rounded-none">
+			<!-- Real-time indicator -->
+			{#if realtimeStats}
+				<div class="flex items-center gap-2 px-4 py-1.5 rounded-none bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-fit text-[10px] font-black text-stone-500 dark:text-stone-400 uppercase tracking-widest leading-none">
+					<span class="flex h-1.5 w-1.5 rounded-none">
+						<span class="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-none bg-green-400 opacity-75"></span>
+						<span class="relative inline-flex h-1.5 w-1.5 rounded-none bg-green-500"></span>
+					</span>
+					<span>{realtimeStats.activeVisitors} active visitors now</span>
+				</div>
+			{/if}
+			
+			<!-- Stats Cards -->
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 rounded-none">
+				<ViewCard 
+					name="Views" 
+					number={stats.views} 
+					percentage={stats.change.views}
+					icon={Eye}
+				/>
+				<ViewCard 
+					name="Visits" 
+					number={stats.visits} 
+					percentage={stats.change.visits}
+					icon={Activity}
+				/>
+				<ViewCard 
+					name="Visitors" 
+					number={stats.visitors} 
+					percentage={stats.change.visitors}
+					icon={Globe}
+				/>
+				<ViewCard 
+					name="Bounce Rate" 
+					number={stats.bounceRate} 
+					percentage={stats.change.bounceRate}
+					type="percent"
+				/>
+                <ViewCard 
+					name="Avg. Session" 
+					number={stats.avgDuration} 
+					percentage={stats.change.avgDuration}
+					type="time"
+				/>
+			</div>
+			
+			<!-- Main Chart -->
+			<div class="rounded-none bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-6 relative overflow-hidden">
+				<div class="h-95 rounded-none">
+					<ChartJsGraph
+						chartD={{ data: timeSeries, label: 'Views' }}
+						showChart={true}
+						sortInterval={chartSortInterval}
+						rangeStart={dashboardStore?.dateRange?.startDate}
+						rangeEnd={dashboardStore?.dateRange?.endDate}
+					/>
+				</div>
+			</div>
+			
+			<!-- Breakdown Sections -->
+			<div class="grid grid-cols-1 gap-6 lg:grid-cols-2 rounded-none">
+				<!-- Top Pages -->
+				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
+					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Top Pages</span>
+						<button 
+							onclick={() => openModal('pages')}
+							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+						>
+							See more →
+						</button>
+					</div>
+					<div class="p-2 flex-1 rounded-none">
+						{#if pages.length === 0}
+							<p class="py-10 text-center text-stone-400 italic font-serif text-sm rounded-none">No data available</p>
+						{:else}
+							<div class="space-y-0.5 rounded-none">
+								{#each pages as page (page.path)}
+									<button onclick={() => toggleFilter('page', page.path)} class="w-full text-left px-5 py-3 flex justify-between items-center group border border-stone-200 dark:border-stone-800 rounded-none transition-all duration-300 hover:bg-white dark:hover:bg-stone-800">
+										<span class="text-xs font-medium text-stone-600 dark:text-stone-400 font-mono truncate max-w-[75%] rounded-none">{page.path}</span>
+										<span class="text-sm font-bold text-stone-900 dark:text-white tabular-nums rounded-none">{page.views || 0}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				</div>
+				
+				<!-- Top Referrers -->
+				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
+					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Top Referrers</span>
+						<button 
+							onclick={() => openModal('referrers')}
+							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+						>
+							See more →
+						</button>
+					</div>
+					<div class="p-2 flex-1 rounded-none">
+						{#if referrers.length === 0}
+							<p class="py-10 text-center text-stone-400 italic font-serif text-sm rounded-none">No data available</p>
+						{:else}
+							<div class="space-y-0.5 rounded-none">
+								{#each referrers as ref (ref.referrer)}
+									<button onclick={() => toggleFilter('referrer', ref.referrer || 'Direct')} class="w-full text-left px-5 py-3 flex justify-between items-center group hover:bg-white dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-none transition-all duration-300">
+										<span class="text-xs font-medium text-stone-600 dark:text-stone-400 truncate max-w-[75%] rounded-none">{ref.referrer || 'Direct'}</span>
+										<span class="text-sm font-bold text-stone-900 dark:text-white tabular-nums rounded-none">{ref.views || 0}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				</div>
+				
+				<!-- Countries -->
+				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
+					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Countries</span>
+						<button 
+							onclick={() => openModal('countries')}
+							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+						>
+							See more →
+						</button>
+					</div>
+					<div class="p-2 flex-1 rounded-none">
+						{#if countries.length === 0}
+							<p class="py-10 text-center text-stone-400 italic font-serif text-sm rounded-none">No data available</p>
+						{:else}
+							<div class="space-y-0.5 rounded-none">
+								{#each countries as country (country.country)}
+									<button onclick={() => toggleFilter('country', country.code || country.country || 'XX')} class="w-full text-left px-5 py-3 flex justify-between items-center group hover:bg-white dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-none transition-all duration-300">
+										<span class="text-xs font-medium text-stone-600 dark:text-stone-400 truncate max-w-[75%] rounded-none">{country.country || 'Unknown'}</span>
+										<span class="text-sm font-bold text-stone-900 dark:text-white tabular-nums rounded-none">{country.views || 0}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				</div>
+				
+				<!-- Devices -->
+				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
+					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Devices</span>
+						<span class="text-xs font-bold text-stone-900 dark:text-white font-serif italic rounded-none">Views</span>
+					</div>
+					<div class="p-6 flex-1 rounded-none">
+						{#if devices.length === 0}
+							<p class="py-10 text-center text-stone-400 italic font-serif text-sm rounded-none">No data available</p>
+						{:else}
+							<div class="space-y-4 rounded-none">
+								{#each devices as device (device.device)}
+									{@const Icon = getDeviceIcon(device.device)}
+									<div class="space-y-2 rounded-none">
+										<div class="flex items-center justify-between rounded-none">
+											<div class="flex items-center gap-2 rounded-none">
+												<Icon size={14} class="text-stone-400" />
+												<span class="text-xs font-bold text-stone-900 dark:text-white capitalize tracking-tight leading-none rounded-none">{device.device}</span>
+											</div>
+											<span class="text-[10px] font-black text-stone-900 dark:text-white tabular-nums leading-none rounded-none">{formatNumber(device.views || 0)}</span>
+										</div>
+										<div class="h-1 rounded-none bg-stone-200 dark:bg-stone-800 overflow-hidden">
+											<div 
+												class="h-full bg-stone-900 dark:bg-stone-100 transition-all duration-500 rounded-none"
+												style="width: {stats.views > 0 ? (device.views / stats.views) * 100 : 0}%"
+											></div>
+										</div>
+									</div>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
+
+	{#if activeModal}
+		<div 
+			class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/20 backdrop-blur-sm p-4 sm:p-6"
+		>
+			<button 
+				type="button"
+				class="absolute inset-0 cursor-default border-none bg-transparent"
+				onclick={closeModal}
+				aria-label="Close modal"
+			></button>
+			<div 
+				class="relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl rounded-none cursor-auto"
+				role="dialog"
+				aria-modal="true"
+				tabindex="-1"
+			>
+				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50">
+					<div>
+						<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
+							{#if activeModal === 'pages'}All Pages{:else if activeModal === 'referrers'}All Referrers{:else}All Countries{/if}
+						</h3>
+						<p class="text-xs font-bold text-stone-900 dark:text-white font-serif italic truncate">Site Overview</p>
+					</div>
+					<button 
+						onclick={closeModal}
+						class="text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors p-2"
+					>
+						<Activity size={16} class="rotate-45" />
+					</button>
+				</div>
+				
+				<div class="p-4 border-b border-stone-100 dark:border-stone-800">
+					<input
+						bind:value={modalSearch}
+						placeholder="Search {activeModal}..."
+						class="w-full px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
+					/>
+				</div>
+
+				<div class="flex-1 overflow-y-auto p-2">
+					<div class="flex w-full flex-col gap-0.5">
+						{#if modalLoading}
+							<div class="py-20 text-center">
+								<p class="text-stone-400 italic font-serif text-sm">Loading…</p>
+							</div>
+						{:else if modalError}
+							<div class="py-20 text-center">
+								<p class="text-stone-400 italic font-serif text-sm">{modalError}</p>
+							</div>
+						{:else}
+							{#each modalData as item}
+								{@const name = item.path || item.referrer || item.country || 'Unknown'}
+								{@const filterKind = activeModal === 'pages' ? 'page' : activeModal === 'referrers' ? 'referrer' : 'country'}
+								{@const filterValue = activeModal === 'pages'
+									? item.path
+									: activeModal === 'referrers'
+										? (item.referrer || 'Direct')
+										: (item.code || item.country || 'XX')}
+								<div class="relative h-fit w-full">
+									<div
+										class="bg-stone-900 dark:bg-stone-100 absolute h-full rounded-none opacity-[0.06]"
+										style="width: {modalTotal > 0 ? ((item.views || 0) / modalTotal) * 100 : 0}%;"
+									></div>
+									<button onclick={() => { toggleFilter(filterKind, filterValue); closeModal(); }} class="w-full text-left flex justify-between gap-2 px-5 py-3 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-none transition-all duration-300 border border-transparent hover:border-stone-200 dark:hover:border-stone-800">
+										<span class="text-xs font-bold text-stone-900 dark:text-white truncate">{name}</span>
+										<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{(item.views || 0).toLocaleString()}</span>
+									</button>
+								</div>
+							{:else}
+								<div class="py-20 text-center">
+									<p class="text-stone-400 italic font-serif text-sm">No matches found</p>
+								</div>
+							{/each}
+						{/if}
+					</div>
+				</div>
+				
+				<div class="px-6 py-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-950/50 flex justify-between items-center">
+					<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
+						{modalData.length} items
+					</span>
+					<button 
+						onclick={closeModal}
+						class="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:opacity-90 transition-opacity rounded-none"
+					>
+						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
-
-<style>
-	.no-bg {
-		background-color: transparent !important;
-	}
-</style>

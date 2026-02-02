@@ -44,7 +44,7 @@
 	<Seo title="Documentation - Littlestats" />
 </svelte:head>
 
-<div class="min-h-screen bg-white dark:bg-stone-950">
+<div class="min-h-screen bg-white dark:bg-stone-950 text-black dark:text-white">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<header class="py-6 border-b border-stone-100 dark:border-stone-900 mb-8">
 			<Nav />
