@@ -12,7 +12,9 @@
 		Database, 
 		ChevronRight,
 		Copy,
-		Check
+		Check,
+		Server,
+		ExternalLink
 	} from 'lucide-svelte';
 
 
@@ -36,7 +38,8 @@
 		{ name: 'Campaigns', id: 'campaigns', icon: Megaphone },
 		{ name: 'Goals & Events', id: 'goals', icon: Target },
 		{ name: 'Tracker API', id: 'api', icon: Code2 },
-		{ name: 'Captured Data', id: 'data', icon: Database }
+		{ name: 'Captured Data', id: 'data', icon: Database },
+		{ name: 'Self-Hosting', id: 'self-hosting', icon: Server }
 	];
 </script>
 
@@ -44,7 +47,7 @@
 	<Seo title="Documentation - Littlestats" />
 </svelte:head>
 
-<div class="min-h-screen bg-white dark:bg-stone-950">
+<div class="min-h-screen bg-white dark:bg-stone-950 text-black dark:text-white">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<header class="py-6 border-b border-stone-100 dark:border-stone-900 mb-8">
 			<Nav />
@@ -280,7 +283,7 @@ track('purchase', {
 						</div>
 					</section>
 
-					<section id="data" class="scroll-mt-20">
+					<section id="data" class="scroll-mt-20 mb-20">
 						<h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
 							<Database class="h-8 w-8 text-{$color}-500" />
 							Captured Data
@@ -294,6 +297,39 @@ track('purchase', {
 									{dataPoint}
 								</div>
 							{/each}
+						</div>
+					</section>
+
+					<section id="self-hosting" class="scroll-mt-20">
+						<h2 class="text-3xl font-bold mb-6 flex items-center gap-3">
+							<Server class="h-8 w-8 text-{$color}-500" />
+							Self-Hosting
+						</h2>
+						<p>
+							Littlestats is open-source and can be self-hosted on your own Cloudflare account. 
+							This gives you full control over your data and infrastructure.
+						</p>
+
+						<div class="bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-8 mt-8 not-prose">
+							<h4 class="text-lg font-bold mb-4">Quick Start</h4>
+							<ol class="space-y-4 list-decimal pl-5 text-stone-600 dark:text-stone-400">
+								<li>Fork the repository on GitHub.</li>
+								<li>Configure your <code class="bg-stone-200 dark:bg-stone-800 px-1.5 py-0.5 rounded text-sm text-black dark:text-white">.env</code> files for both dashboard and web packages.</li>
+								<li>Deploy the backend to Cloudflare Workers using <code class="bg-stone-200 dark:bg-stone-800 px-1.5 py-0.5 rounded text-sm text-black dark:text-white">pnpm run deploy</code>.</li>
+								<li>Deploy the frontend SvelteKit app.</li>
+							</ol>
+
+							<div class="mt-8 pt-8 border-t border-stone-200 dark:border-stone-800">
+								<a 
+									href="https://github.com/abdulmumin1/littlestats/blob/main/docs/self-hosting.md" 
+									target="_blank"
+									rel="noopener noreferrer"
+									class="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity"
+								>
+									Read Full Self-Hosting Guide
+									<ExternalLink class="h-4 w-4" />
+								</a>
+							</div>
 						</div>
 					</section>
 				</div>

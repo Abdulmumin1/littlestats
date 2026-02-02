@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
 	import { Globe, CreditCard, User, LayoutGrid, Palette, Birdhouse } from 'lucide-svelte';
+	import DarkMode from '$lib/components/generals/darkMode.svelte';
 
 	let { children } = $props();
 	let path = $derived($page.url.pathname);
@@ -39,10 +40,18 @@
 									: 'text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'}"
 							>
 								<link.icon size={16} stroke-width={Active ? 2.5 : 2} />
-								{link.label}
-							</a>
+							{link.label}
+						</a>
 						{/each}
 					</nav>
+
+					<!-- Theme Selector -->
+					<div class="pt-8 space-y-2 rounded-none">
+						<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-4">Appearance</p>
+						<div class="px-2 rounded-none">
+							<DarkMode />
+						</div>
+					</div>
 				</div>
 			</aside>
 

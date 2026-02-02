@@ -1,6 +1,6 @@
 <script>
 	import { color } from '$lib/colors/mixer.js';
-	let { title, children } = $props();
+	let { title } = $props();
 </script>
 
 <div
@@ -12,5 +12,5 @@
 		<p>{title}</p>
 		<p>Views</p>
 	</div>
-	{@render children?.()}
+	<slot />
 </div>

@@ -48,7 +48,7 @@
 			aria-haspopup="listbox"
 			aria-expanded={isOpen}
 		>
-			<span class="truncate">{options.find((opt) => String(opt.value) === String(value))?.label || 'Select Site'}</span>
+			<span class="truncate lowercase">{options.find((opt) => String(opt.value) === String(value))?.label || 'Select Site'}</span>
 			<ChevronDown class="h-4 w-4 text-stone-400 transition-transform duration-200 {isOpen ? 'rotate-180' : ''}" />
 		</button>
 
@@ -65,7 +65,7 @@
 							onclick={() => handleSelect(option.value)}
 							onkeydown={(e) => e.key === 'Enter' && handleSelect(option.value)}
 							tabindex="0"
-							class="cursor-pointer px-4 py-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors
+							class="cursor-pointer px-4 py-2 lowercase hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors
                   {String(value) === String(option.value)
 								? `bg-${$color}-600 text-white`
 								: 'text-stone-700 dark:text-stone-200'}"

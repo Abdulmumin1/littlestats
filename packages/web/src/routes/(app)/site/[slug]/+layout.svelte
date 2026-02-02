@@ -6,6 +6,7 @@
 	import { CalendarHeart, CalendarRange, LayoutDashboard, Target, Megaphone, Settings, Globe, Plus, GitBranch } from 'lucide-svelte';
 	import PickDate from '$lib/components/generals/pickDate.svelte';
 	import Dropdown from '$lib/components/generals/dropdown.svelte';
+	import DarkMode from '$lib/components/generals/darkMode.svelte';
 	import Logo from '../../../../lib/components/generals/logo.svelte';
 
 	let { children, data } = $props();
@@ -102,6 +103,8 @@
 							</button>
 						</div>
 					</div>
+
+					
 				</div>
 			</aside>
 

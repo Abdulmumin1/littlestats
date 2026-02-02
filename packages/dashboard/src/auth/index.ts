@@ -65,7 +65,7 @@ export function createAuth(env: Env) {
         httpOnly: true,
         sameSite: env.ENVIRONMENT === 'production' ? "none" : "lax", // 'none' for cross-domain in production
         path: "/",
-        domain: env.ENVIRONMENT === 'production' ? '.littlestats.click' : undefined, // Share across subdomains
+        domain: env.COOKIE_DOMAIN || (env.ENVIRONMENT === 'production' ? '.littlestats.click' : undefined), // Share across subdomains
       },
     },
     
@@ -77,6 +77,7 @@ export function createAuth(env: Env) {
       "https://littlestats.click",
       "https://www.littlestats.click",
       "https://stats.littlestats.click", // Auth API domain
+      ...(env.TRUSTED_ORIGINS ? env.TRUSTED_ORIGINS.split(',').map(o => o.trim()) : []),
     ],
   });
 }

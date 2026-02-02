@@ -3,6 +3,7 @@
 	import CuteCloud from '$lib/components/generals/cuteCloud.svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import InsideNav from '$lib/components/generals/insideNav.svelte';
+	import DarkMode from '$lib/components/generals/darkMode.svelte';
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
 	import { goto } from '$app/navigation';
@@ -72,6 +73,8 @@
 							<Plus size={12} /> Add Domain
 						</a>
 					</div>
+
+					
 				</div>
 			</aside>
 
@@ -106,7 +109,7 @@
 									</div>
 									<div class="truncate rounded-none">
 										<div class="flex items-center gap-2">
-											<h3 class="text-sm font-bold text-stone-900 dark:text-white truncate">{site.name || site.domain}</h3>
+											<h3 class="text-sm font-bold text-stone-900 dark:text-white truncate lowercase">{site.name || site.domain}</h3>
 											{#if !site.verifiedAt}
 												<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
 													UNVERIFIED

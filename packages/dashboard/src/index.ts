@@ -63,26 +63,45 @@ app.use("/api/v2/track/*", async (c: any, next: () => Promise<void>) => {
 });
 
 // CORS for API (specific origins)
-app.use("/api/v2/*", cors({
-  origin: ["http://localhost:5173", "https://littlestats.click", "https://www.littlestats.click"],
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-  maxAge: 600,
-}));
+app.use("/api/v2/*", async (c, next) => {
+  const trustedOrigins = [
+    "http://localhost:5173", 
+    "https://littlestats.click", 
+    "https://www.littlestats.click",
+    ...(c.env.TRUSTED_ORIGINS ? c.env.TRUSTED_ORIGINS.split(',').map(o => o.trim()) : [])
+  ];
+  
+  return cors({
+    origin: trustedOrigins,
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    maxAge: 600,
+  })(c, next);
+});
 
 // ============================================
 // Better-Auth Authentication
 // ============================================
 
 // CORS for auth endpoints (must be before auth handler)
-app.use("/api/auth/*", cors({
-  origin: ["http://localhost:5173", "http://localhost:8787", "https://littlestats.click", "https://www.littlestats.click"],
-  allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-  maxAge: 600,
-}));
+app.use("/api/auth/*", async (c, next) => {
+  const trustedOrigins = [
+    "http://localhost:5173", 
+    "http://localhost:8787", 
+    "https://littlestats.click", 
+    "https://www.littlestats.click",
+    ...(c.env.TRUSTED_ORIGINS ? c.env.TRUSTED_ORIGINS.split(',').map(o => o.trim()) : [])
+  ];
+
+  return cors({
+    origin: trustedOrigins,
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+    maxAge: 600,
+  })(c, next);
+});
 
 // Auth middleware for protected API routes
 const authMiddleware = async (c: any, next: any) => {
@@ -898,8 +917,7 @@ app.post("/api/v2/billing/checkout", async (c) => {
     }
 
     const client = getDodoClient(c.env);
-    const isTestMode = c.env.DODO_PAYMENTS_ENV === 'test';
-    const appUrl = isTestMode ? 'http://localhost:5173' : 'https://littlestats.click';
+    const appUrl = c.env.APP_URL || 'https://littlestats.click';
 
     const session = await client.checkoutSessions.create({
       product_cart: [{ product_id: productId, quantity }],

@@ -31,7 +31,7 @@
 	let {title=false} = $props()
 </script>
 
-<div class="sticky top-0 z-40">
+<div class="sticky top-0 z-40 text-black dark:text-white">
 	<div class="px-4 sm:px-6 lg:px-8 pt-3">
 		<nav
 			class="mx-auto max-w-7xl rounded-full border border-stone-200 bg-white/90 backdrop-blur-md dark:border-stone-800 dark:bg-stone-900/80"
