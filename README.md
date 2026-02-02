@@ -1,6 +1,6 @@
 # Littlestats
 
-**Littlestats** is a privacy-focused, real-time analytics engine built for the modern web. Lightweight, edge-native, and designed specifically for SaaS and AI products.
+Data to make business decisions - analytics that helps you understand your users
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Stack: Cloudflare Workers](https://img.shields.io/badge/Stack-Cloudflare_Workers-F38020?logo=cloudflare-workers&logoColor=white)](https://workers.cloudflare.com/)
