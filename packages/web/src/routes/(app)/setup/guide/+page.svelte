@@ -3,18 +3,17 @@
 	import { color } from '$lib/colors/mixer.js';
 	import { show_toast } from '$lib/toast.js';
 	import { goto } from '$app/navigation';
-	import { verifySite } from './data.remote.js';
+	import { enhance } from '$app/forms';
 
-	let { data } = $props();
+	let { data, form } = $props();
 	let site = $derived(data.site);
 	let copied = $state(false);
 	let verifying = $state(false);
-	let verificationResult = $state(null);
 
-	let isVerified = $derived(site.verifiedAt || verificationResult?.verified);
+	let isVerified = $derived(site.verifiedAt || form?.verified);
 
 	function generateScriptUrl(site) {
-		return `<script src="https://littlestats.click/tracker.js" data-site-id="${site.domainKey}"><\/script>`;
+		return `<script src="https://stats.littlestats.click/tracker.js" data-site-id="${site.id}"><\/script>`;
 	}
 
 	function copyToClipboard() {
@@ -33,24 +32,6 @@
 		show_toast.set({ message: 'Token copied to clipboard', type: 'success' });
 	}
 
-	async function handleVerify() {
-		verifying = true;
-		try {
-			const result = await verifySite({ siteId: site.id, domain: site.domain });
-			verificationResult = result;
-			
-			if (result.verified) {
-				show_toast.set({ message: 'Domain verified successfully!', type: 'success' });
-			} else if (result.error) {
-				show_toast.set({ message: result.error, type: 'error' });
-			}
-		} catch (err) {
-			show_toast.set({ message: err.message || 'Verification failed', type: 'error' });
-		} finally {
-			verifying = false;
-		}
-	}
-
 	function finishSetup() {
 		if (!isVerified) {
 			show_toast.set({ message: 'Please verify your domain first', type: 'error' });
@@ -58,6 +39,15 @@
 		}
 		goto(`/site/${site.id}`);
 	}
+
+	$effect(() => {
+		if (form?.success && form?.verified) {
+			show_toast.set({ message: 'Domain verified successfully!', type: 'success' });
+		}
+		if (form?.error) {
+			show_toast.set({ message: form.error, type: 'error' });
+		}
+	});
 </script>
 
 <svelte:head>
@@ -117,19 +107,28 @@
 						</div>
 					</div>
 
-					<button
-						onclick={handleVerify}
-						disabled={verifying}
-						class={`inline-flex items-center gap-2 px-8 py-3 rounded-none bg-${$color}-600 text-white text-xs font-bold hover:bg-${$color}-700 transition-all shadow-none disabled:opacity-50`}
-					>
-						{#if verifying}
-							<Loader size={14} class="animate-spin" />
-							Verifying DNS...
-						{:else}
-							<RefreshCw size={14} />
-							Verify Domain
-						{/if}
-					</button>
+					<form method="POST" action="?/verify" use:enhance={() => {
+						verifying = true;
+						return async ({ update }) => {
+							await update();
+							verifying = false;
+						};
+					}}>
+						<input type="text" value="{site.id}" name="siteId" hidden class="hidden">
+						<button
+							type="submit"
+							disabled={verifying}
+							class={`inline-flex items-center gap-2 px-8 py-3 rounded-none bg-${$color}-600 text-white text-xs font-bold hover:bg-${$color}-700 transition-all shadow-none disabled:opacity-50`}
+						>
+							{#if verifying}
+								<Loader size={14} class="animate-spin" />
+								Verifying DNS...
+							{:else}
+								<RefreshCw size={14} />
+								Verify Domain
+							{/if}
+						</button>
+					</form>
 					<p class="text-[10px] text-stone-400 italic">It may take a few minutes for DNS changes to propagate.</p>
 				</div>
 			{:else}
