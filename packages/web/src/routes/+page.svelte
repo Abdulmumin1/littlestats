@@ -1,5 +1,6 @@
 <script>
-	import { fade } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
+	import { cubicInOut, backOut } from 'svelte/easing';
 	import Seo from '../lib/components/generals/seo.svelte';
 	import { color } from '$lib/colors/mixer.js';
     import Logo from '$lib/components/generals/logo.svelte';
@@ -32,7 +33,7 @@
     import { writable } from 'svelte/store';
 
     // Icons
-    import { LineChart, Filter, MousePointer2, Megaphone, Github, MessageSquare } from 'lucide-svelte';
+    import { LineChart, Filter, MousePointer2, Megaphone, Github, MessageSquare, Menu, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
     // Data handling for Demo
@@ -105,6 +106,7 @@
 	];
 
     let activeTab = $state(features[0].id);
+    let isMobileMenuOpen = $state(false);
 
     // Derived Data
     let sortInterval = $derived(globalRange.getSingle());
@@ -155,19 +157,113 @@
         
         <!-- Header Section -->
         <header class="p-8 md:p-12 border-b border-stone-100 dark:border-stone-800 relative">
-            <!-- Minimal Nav Positioned Absolute -->
-            <div class="absolute top-4 right-4 md:top-8 md:right-8 flex gap-6 items-center text-sm font-medium text-stone-600 dark:text-stone-400">
-                <a href="http://github.com/abdulmumin1/littlestats" target="_blank" class="hover:text-stone-900 dark:hover:text-white transition-colors flex items-center gap-1.5">
-                    <Github size={14} />
-                    <span>opensource</span>
-                </a>
-                <a href="#pricing" class="hover:text-stone-900 dark:hover:text-white transition-colors">pricing</a>
-                <a href="/signin" class="hover:text-stone-900 dark:hover:text-white transition-colors">login</a>
-                <a href="/signup" class="px-4 py-2 text-white bg-{$color}-600 hover:bg-{$color}-700 transition-colors " onclick={()=>{
-                    track("Get started", {color:$color})
-                }}>get started</a>
+            <!-- Minimal Nav -->
+            <div class="absolute top-4 right-4 md:top-8 md:right-8 flex items-center gap-4">
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex gap-6 items-center text-sm font-medium text-stone-600 dark:text-stone-400">
+                    <a href="http://github.com/abdulmumin1/littlestats" target="_blank" class="hover:text-stone-900 dark:hover:text-white transition-colors flex items-center gap-1.5">
+                        <Github size={14} />
+                        <span>opensource</span>
+                    </a>
+                    <a href="#pricing" class="hover:text-stone-900 dark:hover:text-white transition-colors">pricing</a>
+                    <a href="/signin" class="hover:text-stone-900 dark:hover:text-white transition-colors">login</a>
+                    <a href="/signup" class="px-4 py-2 text-white bg-{$color}-600 hover:bg-{$color}-700 transition-colors " onclick={()=>{
+                        track("Get started", {color:$color})
+                    }}>get started</a>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <button 
+                    class="md:hidden p-2 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+                    onclick={() => isMobileMenuOpen = !isMobileMenuOpen}
+                    aria-label="Toggle menu"
+                >
+                    {#if isMobileMenuOpen}
+                        <X size={24} />
+                    {:else}
+                        <Menu size={24} />
+                    {/if}
+                </button>
+                
                 <DarkMode />
             </div>
+
+            <!-- Mobile Menu Overlay -->
+            {#if isMobileMenuOpen}
+                <div 
+                    transition:fly={{ y: -20, duration: 400, easing: cubicInOut }}
+                    class="fixed inset-0 z-50 bg-white/95 dark:bg-stone-950/95 backdrop-blur-md md:hidden flex flex-col p-8"
+                >
+                    <div 
+                        in:fly={{ y: -10, delay: 100, duration: 400, easing: backOut }}
+                        class="flex justify-between items-center mb-16"
+                    >
+                        <div class="flex items-center gap-2">
+                            <Logo size={28} />
+                            <span class="font-bold text-lg tracking-tight text-stone-900 dark:text-white mt-2">Littlestats</span>
+                        </div>
+                        <button 
+                            onclick={() => isMobileMenuOpen = false}
+                            class="p-2 text-stone-600 dark:text-stone-400 hover:rotate-90 transition-transform duration-300"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+
+                    <nav class="flex flex-col gap-10 text-3xl font-medium">
+                        <div in:fly={{ x: -20, delay: 200, duration: 500, easing: backOut }}>
+                            <a 
+                                href="http://github.com/abdulmumin1/littlestats" 
+                                target="_blank" 
+                                class="text-stone-600 dark:text-stone-400 flex items-center gap-4 hover:text-stone-900 dark:hover:text-white transition-colors"
+                                onclick={() => isMobileMenuOpen = false}
+                            >
+                                <Github size={28} />
+                                <span>GitHub</span>
+                            </a>
+                        </div>
+                        <div in:fly={{ x: -20, delay: 300, duration: 500, easing: backOut }}>
+                            <a 
+                                href="#pricing" 
+                                class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+                                onclick={() => isMobileMenuOpen = false}
+                            >
+                                Pricing
+                            </a>
+                        </div>
+                        <div in:fly={{ x: -20, delay: 400, duration: 500, easing: backOut }}>
+                            <a 
+                                href="/signin" 
+                                class="text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
+                                onclick={() => isMobileMenuOpen = false}
+                            >
+                                Login
+                            </a>
+                        </div>
+                        <div in:fly={{ y: 20, delay: 500, duration: 600, easing: backOut }} class="mt-4">
+                            <a 
+                                href="/signup" 
+                                class="w-full py-5 px-3 text-center text-white bg-{$color}-600 hover:bg-{$color}-700 transition-all active:scale-[0.98] shadow-lg shadow-{$color}-600/20"
+                                onclick={() => {
+                                    isMobileMenuOpen = false;
+                                    track("Get started", {color:$color});
+                                }}
+                            >
+                                Get Started
+                            </a>
+                        </div>
+                    </nav>
+
+                    <div 
+                        in:fade={{ delay: 800, duration: 400 }}
+                        class="mt-auto text-center"
+                    >
+                        <p class="text-xs uppercase tracking-widest text-stone-400 dark:text-stone-600 font-medium">
+                            A product of <span class="text-{$color}-600">The Thirdpen Company</span>
+                        </p>
+                    </div>
+                </div>
+            {/if}
 
              <!-- Logo / Brand (Minimal) -->
             <div class="mb-10">
