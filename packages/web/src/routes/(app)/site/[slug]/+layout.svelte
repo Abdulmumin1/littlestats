@@ -3,7 +3,7 @@
 	import { formatDate } from '$lib/utils.js';
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
-	import { CalendarHeart, CalendarRange, LayoutDashboard, Target, Megaphone, Settings, Globe, Plus, GitBranch, MessageSquare } from 'lucide-svelte';
+	import { CalendarHeart, CalendarRange, LayoutDashboard, Target, Megaphone, Settings, Globe, Plus, GitBranch, Mailbox } from 'lucide-svelte';
 	import PickDate from '$lib/components/generals/pickDate.svelte';
 	import Dropdown from '$lib/components/generals/dropdown.svelte';
 	import DarkMode from '$lib/components/generals/darkMode.svelte';
@@ -16,7 +16,7 @@
 		{ href: `/site/${$page.params.slug}/campaigns`, text: 'Campaigns', icon: Megaphone },
 		{ href: `/site/${$page.params.slug}/funnels`, text: 'Funnels', icon: GitBranch },
 		{ href: `/site/${$page.params.slug}/events`, text: 'Events', icon: CalendarHeart },
-		{ href: `/site/${$page.params.slug}/feedback`, text: 'Feedback', icon: MessageSquare },
+		{ href: `/site/${$page.params.slug}/feedback`, text: 'Feedback', icon: Mailbox },
 		{ href: `/site/${$page.params.slug}/settings`, text: 'Settings', icon: Settings },
 	]);
 

@@ -140,7 +140,16 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 			container.id = 'ls-feedback-widget';
 			const shadow = container.attachShadow({ mode: 'closed' });
 			
-			const styles = \`
+			const styles = `
+				:host {
+					--ls-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+					--ls-bg: #18181b;
+					--ls-text: #fafafa;
+					--ls-primary: #fafafa;
+					--ls-radius: 0;
+					--ls-border: color-mix(in srgb, var(--ls-text), transparent 85%);
+					--ls-muted: color-mix(in srgb, var(--ls-text), transparent 40%);
+				}
 				* { box-sizing: border-box; margin: 0; padding: 0; }
 				.ls-trigger {
 					position: fixed;
@@ -148,9 +157,9 @@ export async function generateTrackerScript(env: Env): Promise<string> {
           right: 24px;
           width: 48px;
           height: 48px;
-          border-radius: 0;
-          background: #18181b;
-					color: white;
+          border-radius: var(--ls-radius);
+          background: var(--ls-bg);
+					color: var(--ls-text);
 					border: none;
 					cursor: pointer;
 					display: flex;
@@ -160,7 +169,10 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 					z-index: 999999;
 					box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 				}
-				.ls-trigger:hover { background: #000; transform: translateY(-2px); }
+				.ls-trigger:hover { 
+					background: color-mix(in srgb, var(--ls-bg), var(--ls-text) 10%); 
+					transform: translateY(-2px); 
+				}
 				.ls-trigger svg { width: 20px; height: 20px; }
 				.ls-modal {
 					position: fixed;
@@ -168,14 +180,15 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 					right: 24px;
 					width: 360px;
 					max-width: calc(100vw - 48px);
-					background: #18181b;
-					border-radius: 0;
-					border: 1px solid #27272a;
+					background: var(--ls-bg);
+					border-radius: var(--ls-radius);
+					border: 1px solid var(--ls-border);
 					z-index: 999998;
 					display: none;
 					overflow: hidden;
-					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+					font-family: var(--ls-font);
 					box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
+					color: var(--ls-text);
 				}
 				.ls-modal.open { display: block; animation: lsFadeIn 0.2s ease-out; }
 				@keyframes lsFadeIn {
@@ -184,24 +197,24 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 				}
 				.ls-header {
 					padding: 24px;
-					background: #09090b;
-					border-bottom: 1px solid #27272a;
+					background: var(--ls-bg);
+					border-bottom: 1px solid var(--ls-border);
 					display: flex;
 					justify-content: space-between;
 					align-items: center;
 				}
-				.ls-header-content h3 { font-size: 12px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
-				.ls-header-content p { font-size: 11px; color: #a1a1aa; font-style: italic; }
-				.ls-close { background: none; border: none; color: #71717a; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; }
-				.ls-close:hover { color: #fff; }
-				.ls-body { padding: 24px; background: #18181b; }
+				.ls-header-content h3 { font-size: 12px; font-weight: 900; color: var(--ls-text); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+				.ls-header-content p { font-size: 11px; color: var(--ls-muted); font-style: italic; }
+				.ls-close { background: none; border: none; color: var(--ls-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; }
+				.ls-close:hover { color: var(--ls-text); }
+				.ls-body { padding: 24px; background: var(--ls-bg); }
 				.ls-rating { display: flex; gap: 8px; margin-bottom: 24px; }
 				.ls-rating button {
 					flex: 1;
 					height: 48px;
-					border: 1px solid #27272a;
-					border-radius: 0;
-					background: #09090b;
+					border: 1px solid var(--ls-border);
+					border-radius: var(--ls-radius);
+					background: var(--ls-bg);
 					cursor: pointer;
 					font-size: 20px;
 					transition: all 0.15s;
@@ -209,14 +222,14 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 					align-items: center;
 					justify-content: center;
 				}
-				.ls-rating button:hover { border-color: #3f3f46; background: #18181b; }
-				.ls-rating button.selected { border-color: #fafafa; background: #27272a; outline: 1px solid #fafafa; }
+				.ls-rating button:hover { border-color: var(--ls-muted); background: var(--ls-bg); }
+				.ls-rating button.selected { border-color: var(--ls-primary); background: color-mix(in srgb, var(--ls-primary), transparent 90%); outline: 1px solid var(--ls-primary); }
 				.ls-field { margin-bottom: 24px; }
 				.ls-field label {
 					display: block;
 					font-size: 10px;
 					font-weight: 900;
-					color: #a1a1aa;
+					color: var(--ls-muted);
 					margin-bottom: 8px;
 					text-transform: uppercase;
 					letter-spacing: 0.05em;
@@ -224,24 +237,24 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 				.ls-field textarea, .ls-field input, .ls-field select {
 					width: 100%;
 					padding: 12px;
-					border: 1px solid #27272a;
-					border-radius: 0;
+					border: 1px solid var(--ls-border);
+					border-radius: var(--ls-radius);
 					font-size: 13px;
 					font-family: inherit;
 					transition: all 0.15s;
-					background: #09090b;
-					color: #fafafa;
+					background: var(--ls-bg);
+					color: var(--ls-text);
 				}
 				.ls-field textarea:focus, .ls-field input:focus, .ls-field select:focus {
 					outline: none;
-					border-color: #fafafa;
+					border-color: var(--ls-primary);
 				}
 				.ls-field textarea { resize: vertical; min-height: 100px; }
 				.ls-actions { display: flex; gap: 8px; }
 				.ls-btn {
 					flex: 1;
 					padding: 14px 16px;
-					border-radius: 0;
+					border-radius: var(--ls-radius);
 					font-size: 10px;
 					font-weight: 900;
 					cursor: pointer;
@@ -251,41 +264,41 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 					letter-spacing: 0.05em;
 				}
 				.ls-btn-primary {
-					background: #fafafa;
-					color: #18181b;
+					background: var(--ls-primary);
+					color: var(--ls-bg);
 				}
-				.ls-btn-primary:hover { background: #fff; opacity: 0.9; }
-				.ls-btn-primary:disabled { background: #27272a; color: #52525b; cursor: not-allowed; }
+				.ls-btn-primary:hover { opacity: 0.9; }
+				.ls-btn-primary:disabled { background: var(--ls-border); color: var(--ls-muted); cursor: not-allowed; }
 				.ls-btn-secondary {
-					background: #09090b;
-					color: #a1a1aa;
-					border: 1px solid #27272a;
+					background: var(--ls-bg);
+					color: var(--ls-muted);
+					border: 1px solid var(--ls-border);
 				}
-				.ls-btn-secondary:hover { background: #18181b; color: #fafafa; border-color: #3f3f46; }
+				.ls-btn-secondary:hover { background: var(--ls-bg); color: var(--ls-text); border-color: var(--ls-muted); }
 				.ls-success {
 					text-align: center;
 					padding: 48px 24px;
-					background: #18181b;
+					background: var(--ls-bg);
 				}
 				.ls-success svg { width: 40px; height: 40px; color: #10b981; margin-bottom: 16px; }
-				.ls-success h4 { font-size: 12px; font-weight: 900; color: #fafafa; text-transform: uppercase; }
-				.ls-success p { font-size: 11px; color: #a1a1aa; margin-top: 8px; font-style: italic; }
+				.ls-success h4 { font-size: 12px; font-weight: 900; color: var(--ls-text); text-transform: uppercase; }
+				.ls-success p { font-size: 11px; color: var(--ls-muted); margin-top: 8px; font-style: italic; }
 				.ls-branding-footer {
 					padding: 12px;
-					background: #09090b;
-					border-top: 1px solid #27272a;
+					background: var(--ls-bg);
+					border-top: 1px solid var(--ls-border);
 					text-align: center;
 				}
 				.ls-branding-link {
 					font-size: 10px;
-					color: #52525b;
+					color: var(--ls-muted);
 					text-decoration: none;
 					text-transform: uppercase;
 					letter-spacing: 0.05em;
 					font-weight: 700;
 				}
-				.ls-branding-link:hover { color: #a1a1aa; }
-			\`;
+				.ls-branding-link:hover { color: var(--ls-text); }
+			`;
 			
 			shadow.innerHTML = \`
 				<style>\${styles}</style>

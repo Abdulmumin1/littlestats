@@ -127,7 +127,7 @@
 
 <style>
 	.views.active {
-		@apply border-2;
+		border-width: 2px;
 		border-color: var(--accent-color);
 	}
 	.dark .views.active {
