@@ -12,7 +12,7 @@
 </script>
 
 <div class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-	<nav class="flex items-center gap-2 rounded-full border border-stone-200/50 bg-white/80 p-1.5 shadow-xl shadow-stone-200/20 backdrop-blur-xl dark:border-stone-800/50 dark:bg-stone-900/80 dark:shadow-black/20">
+	<nav class="flex items-center gap-2 rounded-full border border-stone-200/50 bg-white/80 p-1.5  backdrop-blur-xl dark:border-stone-800/50 dark:bg-stone-900/80 dark:shadow-black/20">
 		<!-- Logo -->
 		<a
 			href="/"

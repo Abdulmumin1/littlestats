@@ -2,6 +2,8 @@
 
 Data to make business decisions - analytics that helps you understand your users
 
+![alt text](https://mac-file.yaqeen.me/F5AC3A54-Screenshot%202026-02-02%20at%2023.14.55.png)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Stack: Cloudflare Workers](https://img.shields.io/badge/Stack-Cloudflare_Workers-F38020?logo=cloudflare-workers&logoColor=white)](https://workers.cloudflare.com/)
 
@@ -45,7 +47,7 @@ Littlestats is fully open-source and easy to host on your own Cloudflare account
 
 1. **Clone & Install:**
    ```bash
-   git clone https://github.com/littlestats/littlestats.git
+   git clone https://github.com/abdulmumin1/littlestats.git
    cd littlestats
    pnpm install
    ```

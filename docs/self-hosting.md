@@ -5,7 +5,7 @@ Littlestats is designed to run on **Cloudflare Workers**, utilizing **D1** for t
 ## Prerequisites
 
 - A [Cloudflare](https://dash.cloudflare.com/) account.
-- [Cloudflare Workers Paid Plan](https://developers.cloudflare.com/workers/platform/pricing/#workers) (Required for Durable Objects).
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/platform/pricing/#workers)
 - [pnpm](https://pnpm.io/) installed locally.
 
 ## Project Structure

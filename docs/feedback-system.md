@@ -59,3 +59,17 @@ Feedback is stored in the `feedbacks` table with the following information:
 - **Context**: Automatically captured URL, Browser, OS, Device, Screen size, and Country.
 - **Identity**: Linked to `visitor_id` and `session_id` from analytics.
 - **Status**: Management state for internal workflow.
+
+## 5. Customization
+
+You can customize the look and feel of the feedback widget by setting these CSS variables in your site's CSS:
+
+```css
+:root {
+  --ls-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* Default: System fonts */
+  --ls-bg: #18181b;   /* Widget background color */
+  --ls-text: #fafafa; /* Text color */
+  --ls-primary: #fafafa; /* Accent color for buttons and focus states */
+  --ls-radius: 0;     /* Border radius for widget and inputs */
+}
+```

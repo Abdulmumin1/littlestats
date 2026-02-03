@@ -33,7 +33,7 @@
     import { writable } from 'svelte/store';
 
     // Icons
-    import { LineChart, Filter, MousePointer2, Megaphone, Github, MessageSquare, Menu, X } from 'lucide-svelte';
+    import { LineChart, Filter, MousePointer2, Megaphone, Github, Mailbox, Menu, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
     // Data handling for Demo
@@ -102,7 +102,7 @@
         { id: 'funnels', label: 'funnels', component: 'Funnels', icon: Filter },
 		{ id: 'traffic', label: 'traffic', component: 'Traffic', icon: LineChart },
 		{ id: 'events', label: 'events', component: 'Events', icon: MousePointer2 },
-        { id: 'feedback', label: 'feedback', component: 'Feedback', icon: MessageSquare },
+        { id: 'feedback', label: 'feedback', component: 'Feedback', icon: Mailbox },
 	];
 
     let activeTab = $state(features[0].id);
