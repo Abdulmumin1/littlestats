@@ -140,7 +140,7 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 			container.id = 'ls-feedback-widget';
 			const shadow = container.attachShadow({ mode: 'closed' });
 			
-			const styles = `
+			const styles = \`
 				:host {
 					--ls-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 					--ls-bg: #18181b;
@@ -298,7 +298,7 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 					font-weight: 700;
 				}
 				.ls-branding-link:hover { color: var(--ls-text); }
-			`;
+			\`;
 			
 			shadow.innerHTML = \`
 				<style>\${styles}</style>
