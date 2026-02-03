@@ -279,7 +279,7 @@
                 <span class="text-{$color}-600">business decisions</span>
             </h1>
             <p class="mt-6 text-xl text-stone-500 dark:text-stone-400 max-w-2xl font-light">
-                Simple, privacy-focused analytics that helps you understand your users without the complexity.
+                Analytics that helps you understand your users without the complexity.
             </p>
         </header>
 
