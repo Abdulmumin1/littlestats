@@ -181,12 +181,16 @@ export class AnalyticsAPI {
 	private ws: WebSocket | null = null;
 	private wsCallbacks: Map<string, ((data: RealtimeStats) => void)[]> = new Map();
 
-	constructor(baseUrl = 'https://stats.littlestats.click') {
-		this.baseUrl = baseUrl;
-		this.wsUrl = baseUrl.replace('https://', 'wss://').replace('http://', 'ws://');
+	constructor(baseUrl = '') {
+		// Default to empty string for same-origin proxy (no CORS)
+		// This routes all API requests through the web app's /api/v2 proxy
+		this.baseUrl = baseUrl || '';
+		this.wsUrl = (baseUrl || (browser && location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://stats.littlestats.click'))
+			.replace('https://', 'wss://')
+			.replace('http://', 'ws://');
 	}
 
-	// Generic fetch wrapper
+	// Generic fetch wrapper - now uses same-origin proxy (no CORS)
 	private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
 		if (!browser) {
 			throw new Error('API client can only be used in browser');
@@ -195,7 +199,6 @@ export class AnalyticsAPI {
 		const url = `${this.baseUrl}${endpoint}`;
 		const response = await fetch(url, {
 			...options,
-			credentials: 'include',
 			headers: {
 				'Content-Type': 'application/json',
 				...options?.headers
@@ -562,11 +565,12 @@ export class AnalyticsAPI {
 	}
 }
 
-// Create singleton instance
+// Create singleton instance - uses local proxy by default (no CORS)
+// Pass VITE_DASHBOARD_URL only for local dev dashboard testing
 export const api = new AnalyticsAPI(
-	browser && import.meta.env.VITE_DASHBOARD_URL
+	browser && import.meta.env.VITE_USE_DIRECT_API === 'true' && import.meta.env.VITE_DASHBOARD_URL
 		? import.meta.env.VITE_DASHBOARD_URL
-		: (browser && location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://stats.littlestats.click')
+		: ''
 );
 
 export default api;
