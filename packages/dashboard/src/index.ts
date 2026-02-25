@@ -17,9 +17,19 @@ import { webhooksRouter } from "./routes/webhooks";
 
 // Middleware
 import { authCors, trackingCors, apiCors, feedbackCors } from "./middleware/cors";
+import { DurableObject } from "cloudflare:workers";
+
+
+class DomainAnalyticsSQLite extends DurableObject<Env> {
+  constructor(ctx: DurableObjectState, env: Env) {
+    // Required, as we're extending the base class.
+    super(ctx, env)
+  }
+
+}
 
 // Export Durable Object class
-export { DomainAnalyticsDO };
+export { DomainAnalyticsDO, DomainAnalyticsSQLite };
 
 // Create Hono app with proper types
 type Variables = {

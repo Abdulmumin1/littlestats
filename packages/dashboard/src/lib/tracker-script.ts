@@ -10,6 +10,17 @@ export async function generateTrackerScript(env: Env): Promise<string> {
     VISITOR_KEY: '_ls_vid'
   };
 
+  // Skip tracking on localhost or dev environments
+  const hostname = location.hostname;
+  const isDev = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.local') || hostname.includes('::1');
+  if (isDev) {
+    console.log('[LittleStats] Tracking disabled on development environment:', hostname);
+    // Still expose API functions as no-ops so code doesn't break
+    window.track = () => {};
+    window.identify = () => {};
+    return;
+  }
+
   class LittleStatsTracker {
     constructor(siteId, options = {}) {
       this.siteId = siteId;
@@ -25,6 +36,8 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       this.cache = this.loadCache();
       this.visitorId = this.getVisitorId();
       this.feedbackWidget = null;
+      this.feedbackInitialized = false;
+      this.saveCacheTimeout = null;
       this.init();
     }
     
@@ -38,8 +51,21 @@ export async function generateTrackerScript(env: Env): Promise<string> {
     }
     
     saveCache() {
+      // Debounce localStorage writes to prevent blocking during rapid events (scroll/mousemove)
+      if (this.saveCacheTimeout) clearTimeout(this.saveCacheTimeout);
+      this.saveCacheTimeout = setTimeout(() => {
+        this.cache.iat = Math.floor(Date.now() / 1000);
+        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(this.cache));
+      }, 250);
+    }
+    
+    flushCache() {
+      // Immediate save for page unload events
+      if (this.saveCacheTimeout) clearTimeout(this.saveCacheTimeout);
       this.cache.iat = Math.floor(Date.now() / 1000);
-      localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(this.cache));
+      try {
+        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(this.cache));
+      } catch (e) {}
     }
     
     getVisitorId() {
@@ -81,16 +107,29 @@ export async function generateTrackerScript(env: Env): Promise<string> {
         this.handleNavigation();
       };
       window.addEventListener('popstate', () => this.handleNavigation());
+      
+      // Debounced cache save on interaction events
       ['click', 'scroll', 'mousemove'].forEach(e => {
         document.addEventListener(e, () => this.saveCache(), { passive: true });
       });
       
+      // Flush cache on page unload
+      window.addEventListener('beforeunload', () => this.flushCache());
+      window.addEventListener('pagehide', () => this.flushCache());
+      
+      // Lazy-load feedback widget only when first needed
       if (this.options.feedback !== false && this.options.feedbackUi !== false) {
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', () => this.initFeedbackWidget());
-        } else {
-          this.initFeedbackWidget();
-        }
+        // Pre-check if feedback will be shown (e.g., via API call or delayed trigger)
+        this.scheduleFeedbackInit();
+      }
+    }
+    
+    scheduleFeedbackInit() {
+      // Defer widget initialization to after page load to avoid blocking
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => this.initFeedbackWidget(), { timeout: 5000 });
+      } else {
+        setTimeout(() => this.initFeedbackWidget(), 1000);
       }
     }
     
@@ -136,6 +175,17 @@ export async function generateTrackerScript(env: Env): Promise<string> {
     }
     
     initFeedbackWidget() {
+      // Prevent double initialization and only init when body is available
+      if (this.feedbackInitialized || !document.body) return;
+      this.feedbackInitialized = true;
+      
+      // If body not ready yet, wait for it
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.initFeedbackWidget());
+        return;
+      }
+      
+      // Widget creation code continues here...
 			const container = document.createElement('div');
 			container.id = 'ls-feedback-widget';
 			const shadow = container.attachShadow({ mode: 'closed' });
@@ -457,8 +507,13 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       return response.json();
     }
 
-    showFeedback() { if (this.feedbackWidget) this.feedbackWidget.querySelector('.ls-modal').classList.add('open'); }
-    hideFeedback() { if (this.feedbackWidget) this.feedbackWidget.querySelector('.ls-modal').classList.remove('open'); }
+    showFeedback() { 
+      if (!this.feedbackInitialized) this.initFeedbackWidget();
+      if (this.feedbackWidget) this.feedbackWidget.querySelector('.ls-modal').classList.add('open'); 
+    }
+    hideFeedback() { 
+      if (this.feedbackWidget) this.feedbackWidget.querySelector('.ls-modal').classList.remove('open'); 
+    }
     async submit(content, options = {}) {
       return this.submitFeedback({
         content,
