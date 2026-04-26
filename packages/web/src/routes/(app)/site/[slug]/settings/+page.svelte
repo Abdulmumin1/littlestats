@@ -24,8 +24,6 @@
 	let feedbackEmailNotifications = $derived(
 		feedbackEmailNotificationsOverride ?? (site.settings?.feedbackEmailNotifications !== false)
 	);
-	let isVerified = $derived(Boolean(site.verifiedAt) || verifiedOverride);
-	let currentToken = $derived(tokenOverride ?? site.verificationToken);
 	
 	// DNS host record based on domain type (subdomain vs root)
 	let dnsHost = $derived(getDnsHostRecord(site.domain));
