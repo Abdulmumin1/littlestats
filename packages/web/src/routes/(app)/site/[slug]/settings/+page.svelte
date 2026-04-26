@@ -6,26 +6,32 @@
 	import { Shield, CheckCircle, AlertTriangle, Copy, Trash2, Loader, RefreshCw } from 'lucide-svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import { verifySite, deleteSite } from './data.remote.js';
+	import { getDnsHostRecord } from '$lib/utils.js';
 
 	let { data } = $props();
 	let site = $derived(data.site);
 	
 	let verifying = $state(false);
 	let deleting = $state(false);
-	let isVerified = $state(data.site.verifiedAt);
+	let verifiedOverride = $state(false);
 	
 	// If the verification action returned a new token (legacy case), update it locally
-	let currentToken = $state(data.site.verificationToken);
+	let tokenOverride = $state(null);
+	let isVerified = $derived(Boolean(site.verifiedAt) || verifiedOverride);
+	let currentToken = $derived(tokenOverride ?? site.verificationToken);
+	
+	// DNS host record based on domain type (subdomain vs root)
+	let dnsHost = $derived(getDnsHostRecord(site.domain));
 	
 	async function handleVerify() {
 		verifying = true;
 		try {
 			const result = await verifySite({ siteId: site.id });
 			if (result.success && result.verified) {
-				isVerified = true;
+				verifiedOverride = true;
 				show_toast.set({ message: 'Domain verified successfully!', type: 'success' });
 			} else {
-				if (result.token) currentToken = result.token;
+				if (result.token) tokenOverride = result.token;
 				show_toast.set({ message: result.error || 'Verification failed', type: 'error' });
 			}
 		} catch (err) {
@@ -105,7 +111,7 @@
 						</div>
 						<div class="space-y-1 rounded-none">
 							<span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Name / Host</span>
-							<div class="p-2 bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-none">@</div>
+							<div class="p-2 bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-none">{dnsHost}</div>
 						</div>
 					</div>
 					

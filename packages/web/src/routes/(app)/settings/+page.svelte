@@ -7,6 +7,7 @@
 	import { color } from '$lib/colors/mixer.js';
 	import Seo from '../../../lib/components/generals/seo.svelte';
 	import { api } from '$lib/api/analytics.ts';
+	import { goto } from '$app/navigation';
 
 	let domains = $state([]);
 	let newDomainName = $state('');
@@ -73,6 +74,9 @@
 			
 			newDomainName = '';
 			show_toast.set({ message: `Domain ${result.domain} added successfully!`, type: 'success' });
+			
+			// Redirect to verification dashboard
+			goto(`/setup/guide?siteId=${result.id}`);
 		} catch (error) {
 			console.error('Failed to add domain:', error);
 			setError(error.message || 'Failed to add domain');
