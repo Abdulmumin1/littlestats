@@ -6,6 +6,7 @@
 	import { Shield, CheckCircle, AlertTriangle, Copy, Trash2, Loader, RefreshCw, Mail } from 'lucide-svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import { verifySite, deleteSite, updateSiteSettings } from './data.remote.js';
+	import { getDnsHostRecord } from '$lib/utils.js';
 
 	let { data } = $props();
 	let site = $derived(data.site);
@@ -23,6 +24,11 @@
 	let feedbackEmailNotifications = $derived(
 		feedbackEmailNotificationsOverride ?? (site.settings?.feedbackEmailNotifications !== false)
 	);
+	let isVerified = $derived(Boolean(site.verifiedAt) || verifiedOverride);
+	let currentToken = $derived(tokenOverride ?? site.verificationToken);
+	
+	// DNS host record based on domain type (subdomain vs root)
+	let dnsHost = $derived(getDnsHostRecord(site.domain));
 	
 	async function handleVerify() {
 		verifying = true;
@@ -142,7 +148,7 @@
 						</div>
 						<div class="space-y-1 rounded-none">
 							<span class="text-[10px] font-black uppercase tracking-widest text-stone-400">Name / Host</span>
-							<div class="p-2 bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-none">@</div>
+							<div class="p-2 bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-none">{dnsHost}</div>
 						</div>
 					</div>
 					

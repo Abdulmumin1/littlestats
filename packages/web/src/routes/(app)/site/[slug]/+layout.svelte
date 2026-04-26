@@ -1,5 +1,6 @@
 <script>
 	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
+	import { api } from '$lib/api/analytics.ts';
 	import { formatDate } from '$lib/utils.js';
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
@@ -26,11 +27,29 @@
 	}
 
 	let isOpen = $state(false);
+	let newFeedbackCount = $state(0);
 	let selectedStartDate = $state(new Date(dashboardStore.dateRange.startDate));
 	let selectedEndDate = $state(new Date(dashboardStore.dateRange.endDate));
 	const domain_options = $derived(data.domains.map((e) => ({ value: e.id, label: e.name })));
 
-	console.log(data	)
+	$effect(() => {
+		if (!data.domain_id) return;
+
+		let cancelled = false;
+		newFeedbackCount = 0;
+
+		api.getFeedback(data.domain_id, { status: 'new', limit: 1 })
+			.then((response) => {
+				if (!cancelled) newFeedbackCount = response.total || 0;
+			})
+			.catch((error) => {
+				if (!cancelled) console.error('Error fetching feedback count:', error);
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	});
 </script>
 
 <PickDate bind:isOpen bind:startDate={selectedStartDate} bind:endDate={selectedEndDate} on:close={(e) => {
@@ -66,8 +85,8 @@
 					<!-- Navigation -->
 					<div class="space-y-2 rounded-none">
 						<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 ml-4">Analytics</p>
-						<nav class="flex flex-col gap-1 rounded-none">
-							{#each links as link}
+						<nav class="flex flex-col gap-1 rounded-none" data-sveltekit-preload-data="hover">
+							{#each links as link (link.href)}
 								{@const Active = isActive(link.href)}
 								<a
 									href={link.href}
@@ -80,9 +99,9 @@
 										{link.text}
 									</div>
 
-									{#if link.text === 'Feedback' && data.newFeedbackCount > 0}
+									{#if link.text === 'Feedback' && newFeedbackCount > 0}
 										<span class="{Active ? 'bg-white/20 text-white' : `bg-${$color}-600 text-white`} text-[10px] font-black px-1.5 py-0.5 rounded-none min-w-[1.2rem] text-center tabular-nums">
-											{data.newFeedbackCount}
+											{newFeedbackCount}
 										</span>
 									{/if}
 								</a>
