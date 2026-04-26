@@ -38,42 +38,67 @@ export function calculateTrialDaysLeft(activationDate) {
 	return roundedDaysLeft;
 }
 
-export function formatDate(dateString, year=true) {
-	
-		const date = new Date(dateString);
-		
-		let d = date.toLocaleDateString('en-US', {
-			...(year && {year:'numeric'}),
-			month: 'short', // Use 'short' for "Jan" instead of "January"
-			day: '2-digit'
-		});
-		if (d == 'Invalid Date') return dateString
-		return d;
-	
+export function formatDate(dateString, year = true) {
+	const date = new Date(dateString);
+
+	let d = date.toLocaleDateString('en-US', {
+		...(year && { year: 'numeric' }),
+		month: 'short', // Use 'short' for "Jan" instead of "January"
+		day: '2-digit'
+	});
+	if (d == 'Invalid Date') return dateString;
+	return d;
 }
 
-
 export function executeInWorker(func, ...args) {
-    return new Promise((resolve, reject) => {
-        const blob = new Blob([
-            `onmessage = function(e) {
+	return new Promise((resolve, reject) => {
+		const blob = new Blob(
+			[
+				`onmessage = function(e) {
                 const [funcStr, args] = e.data;
                 const func = new Function('return ' + funcStr)();
                 postMessage(func(...args));
             }`
-        ], { type: 'application/javascript' });
-        
-        const worker = new Worker(URL.createObjectURL(blob));
-        worker.onmessage = (e) => {
-            resolve(e.data);
-            worker.terminate();
-        };
-        worker.onerror = (e) => {
-            reject(e.message);
-            worker.terminate();
-        };
+			],
+			{ type: 'application/javascript' }
+		);
+
+		const worker = new Worker(URL.createObjectURL(blob));
+		worker.onmessage = (e) => {
+			resolve(e.data);
+			worker.terminate();
+		};
+		worker.onerror = (e) => {
+			reject(e.message);
+			worker.terminate();
+		};
 		// console.log(func.toString())
-        
-        worker.postMessage([func.toString(), args]);
-    });
+
+		worker.postMessage([func.toString(), args]);
+	});
+}
+
+/**
+ * Get the DNS host record value for a domain.
+ * Assumes the DNS zone is the last two labels of the domain.
+ * @param {string} domain - The domain name (e.g., "example.com" or "blog.example.com")
+ * @returns {string} - The host value for DNS TXT record ("@" for root domains, subdomain for subdomains)
+ */
+export function getDnsHostRecord(domain) {
+	if (!domain) return '@';
+
+	const cleanDomain = domain
+		.replace(/^https?:\/\//, '')
+		.split('/')[0]
+		.split(':')[0]
+		.toLowerCase()
+		.replace(/\.$/, '');
+	const parts = cleanDomain.split('.').filter(Boolean);
+
+	if (parts.length <= 2) {
+		return '@';
+	}
+
+	const subdomainParts = parts.slice(0, parts.length - 2);
+	return subdomainParts.join('.');
 }

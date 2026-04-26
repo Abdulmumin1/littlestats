@@ -4,6 +4,7 @@
 	import { show_toast } from '$lib/toast.js';
 	import { goto } from '$app/navigation';
 	import { enhance } from '$app/forms';
+	import { getDnsHostRecord } from '$lib/utils.js';
 
 	let { data, form } = $props();
 	let site = $derived(data.site);
@@ -11,6 +12,7 @@
 	let verifying = $state(false);
 
 	let isVerified = $derived(site.verifiedAt || form?.verified);
+	let dnsHost = $derived(getDnsHostRecord(site.domain));
 
 	function generateScriptUrl(site) {
 		return `<script src="https://stats.littlestats.click/tracker.js" data-site-id="${site.id}"><\/script>`;
@@ -95,7 +97,7 @@
 							<span class="font-mono text-stone-900 dark:text-stone-100">TXT</span>
 							
 							<span class="font-black uppercase tracking-widest text-stone-400">Host</span>
-							<span class="font-mono text-stone-900 dark:text-stone-100">@</span>
+							<span class="font-mono text-stone-900 dark:text-stone-100">{dnsHost}</span>
 							
 							<span class="font-black uppercase tracking-widest text-stone-400 self-center">Value</span>
 							<div class="flex items-center justify-between gap-2 p-2 bg-white dark:bg-stone-900 border border-stone-100 dark:border-stone-800 rounded-none group">
