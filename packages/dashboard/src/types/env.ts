@@ -4,6 +4,11 @@ export interface Env {
   // D1 Database
   DB: D1Database;
 
+  // Email Routing
+  SEND_EMAIL?: {
+    send(message: unknown): Promise<void>;
+  };
+
   // Durable Objects
   ANALYTICS_DO: DurableObjectNamespace;
 
@@ -16,7 +21,7 @@ export interface Env {
   BETTER_AUTH_SECRET: string;
   BETTER_AUTH_URL: string;
   TRUSTED_ORIGINS?: string; // Comma-separated list of trusted origins
-  COOKIE_DOMAIN?: string;   // Optional cookie domain
+  COOKIE_DOMAIN?: string; // Optional cookie domain
 
   // OAuth credentials
   GOOGLE_CLIENT_ID?: string;
@@ -35,9 +40,9 @@ export interface Env {
 
   // Dodo Payments configuration
   DODO_PAYMENTS_API_KEY: string;
-  DODO_PAYMENTS_ENV?: 'test' | 'live';
+  DODO_PAYMENTS_ENV?: "test" | "live";
   DODO_WEBHOOK_SECRET?: string;
 
   // Environment
-  ENVIRONMENT?: 'development' | 'production';
+  ENVIRONMENT?: "development" | "production";
 }
