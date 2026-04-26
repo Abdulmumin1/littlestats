@@ -3,29 +3,36 @@
 	import { goto } from '$app/navigation';
 	import { color } from '$lib/colors/mixer.js';
 	import { show_toast } from '$lib/toast.js';
-	import { Shield, CheckCircle, AlertTriangle, Copy, Trash2, Loader, RefreshCw } from 'lucide-svelte';
+	import { Shield, CheckCircle, AlertTriangle, Copy, Trash2, Loader, RefreshCw, Mail } from 'lucide-svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
-	import { verifySite, deleteSite } from './data.remote.js';
+	import { verifySite, deleteSite, updateSiteSettings } from './data.remote.js';
 
 	let { data } = $props();
 	let site = $derived(data.site);
 	
 	let verifying = $state(false);
 	let deleting = $state(false);
-	let isVerified = $state(data.site.verifiedAt);
+	let updatingNotifications = $state(false);
+	let verifiedOverride = $state(false);
 	
 	// If the verification action returned a new token (legacy case), update it locally
-	let currentToken = $state(data.site.verificationToken);
+	let tokenOverride = $state(null);
+	let feedbackEmailNotificationsOverride = $state(null);
+	let isVerified = $derived(Boolean(site.verifiedAt) || verifiedOverride);
+	let currentToken = $derived(tokenOverride ?? site.verificationToken);
+	let feedbackEmailNotifications = $derived(
+		feedbackEmailNotificationsOverride ?? (site.settings?.feedbackEmailNotifications !== false)
+	);
 	
 	async function handleVerify() {
 		verifying = true;
 		try {
 			const result = await verifySite({ siteId: site.id });
 			if (result.success && result.verified) {
-				isVerified = true;
+				verifiedOverride = true;
 				show_toast.set({ message: 'Domain verified successfully!', type: 'success' });
 			} else {
-				if (result.token) currentToken = result.token;
+				if (result.token) tokenOverride = result.token;
 				show_toast.set({ message: result.error || 'Verification failed', type: 'error' });
 			}
 		} catch (err) {
@@ -58,6 +65,36 @@
 	function copyToken() {
 		navigator.clipboard.writeText(currentToken || '');
 		show_toast.set({ message: 'Token copied to clipboard', type: 'success' });
+	}
+
+	async function toggleFeedbackEmailNotifications() {
+		const nextValue = !feedbackEmailNotifications;
+		const previousValue = feedbackEmailNotifications;
+		feedbackEmailNotificationsOverride = nextValue;
+		updatingNotifications = true;
+
+		try {
+			const result = await updateSiteSettings({
+				siteId: site.id,
+				feedbackEmailNotifications: nextValue
+			});
+
+			if (!result.success) {
+				feedbackEmailNotificationsOverride = previousValue;
+				show_toast.set({ message: result.error || 'Failed to update notifications', type: 'error' });
+				return;
+			}
+
+			show_toast.set({
+				message: nextValue ? 'Feedback email notifications enabled' : 'Feedback email notifications disabled',
+				type: 'success'
+			});
+		} catch (err) {
+			feedbackEmailNotificationsOverride = previousValue;
+			show_toast.set({ message: err.message || 'Failed to update notifications', type: 'error' });
+		} finally {
+			updatingNotifications = false;
+		}
 	}
 </script>
 
@@ -155,6 +192,36 @@
 				</div>
 			</div>
 		{/if}
+	</div>
+
+	<!-- Feedback Notifications -->
+	<div class="rounded-none bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-8 shadow-none">
+		<div class="flex items-center justify-between gap-6">
+			<div class="space-y-1">
+				<h2 class="flex items-center gap-2 text-sm font-bold text-stone-900 dark:text-white uppercase tracking-tight rounded-none">
+					<Mail size={16} class="text-stone-400" />
+					Feedback Email Notifications
+				</h2>
+				<p class="text-xs text-stone-500 dark:text-stone-400">
+					Email the account owner when someone submits feedback for <strong>{site.domain}</strong>.
+				</p>
+			</div>
+
+			<button
+				type="button"
+				onclick={toggleFeedbackEmailNotifications}
+				disabled={updatingNotifications}
+				class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-none border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 disabled:opacity-50 {feedbackEmailNotifications ? `bg-${$color}-600` : 'bg-stone-200 dark:bg-stone-700'}"
+				role="switch"
+				aria-checked={feedbackEmailNotifications}
+				aria-label="Toggle feedback email notifications"
+			>
+				<span
+					aria-hidden="true"
+					class="pointer-events-none inline-block h-5 w-5 transform rounded-none bg-white shadow ring-0 transition duration-200 ease-in-out {feedbackEmailNotifications ? 'translate-x-5' : 'translate-x-0'}"
+				></span>
+			</button>
+		</div>
 	</div>
 
 	<!-- Danger Zone -->

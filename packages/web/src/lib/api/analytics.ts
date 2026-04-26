@@ -10,6 +10,10 @@ export interface Site {
 	name: string | null;
 	plan: 'free' | 'pro' | 'enterprise';
 	planStatus: string;
+	settings?: {
+		feedbackEmailNotifications?: boolean;
+		[key: string]: unknown;
+	};
 	domainKey: string;
 	createdAt: string;
 	sessionCount?: number;
@@ -185,7 +189,12 @@ export class AnalyticsAPI {
 		// Default to empty string for same-origin proxy (no CORS)
 		// This routes all API requests through the web app's /api/v2 proxy
 		this.baseUrl = baseUrl || '';
-		this.wsUrl = (baseUrl || (browser && location.hostname === 'localhost' ? 'http://localhost:8787' : 'https://stats.littlestats.click'))
+		this.wsUrl = (
+			baseUrl ||
+			(browser && location.hostname === 'localhost'
+				? 'http://localhost:8787'
+				: 'https://stats.littlestats.click')
+		)
 			.replace('https://', 'wss://')
 			.replace('http://', 'ws://');
 	}
@@ -217,7 +226,7 @@ export class AnalyticsAPI {
 	private async fetchPost<T>(endpoint: string, body: unknown): Promise<T> {
 		return this.fetch<T>(endpoint, {
 			method: 'POST',
-			body: JSON.stringify(body),
+			body: JSON.stringify(body)
 		});
 	}
 
@@ -325,7 +334,7 @@ export class AnalyticsAPI {
 			cursor?: string;
 			filter?: StatsFilter;
 			eventName?: string;
-	excludePageview?: boolean;
+			excludePageview?: boolean;
 		}
 	): Promise<{ events: RawEvent[]; total: number; nextCursor: string | null }> {
 		const params = new URLSearchParams();
@@ -441,7 +450,7 @@ export class AnalyticsAPI {
 			steps,
 			funnelType: options?.funnelType || 'session',
 			startDate: options?.filter?.startDate,
-			endDate: options?.filter?.endDate,
+			endDate: options?.filter?.endDate
 		});
 	}
 
@@ -458,7 +467,7 @@ export class AnalyticsAPI {
 
 	async deleteFunnel(siteId: string, funnelId: string): Promise<{ success: true }> {
 		return this.fetch(`/api/v2/sites/${siteId}/funnels/${funnelId}`, {
-			method: 'DELETE',
+			method: 'DELETE'
 		});
 	}
 
@@ -516,7 +525,13 @@ export class AnalyticsAPI {
 	}
 
 	// Verify site
-	async verifySite(siteId: string): Promise<{ success: boolean; verified: boolean; message?: string; error?: string; token?: string }> {
+	async verifySite(siteId: string): Promise<{
+		success: boolean;
+		verified: boolean;
+		message?: string;
+		error?: string;
+		token?: string;
+	}> {
 		return this.fetch(`/api/v2/sites/${siteId}/verify`, {
 			method: 'POST'
 		});
@@ -526,6 +541,16 @@ export class AnalyticsAPI {
 	async deleteSite(siteId: string): Promise<{ success: boolean }> {
 		return this.fetch(`/api/v2/sites/${siteId}`, {
 			method: 'DELETE'
+		});
+	}
+
+	async updateSiteSettings(
+		siteId: string,
+		settings: { feedbackEmailNotifications: boolean }
+	): Promise<{ success: boolean; settings: Site['settings'] }> {
+		return this.fetch(`/api/v2/sites/${siteId}/settings`, {
+			method: 'PATCH',
+			body: JSON.stringify(settings)
 		});
 	}
 
