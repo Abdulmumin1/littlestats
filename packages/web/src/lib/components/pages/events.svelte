@@ -382,7 +382,7 @@
 		<p class="text-xs font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Track, validate, and debug product actions</p>
 	</div>
 
-	<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+	<div class="grid min-h-[60vh] grid-cols-1 content-start gap-6 lg:grid-cols-12">
 		<div class="lg:col-span-4 space-y-4">
 			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none">
 				<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">
@@ -429,7 +429,7 @@
 			</div>
 		</div>
 
-		<div class="lg:col-span-8 space-y-6">
+		<div class="lg:col-span-8 min-h-[60vh] space-y-6">
 			<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
 					<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">

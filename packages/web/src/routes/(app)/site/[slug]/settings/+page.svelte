@@ -7,6 +7,7 @@
 	import Seo from '$lib/components/generals/seo.svelte';
 	import { verifySite, deleteSite, updateSiteSettings } from './data.remote.js';
 	import { getDnsHostRecord } from '$lib/utils.js';
+	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
 
 	let { data } = $props();
 	let site = $derived(data.site);
@@ -106,7 +107,7 @@
 	<Seo title="Site Settings - Littlestats" />
 </svelte:head>
 
-<div class="space-y-8 max-w-4xl rounded-none">
+<SitePageShell maxWidth="max-w-4xl" class="space-y-8">
 	<header class="px-2 rounded-none">
 		<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight">Site Settings</h1>
 		<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Manage domain configuration</p>
@@ -252,4 +253,4 @@
 			{/if}
 		</button>
 	</div>
-</div>
+</SitePageShell>

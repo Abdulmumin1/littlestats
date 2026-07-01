@@ -252,9 +252,11 @@
 	</div>
 
 	{#if loading && feedbackList.length === 0}
-		<LoadingState />
+		<div class="flex min-h-[60vh] items-center justify-center">
+			<LoadingState />
+		</div>
 	{:else if feedbackList.length === 0}
-		<div in:fade class="flex flex-col items-center justify-center py-32 border border-dashed border-stone-200 dark:border-stone-800 bg-stone-50/30 dark:bg-stone-950/30">
+		<div in:fade class="flex min-h-[60vh] flex-col items-center justify-center py-32 border border-dashed border-stone-200 dark:border-stone-800 bg-stone-50/30 dark:bg-stone-950/30">
 			<AlertCircle size={32} class="text-stone-300 dark:text-stone-700 mb-4" />
 			<p class="text-sm font-serif italic text-stone-400">No feedback found for this selection</p>
 			{#if statusFilter || categoryFilter}
@@ -267,7 +269,7 @@
 			{/if}
 		</div>
 	{:else}
-		<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+		<div class="grid min-h-[60vh] grid-cols-1 content-start gap-8 items-start lg:grid-cols-12">
 			<!-- Feedback List -->
 			<div class="lg:col-span-7">
 				{#key statusFilter + offset + categoryFilter}
