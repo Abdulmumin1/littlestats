@@ -1,7 +1,7 @@
 // Drizzle schema for Better Auth
 // Cloudflare D1 (SQLite) compatible
 
-import { sqliteTable, text, integer, unique, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, unique, primaryKey, index } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -114,6 +114,7 @@ export const funnels = sqliteTable("funnels", {
 // Analytics events table
 export const events = sqliteTable("events", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  eventUid: text("event_uid"),
   siteId: text("site_id").notNull().references(() => sites.id, { onDelete: "cascade" }),
   sessionId: text("session_id").notNull().references(() => analyticsSessions.id, { onDelete: "cascade" }),
   visitId: text("visit_id").notNull(),
@@ -140,7 +141,12 @@ export const events = sqliteTable("events", {
   engagementTime: integer("engagement_time"),
   campaignBucket: text("campaign_bucket"),
   createdAt: text("created_at"),
-});
+}, (table) => ({
+  siteTime: index("idx_events_site_time_id").on(table.siteId, table.createdAt, table.id),
+  siteTypeTime: index("idx_events_site_type_time").on(table.siteId, table.eventType, table.createdAt),
+  siteEventTime: index("idx_events_site_event_time").on(table.siteId, table.eventType, table.eventName, table.createdAt),
+  siteVisitTime: index("idx_events_site_visit_time").on(table.siteId, table.visitId, table.createdAt),
+}));
 
 // Hourly aggregated stats
 export const hourlyStats = sqliteTable("hourly_stats", {

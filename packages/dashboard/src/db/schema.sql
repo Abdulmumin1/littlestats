@@ -151,6 +151,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_browser ON sessions(site_id, browser);
 -- Events (pageviews and custom events - 90 day retention)
 CREATE TABLE IF NOT EXISTS events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  event_uid TEXT,
   site_id TEXT NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
   session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   visit_id TEXT NOT NULL,                 -- Changes every 30 min
@@ -207,6 +208,11 @@ CREATE INDEX IF NOT EXISTS idx_events_country ON events(site_id, country);
 CREATE INDEX IF NOT EXISTS idx_events_device ON events(site_id, device);
 CREATE INDEX IF NOT EXISTS idx_events_browser ON events(site_id, browser);
 CREATE INDEX IF NOT EXISTS idx_events_os ON events(site_id, os);
+CREATE INDEX IF NOT EXISTS idx_events_site_time_id ON events(site_id, created_at, id);
+CREATE INDEX IF NOT EXISTS idx_events_site_type_time ON events(site_id, event_type, created_at);
+CREATE INDEX IF NOT EXISTS idx_events_site_event_time ON events(site_id, event_type, event_name, created_at);
+CREATE INDEX IF NOT EXISTS idx_events_site_visit_time ON events(site_id, visit_id, created_at);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_events_uid ON events(site_id, event_uid) WHERE event_uid IS NOT NULL;
 
 -- Event properties (typed key-value - 90 day retention)
 CREATE TABLE IF NOT EXISTS event_properties (
