@@ -1,7 +1,7 @@
 // Campaigns stats - Campaign tracking and goals
 import type { D1Database } from "@cloudflare/workers-types";
 import type { StatsFilter } from "../../types";
-import { getDefaultDateRange } from "./filter-utils";
+import { getDateBounds, getDefaultDateRange } from "./filter-utils";
 
 export class CampaignsStats {
   constructor(private db: D1Database, private siteId: string) {}
@@ -15,6 +15,7 @@ export class CampaignsStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const conversionExpr = goalEventName
       ? `SUM(CASE WHEN event_type = 2 AND event_name = '${goalEventName.replace(/'/g, "''")}' THEN 1 ELSE 0 END)`
@@ -28,7 +29,7 @@ export class CampaignsStats {
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         AND campaign_bucket IS NOT NULL
         AND campaign_bucket != ''
         AND lower(campaign_bucket) != 'direct'
@@ -41,8 +42,8 @@ export class CampaignsStats {
 
     const { results } = await this.db.prepare(sql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`,
+      start,
+      endExclusive,
       limit
     ).all<{ bucket: string; visits: number; conversions: number }>();
 
@@ -63,6 +64,7 @@ export class CampaignsStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const totalSql = `
       SELECT 
@@ -71,14 +73,14 @@ export class CampaignsStats {
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
     `;
 
     const totalResult = await this.db.prepare(totalSql).bind(
       goalEventName,
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`
+      start,
+      endExclusive
     ).first<{ conversions: number; total_visits: number }>();
 
     const conversions = totalResult?.conversions || 0;
@@ -90,7 +92,7 @@ export class CampaignsStats {
         SELECT DISTINCT visit_id
         FROM events
         WHERE site_id = ? AND event_type = 2 AND event_name = ?
-          AND created_at >= ? AND created_at <= ?
+          AND created_at >= ? AND created_at < ?
       ),
       visit_attribution AS (
         SELECT 
@@ -116,7 +118,7 @@ export class CampaignsStats {
 
     const { results: bucketResults } = await this.db.prepare(byBucketSql).bind(
       this.siteId, goalEventName,
-      `${startDate}T00:00:00`, `${endDate}T23:59:59`,
+      start, endExclusive,
       this.siteId
     ).all<{ bucket: string; conversions: number }>();
 
@@ -132,14 +134,14 @@ export class CampaignsStats {
         COUNT(*) as conversions
       FROM events
       WHERE site_id = ? AND event_type = 2 AND event_name = ?
-        AND created_at >= ? AND created_at <= ?
+        AND created_at >= ? AND created_at < ?
       GROUP BY date
       ORDER BY date ASC
     `;
 
     const { results: tsResults } = await this.db.prepare(timeSeriesSql).bind(
       this.siteId, goalEventName,
-      `${startDate}T00:00:00`, `${endDate}T23:59:59`
+      start, endExclusive
     ).all<{ date: string; conversions: number }>();
 
     const timeSeries = (tsResults || []).map(r => ({
@@ -169,6 +171,7 @@ export class CampaignsStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const groupBy = options?.groupBy || 'source';
     const metric = options?.metric || 'conversions';
@@ -225,7 +228,7 @@ export class CampaignsStats {
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         ${excludeNonCampaigns}
       GROUP BY segment
       ORDER BY total DESC
@@ -234,8 +237,8 @@ export class CampaignsStats {
 
     const { results: topResults } = await this.db.prepare(topSql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`,
+      start,
+      endExclusive,
       segmentsLimit
     ).all<{ segment: string; total: number }>();
 
@@ -253,7 +256,7 @@ export class CampaignsStats {
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         ${excludeNonCampaigns}
       GROUP BY timestamp, segment
       ORDER BY timestamp ASC
@@ -261,8 +264,8 @@ export class CampaignsStats {
 
     const { results: seriesResults } = await this.db.prepare(seriesSql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`
+      start,
+      endExclusive
     ).all<{ timestamp: string; segment: string; value: number }>();
 
     const pointsMap = new Map<string, { timestamp: string; total: number; segments: Record<string, number> }>();

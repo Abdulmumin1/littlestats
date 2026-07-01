@@ -22,6 +22,8 @@ export class DomainAnalyticsDO {
   private lastFlush: number = 0;
   private totalEventsSinceFlush: number = 0;
   private siteId: string = "";
+  private flushPromise: Promise<void> | null = null;
+  private hourRolloverPromise: Promise<void> | null = null;
   
   // Limit Enforcement State
   private monthlyUsage: number = 0;
@@ -64,6 +66,12 @@ export class DomainAnalyticsDO {
 
   private async restoreState(): Promise<void> {
     try {
+      // Restore metadata before any rollover flush. flushHourlyStats() requires
+      // the site ID, and a Durable Object can wake up after the hour changed.
+      this.lastFlush = (await this.state.storage.get<number>("lastFlush")) || 0;
+      this.totalEventsSinceFlush = (await this.state.storage.get<number>("totalEventsSinceFlush")) || 0;
+      this.siteId = (await this.state.storage.get<string>("siteId")) || "";
+
       // Restore active sessions
       const storedSessions = await this.state.storage.get<[string, SessionState][]>("activeSessions");
       if (storedSessions) {
@@ -71,16 +79,22 @@ export class DomainAnalyticsDO {
         const hydratedSessions = storedSessions.map(([id, session]) => {
           return [id, {
             ...session,
+            currentVisitPageViews: session.currentVisitPageViews ?? (session.isBounce ? Math.min(session.pageViews, 1) : 2),
+            totalEvents: session.totalEvents ?? session.pageViews + session.events.length,
+            identifiedUserId: session.identifiedUserId ?? null,
             firstSeen: new Date(session.firstSeen),
             lastSeen: new Date(session.lastSeen),
             events: session.events.map(event => ({
               ...event,
+              eventUid: event.eventUid || crypto.randomUUID(),
               createdAt: new Date(event.createdAt)
             }))
           }] as [string, SessionState];
         });
         
         this.activeSessions = new Map(hydratedSessions);
+        const bufferedEventCount = hydratedSessions.reduce((total, [, session]) => total + session.events.length, 0);
+        this.totalEventsSinceFlush = Math.max(this.totalEventsSinceFlush, bufferedEventCount);
         console.log(`[DO] Restored ${this.activeSessions.size} sessions`);
       }
 
@@ -103,25 +117,27 @@ export class DomainAnalyticsDO {
         }
       }
 
-      // Restore metadata
-      this.lastFlush = (await this.state.storage.get<number>("lastFlush")) || 0;
-      this.totalEventsSinceFlush = (await this.state.storage.get<number>("totalEventsSinceFlush")) || 0;
-      this.siteId = (await this.state.storage.get<string>("siteId")) || "";
-
       // Load monthly usage (non-blocking for startup, but blocking for first request if not finished)
       // We await it here because restoreState blocks concurrency, ensuring it's ready
       if (this.siteId) {
         await this.loadMonthlyUsage();
       }
 
+      if (this.totalEventsSinceFlush > 0) {
+        await this.state.storage.setAlarm(Date.now() + FLUSH_INTERVAL);
+      }
+
       // Clean up expired sessions
-      this.cleanupExpiredSessions();
+      await this.cleanupExpiredSessions();
 
     } catch (error) {
       console.error("[DO] Error restoring state:", error);
-      // Initialize fresh state
-      this.activeSessions = new Map();
-      this.currentHour = this.initializeHourlyStats();
+      // Keep whatever was restored successfully. Reinitializing here allowed a
+      // transient D1 rollover failure to wipe restored buffers on the next
+      // persist. The alarm/request path will retry idempotently.
+      if (this.totalEventsSinceFlush > 0) {
+        await this.state.storage.setAlarm(Date.now() + FLUSH_INTERVAL);
+      }
     }
   }
 
@@ -220,7 +236,11 @@ export class DomainAnalyticsDO {
         WHERE site_id = ? AND hour >= ?
       `).bind(this.siteId, startOfMonth).first<{ total: number }>();
 
-      this.monthlyUsage = (result?.total || 0) + this.totalEventsSinceFlush;
+      const bufferedBillableEvents = Array.from(this.activeSessions.values()).reduce(
+        (total, session) => total + session.events.filter(event => event.eventType === 1 || event.eventType === 2).length,
+        0,
+      );
+      this.monthlyUsage = (result?.total || 0) + bufferedBillableEvents;
       this.monthlyUsageLoaded = true;
     } catch (e) {
       console.error("[DO] Error loading monthly usage:", e);
@@ -294,6 +314,10 @@ export class DomainAnalyticsDO {
       return Response.json({ error: "Missing website ID" }, { status: 400 });
     }
 
+    if (this.siteId && payload.website !== this.siteId) {
+      return Response.json({ error: "Website ID does not match tracking endpoint" }, { status: 400 });
+    }
+
     // Ensure site ID is set
     if (!this.siteId) {
       this.siteId = payload.website;
@@ -311,15 +335,16 @@ export class DomainAnalyticsDO {
     const event = this.createEvent(payload, session, now, clientIP, country);
     
     // Update session
-    this.updateSession(session, event, payload.type);
+    this.updateSession(session, event);
     
     // Update hourly stats
-    this.updateHourlyStats(session, event, payload.type);
+    await this.updateHourlyStats(session, event);
     
     // Add event to session buffer
     session.events.push(event);
+    session.totalEvents++;
     this.totalEventsSinceFlush++;
-    this.monthlyUsage++;
+    if (event.eventType === 1 || event.eventType === 2) this.monthlyUsage++;
 
     // Persist state immediately (requirement: no data loss)
     await this.persistState();
@@ -330,14 +355,15 @@ export class DomainAnalyticsDO {
 		// Custom events are often used for conversions (e.g. form_submitted) and should
 		// be queryable immediately from the dashboard (which reads from D1).
 		// Pageviews can remain batched for throughput.
-		if (payload.type === "event") {
-			await this.flushSessionToD1(session);
+		if (event.eventType === 2) {
+			await this.flushToD1();
 		}
 
     // Check if we need to flush to D1
     if (this.shouldFlush()) {
-      // Don't await - let it run in background
-      this.flushToD1().catch(console.error);
+      this.state.waitUntil(this.flushToD1().catch(console.error));
+    } else if (this.totalEventsSinceFlush === 1) {
+      await this.state.storage.setAlarm(Date.now() + FLUSH_INTERVAL);
     }
 
     // Return cache data to client
@@ -363,6 +389,10 @@ export class DomainAnalyticsDO {
     if (payload.id) {
       // Identified user
       sessionId = this.generateSessionId(this.siteId, payload.id, "", monthSalt);
+    } else if (payload.visitorId) {
+      // Prefer the first-party visitor ID. IP + UA changes frequently and used
+      // to merge unrelated visitors behind the same proxy or NAT.
+      sessionId = this.generateSessionId(this.siteId, payload.visitorId, "", monthSalt);
     } else {
       // Anonymous user - use IP + User Agent
       sessionId = this.generateSessionId(
@@ -385,17 +415,19 @@ export class DomainAnalyticsDO {
         console.log(`[DO] Session ${sessionId} expired after ${timeSinceLastActivity}ms`);
         
         // Flush old session data first
-        await this.flushSessionToD1(session);
+        await this.flushToD1();
         
         // Create new visit
         session.visitId = this.generateVisitId(sessionId, now);
         session.visitCount++;
+        session.currentVisitPageViews = 0;
         session.isBounce = true; // Reset bounce status for new visit
       }
 
       // Update session activity
       session.lastSeen = now;
       session.lastActivity = now.getTime();
+      if (payload.id) session.identifiedUserId = payload.id;
       
     } else {
       // Create new session
@@ -409,12 +441,15 @@ export class DomainAnalyticsDO {
         lastSeen: now,
         lastActivity: now.getTime(),
         pageViews: 0,
+        currentVisitPageViews: 0,
+        totalEvents: 0,
         events: [],
         visitCount: 1,
         deviceInfo: this.parseDeviceInfo(payload, country),
         isBounce: true, // Will be set to false on second pageview
         totalEngagementTime: 0,
         lastHeartbeat: now.getTime(),
+        identifiedUserId: payload.id || null,
       };
 
       this.activeSessions.set(sessionId, session);
@@ -438,6 +473,7 @@ export class DomainAnalyticsDO {
       case "pageview": eventType = 1; break;
       case "event": eventType = 2; break;
       case "page_exit": eventType = 3; break;
+      case "identify": eventType = 4; break;
       default: eventType = 1;
     }
 
@@ -478,6 +514,7 @@ export class DomainAnalyticsDO {
 
     return {
       id: 0, // Will be set by D1
+      eventUid: crypto.randomUUID(),
       siteId: this.siteId,
       sessionId: session.id,
       visitId: session.visitId,
@@ -515,58 +552,51 @@ export class DomainAnalyticsDO {
 
   private updateSession(
     session: SessionState,
-    event: Event,
-    eventType: string
+    event: Event
   ): void {
     // Update page view count
-    if (eventType === "pageview") {
+    if (event.eventType === 1) {
       session.pageViews++;
+      session.currentVisitPageViews++;
       
       // Not a bounce if more than one pageview
-      if (session.pageViews > 1) {
+      if (session.currentVisitPageViews > 1) {
         session.isBounce = false;
       }
     }
 
     // Handle page exit with duration
-    if (eventType === "page_exit" && event.engagementTime) {
+    if (event.eventType === 3 && event.engagementTime) {
       session.totalEngagementTime += event.engagementTime;
     }
   }
 
-  private updateHourlyStats(
+  private async updateHourlyStats(
     session: SessionState,
-    event: Event,
-    eventType: string
-  ): void {
+    event: Event
+  ): Promise<void> {
     const now = new Date();
     const currentHourStr = this.formatHour(now);
 
     // Check if hour rolled over
     if (this.currentHour.hour !== currentHourStr) {
-      // Check for month rollover
-      // If the month of the old hour is different from the current month, reset usage
-      const oldDate = new Date(this.currentHour.hour);
-      if (oldDate.getUTCMonth() !== now.getUTCMonth()) {
-        console.log(`[DO] Month rolled over: ${oldDate.toISOString()} -> ${now.toISOString()}. Resetting monthly usage.`);
-        this.monthlyUsage = 0;
-      }
-
-      this.flushHourlyStats();
-      this.currentHour = this.initializeHourlyStats();
+      await this.rolloverHour(now);
     }
 
-    // Update stats
-    this.currentHour.views++;
-    this.currentHour.visits.add(session.visitId);
-    this.currentHour.visitors.add(session.id);
+    // Traffic metrics are based on pageviews. Custom events and page exits
+    // must not inflate the headline view, visit, or visitor counts.
+    if (event.eventType === 1) {
+      this.currentHour.views++;
+      this.currentHour.visits.add(session.visitId);
+      this.currentHour.visitors.add(session.id);
+    }
 
-    if (eventType === "event" && event.eventName) {
+    if (event.eventType === 2 && event.eventName) {
       this.currentHour.customEvents++;
     }
 
     // Bounce detection
-    if (eventType === "page_exit" && session.isBounce) {
+    if (event.eventType === 3 && session.isBounce) {
       this.currentHour.bounceCount++;
     }
 
@@ -574,6 +604,35 @@ export class DomainAnalyticsDO {
     if (event.engagementTime) {
       this.currentHour.totalDuration += event.engagementTime;
     }
+  }
+
+  private rolloverHour(now: Date): Promise<void> {
+    if (this.hourRolloverPromise) return this.hourRolloverPromise;
+
+    this.hourRolloverPromise = (async () => {
+      if (this.currentHour.hour === this.formatHour(now)) return;
+
+      const oldDate = new Date(this.currentHour.hour);
+      // Serialize with event flushing. The old hour is only reset after D1 has
+      // accepted its final aggregate, so a transient failure cannot erase it.
+      await this.flushToD1();
+      await this.flushHourlyStats();
+
+      if (
+        oldDate.getUTCFullYear() !== now.getUTCFullYear() ||
+        oldDate.getUTCMonth() !== now.getUTCMonth()
+      ) {
+        console.log(`[DO] Month rolled over: ${oldDate.toISOString()} -> ${now.toISOString()}. Resetting monthly usage.`);
+        this.monthlyUsage = 0;
+      }
+
+      this.currentHour = this.initializeHourlyStats();
+      await this.persistState();
+    })().finally(() => {
+      this.hourRolloverPromise = null;
+    });
+
+    return this.hourRolloverPromise;
   }
 
   // ============================================
@@ -798,10 +857,29 @@ export class DomainAnalyticsDO {
     );
   }
 
-  private async flushToD1(): Promise<void> {
+  private flushToD1(): Promise<void> {
+    if (this.flushPromise) return this.flushPromise;
+
+    this.flushPromise = this.drainFlushQueue().finally(() => {
+      this.flushPromise = null;
+    });
+
+    return this.flushPromise;
+  }
+
+  private async drainFlushQueue(): Promise<void> {
+    // Requests may arrive while a waitUntil flush is in progress. Keep draining
+    // until every event observed during the flush has had its own pass.
+    while (this.totalEventsSinceFlush > 0) {
+      await this.performFlushToD1();
+    }
+  }
+
+  private async performFlushToD1(): Promise<void> {
     if (this.totalEventsSinceFlush === 0) return;
 
-    console.log(`[DO] Flushing to D1: ${this.totalEventsSinceFlush} events`);
+    const eventsAtStart = this.totalEventsSinceFlush;
+    console.log(`[DO] Flushing to D1: ${eventsAtStart} events`);
 
     try {
       // Flush all active sessions
@@ -816,45 +894,53 @@ export class DomainAnalyticsDO {
 
       // Update metadata
       this.lastFlush = Date.now();
-      this.totalEventsSinceFlush = 0;
+      this.totalEventsSinceFlush = Math.max(0, this.totalEventsSinceFlush - eventsAtStart);
       await this.persistState();
+      if (this.totalEventsSinceFlush === 0) {
+        await this.state.storage.deleteAlarm();
+      }
 
       console.log("[DO] Flush complete");
 
     } catch (error) {
       console.error("[DO] Flush error:", error);
       // Don't reset counters - will retry on next flush
+      throw error;
     }
   }
 
   private async flushSessionToD1(session: SessionState): Promise<void> {
     if (session.events.length === 0) return;
 
-    // Verify site exists before flushing
-    const siteExists = await this.env.DB.prepare(
-      "SELECT 1 FROM sites WHERE id = ?"
-    ).bind(this.siteId).first();
-    
-    if (!siteExists) {
-      console.log(`[DO] Site ${this.siteId} no longer exists, skipping flush`);
-      // Clear events to prevent retry
-      session.events = [];
-      return;
-    }
+    // Detach this batch before awaiting D1. Events received while the write is
+    // in flight stay in session.events for the next drain pass.
+    const eventsToFlush = session.events.splice(0, session.events.length);
+
+    try {
+      // Verify site exists before flushing
+      const siteExists = await this.env.DB.prepare(
+        "SELECT 1 FROM sites WHERE id = ?"
+      ).bind(this.siteId).first();
+
+      if (!siteExists) {
+        console.log(`[DO] Site ${this.siteId} no longer exists, skipping flush`);
+        return;
+      }
 
     // IMPORTANT: Insert session FIRST to satisfy foreign key constraint
     const sessionSql = `
       INSERT INTO sessions (
         id, site_id, visitor_id, first_visit_at, last_visit_at, visit_count,
         browser, os, device, screen, country, language, timezone,
-        total_pageviews, total_events, total_engagement_time
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        total_pageviews, total_events, total_engagement_time, identified_user_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         last_visit_at = excluded.last_visit_at,
         visit_count = excluded.visit_count,
         total_pageviews = excluded.total_pageviews,
-        total_events = excluded.total_events,
+        total_events = MAX(total_events, excluded.total_events),
         total_engagement_time = excluded.total_engagement_time,
+        identified_user_id = COALESCE(excluded.identified_user_id, identified_user_id),
         updated_at = CURRENT_TIMESTAMP
     `;
 
@@ -873,12 +959,14 @@ export class DomainAnalyticsDO {
       session.deviceInfo.language,
       session.deviceInfo.timezone,
       session.pageViews,
-      session.events.length,
+      session.totalEvents,
       session.totalEngagementTime,
+      session.identifiedUserId,
     ).run();
 
     // Then insert events
-    const events = session.events.map(event => ({
+    const events = eventsToFlush.map(event => ({
+      event_uid: event.eventUid,
       site_id: event.siteId,
       session_id: event.sessionId,
       visit_id: event.visitId,
@@ -905,34 +993,45 @@ export class DomainAnalyticsDO {
     for (let i = 0; i < events.length; i += 5) {
       const batch = events.slice(i, i + 5);
       const placeholders = batch.map(() => 
-        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
       ).join(", ");
       
       const sql = `
-        INSERT INTO events (
-          site_id, session_id, visit_id, event_type, url_path, url_query,
+        INSERT OR IGNORE INTO events (
+          event_uid, site_id, session_id, visit_id, event_type, url_path, url_query,
           referrer_domain, page_title, event_name, event_data, browser, os, device,
           screen, country, language, timezone, engagement_time, created_at, campaign_bucket
         ) VALUES ${placeholders}
       `;
 
       const params = batch.flatMap(e => [
-        e.site_id, e.session_id, e.visit_id, e.event_type, e.url_path,
+        e.event_uid, e.site_id, e.session_id, e.visit_id, e.event_type, e.url_path,
         e.url_query || null, e.referrer_domain || null, e.page_title || null, e.event_name || null, e.event_data || null,
         e.browser || null, e.os || null, e.device || null, e.screen || null, e.country || null, e.language || null,
-        e.timezone || null, e.engagement_time || null, e.created_at instanceof Date ? e.created_at.toISOString() : (e.created_at || new Date().toISOString()),
+        e.timezone || null, e.engagement_time || null, e.created_at || new Date().toISOString(),
         e.campaign_bucket,
       ]);
 
       await this.env.DB.prepare(sql).bind(...params).run();
     }
 
-    // Clear flushed events
-    session.events = [];
+    } catch (error) {
+      // Preserve ordering and retry the detached batch on the next flush.
+      session.events.unshift(...eventsToFlush);
+      throw error;
+    }
   }
 
   private async flushHourlyStats(): Promise<void> {
-    if (this.currentHour.views === 0) return;
+    if (
+      this.currentHour.views === 0 &&
+      this.currentHour.customEvents === 0 &&
+      this.currentHour.bounceCount === 0 &&
+      this.currentHour.totalDuration === 0
+    ) return;
+    if (!this.siteId) {
+      throw new Error("Cannot flush hourly stats before the site ID is restored");
+    }
 
     const sql = `
       INSERT INTO hourly_stats (
@@ -965,7 +1064,7 @@ export class DomainAnalyticsDO {
   // Session Management
   // ============================================
 
-  private cleanupExpiredSessions(): void {
+  private async cleanupExpiredSessions(): Promise<void> {
     const now = Date.now();
     const expiredSessions: string[] = [];
 
@@ -976,17 +1075,32 @@ export class DomainAnalyticsDO {
       }
     }
 
+    if (expiredSessions.length === 0) return;
+
+    // Flush before deleting. The previous fire-and-forget write removed the
+    // only in-memory reference immediately, so a D1 error permanently lost
+    // the expired session's buffered events.
+    await this.flushToD1();
     for (const sessionId of expiredSessions) {
       const session = this.activeSessions.get(sessionId);
-      if (session && session.events.length > 0) {
-        // Flush remaining events
-        this.flushSessionToD1(session).catch(console.error);
+      if (session && Date.now() - session.lastActivity > SESSION_TIMEOUT) {
+        this.activeSessions.delete(sessionId);
       }
-      this.activeSessions.delete(sessionId);
     }
 
-    if (expiredSessions.length > 0) {
-      console.log(`[DO] Cleaned up ${expiredSessions.length} expired sessions`);
+    await this.persistState();
+    console.log(`[DO] Cleaned up expired sessions`);
+  }
+
+  async alarm(): Promise<void> {
+    try {
+      await this.flushToD1();
+      await this.cleanupExpiredSessions();
+    } catch (error) {
+      // Keep a deterministic retry even if the platform's alarm retry policy
+      // changes; event_uid makes replay safe.
+      await this.state.storage.setAlarm(Date.now() + FLUSH_INTERVAL);
+      throw error;
     }
   }
 

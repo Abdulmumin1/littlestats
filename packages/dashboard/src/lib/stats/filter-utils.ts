@@ -54,6 +54,20 @@ export function getDefaultDateRange(): { startDate: string; endDate: string } {
   return { startDate, endDate };
 }
 
+/**
+ * Return a half-open UTC range. Using the next day's midnight avoids dropping
+ * events recorded during the final second of the selected end date.
+ */
+export function getDateBounds(startDate: string, endDate: string): { start: string; endExclusive: string } {
+  const end = new Date(`${endDate}T00:00:00Z`);
+  end.setUTCDate(end.getUTCDate() + 1);
+
+  return {
+    start: `${startDate}T00:00:00`,
+    endExclusive: end.toISOString().slice(0, 19),
+  };
+}
+
 export function calculateChange(current: number, previous: number): number {
   if (previous === 0) return current > 0 ? 100 : 0;
   return Math.round(((current - previous) / previous) * 100);

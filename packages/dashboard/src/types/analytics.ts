@@ -22,6 +22,7 @@ export interface TrackPayload {
 
 export interface Event {
   id: number;
+  eventUid: string;
   siteId: string;
   sessionId: string;
   visitId: string;

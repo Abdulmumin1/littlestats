@@ -1,7 +1,7 @@
 // Events stats - Custom events and event lists
 import type { D1Database } from "@cloudflare/workers-types";
 import type { StatsFilter } from "../../types";
-import { getDefaultDateRange } from "./filter-utils";
+import { getDateBounds, getDefaultDateRange } from "./filter-utils";
 
 export class EventsStats {
   constructor(private db: D1Database, private siteId: string) {}
@@ -10,6 +10,7 @@ export class EventsStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const sql = `
       SELECT 
@@ -18,7 +19,7 @@ export class EventsStats {
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         AND event_type = 2
         AND event_name IS NOT NULL
       GROUP BY event_name
@@ -27,8 +28,8 @@ export class EventsStats {
 
     const { results } = await this.db.prepare(sql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`
+      start,
+      endExclusive
     ).all<{ name: string; count: number }>();
 
     return results || [];
@@ -45,18 +46,23 @@ export class EventsStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const limit = options?.limit ?? 100;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const limit = Math.min(250, Math.max(1, options?.limit ?? 100));
     const eventNameFilter = options?.eventName;
     const excludePageview = filter.excludePageview;
 
-    const eventNameClause = eventNameFilter 
-      ? `AND (
-          (event_type = 2 AND event_name = '${eventNameFilter.replace(/'/g, "''")}')
-          OR (event_type = 1 AND '${eventNameFilter.replace(/'/g, "''")}' = 'Page View')
-          OR (event_type = 3 AND '${eventNameFilter.replace(/'/g, "''")}' = 'Page Exit')
-          OR (event_type = 4 AND '${eventNameFilter.replace(/'/g, "''")}' = 'Heartbeat')
-        )`
-      : '';
+    let eventNameClause = '';
+    const eventNameBinds: Array<string | number> = [];
+    if (eventNameFilter === 'Page View') {
+      eventNameClause = 'AND event_type = 1';
+    } else if (eventNameFilter === 'Page Exit') {
+      eventNameClause = 'AND event_type = 3';
+    } else if (eventNameFilter === 'Heartbeat') {
+      eventNameClause = 'AND event_type = 4';
+    } else if (eventNameFilter) {
+      eventNameClause = 'AND event_type = 2 AND event_name = ?';
+      eventNameBinds.push(eventNameFilter);
+    }
       
     const excludePageviewClause = excludePageview ? "AND event_type != 1" : "";
 
@@ -65,18 +71,21 @@ export class EventsStats {
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         ${eventNameClause}
         ${excludePageviewClause}
     `;
 
     const totalResult = await this.db
       .prepare(totalSql)
-      .bind(this.siteId, `${startDate}T00:00:00`, `${endDate}T23:59:59`)
+      .bind(this.siteId, start, endExclusive, ...eventNameBinds)
       .first<{ total: number }>();
 
     const cursor = options?.cursor;
 
+    const cursorClause = cursor
+      ? 'AND (created_at < ? OR (created_at = ? AND id < ?))'
+      : '';
     const sql = `
       SELECT 
         id,
@@ -97,31 +106,24 @@ export class EventsStats {
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         ${eventNameClause}
         ${excludePageviewClause}
-        AND (
-          ? IS NULL
-          OR created_at < ?
-          OR (created_at = ? AND id < ?)
-        )
+        ${cursorClause}
       ORDER BY created_at DESC, id DESC
       LIMIT ?
     `;
 
-    const cursorTs = cursor?.timestamp ?? null;
-    const cursorId = cursor?.id ?? null;
+    const cursorBinds = cursor ? [cursor.timestamp, cursor.timestamp, cursor.id] : [];
 
     const { results } = await this.db
       .prepare(sql)
       .bind(
         this.siteId,
-        `${startDate}T00:00:00`,
-        `${endDate}T23:59:59`,
-        cursorTs,
-        cursorTs,
-        cursorTs,
-        cursorId,
+        start,
+        endExclusive,
+        ...eventNameBinds,
+        ...cursorBinds,
         limit
       )
       .all<{ id: number; timestamp: string }>();

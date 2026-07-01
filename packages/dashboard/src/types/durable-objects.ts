@@ -14,12 +14,15 @@ export interface SessionState {
   lastSeen: Date;
   lastActivity: number; // timestamp
   pageViews: number;
+  currentVisitPageViews: number;
+  totalEvents: number;
   events: Event[];
   visitCount: number;
   deviceInfo: DeviceInfo;
   isBounce: boolean;
   totalEngagementTime: number;
   lastHeartbeat: number;
+  identifiedUserId: string | null;
 }
 
 export interface HourlyStatsState {

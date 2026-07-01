@@ -146,6 +146,8 @@ export async function generateTrackerScript(env: Env): Promise<string> {
         payload.type = 'event';
         payload.name = eventName;
         payload.data = eventData;
+      } else {
+        payload.type = 'pageview';
       }
       this.send(payload);
     }

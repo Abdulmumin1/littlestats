@@ -1,7 +1,7 @@
 // Breakdown stats - Referrers, Pages, Countries, Devices, Browsers
 import type { D1Database } from "@cloudflare/workers-types";
 import type { StatsFilter } from "../../types";
-import { buildEventsFilterWhere, getDefaultDateRange } from "./filter-utils";
+import { buildEventsFilterWhere, getDateBounds, getDefaultDateRange } from "./filter-utils";
 import { COUNTRY_NAMES } from "../utils/country-names";
 
 function getCountryName(code: string): string {
@@ -20,6 +20,7 @@ export class BreakdownStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const { whereSql, binds } = buildEventsFilterWhere(filter, {
       field: 'referrer_domain',
@@ -30,11 +31,12 @@ export class BreakdownStats {
       SELECT 
         referrer_domain as referrer,
         COUNT(*) as views,
-        COUNT(DISTINCT session_id) as visits
+        COUNT(DISTINCT visit_id) as visits
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
+        AND event_type = 1
         AND referrer_domain IS NOT NULL
         ${whereSql}
       GROUP BY referrer_domain
@@ -44,8 +46,8 @@ export class BreakdownStats {
 
     const { results } = await this.db.prepare(sql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`,
+      start,
+      endExclusive,
       ...binds,
       limit
     ).all<{ referrer: string; views: number; visits: number }>();
@@ -61,6 +63,7 @@ export class BreakdownStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const { whereSql, binds } = buildEventsFilterWhere(filter, {
       field: 'url_path',
@@ -71,11 +74,12 @@ export class BreakdownStats {
       SELECT 
         url_path as path,
         COUNT(*) as views,
-        COUNT(DISTINCT session_id) as visits
+        COUNT(DISTINCT visit_id) as visits
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
+        AND event_type = 1
         ${whereSql}
       GROUP BY url_path
       ORDER BY views DESC
@@ -84,8 +88,8 @@ export class BreakdownStats {
 
     const { results } = await this.db.prepare(sql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`,
+      start,
+      endExclusive,
       ...binds,
       limit
     ).all<{ path: string; views: number; visits: number }>();
@@ -101,6 +105,7 @@ export class BreakdownStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const countryExpr = "COALESCE(NULLIF(e.country, ''), NULLIF(s.country, ''), 'XX')";
 
@@ -116,12 +121,12 @@ export class BreakdownStats {
       SELECT 
         ${countryExpr} as country,
         COUNT(*) as views,
-        COUNT(DISTINCT e.session_id) as visits
+        COUNT(DISTINCT e.visit_id) as visits
       FROM events e
       JOIN sessions s ON s.id = e.session_id
       WHERE e.site_id = ?
         AND e.created_at >= ?
-        AND e.created_at <= ?
+        AND e.created_at < ?
         AND e.event_type = 1
         ${whereSql}
       GROUP BY ${countryExpr}
@@ -131,8 +136,8 @@ export class BreakdownStats {
 
     const { results } = await this.db.prepare(sql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`,
+      start,
+      endExclusive,
       ...binds,
       limit
     ).all<{ country: string; views: number; visits: number }>();
@@ -149,25 +154,30 @@ export class BreakdownStats {
     const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
+
+    const { whereSql, binds } = buildEventsFilterWhere(filter);
 
     const sql = `
       SELECT 
         device,
         COUNT(*) as views,
-        COUNT(DISTINCT session_id) as visits
+        COUNT(DISTINCT visit_id) as visits
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         AND event_type = 1
+        ${whereSql}
       GROUP BY device
       ORDER BY views DESC
     `;
 
     const { results } = await this.db.prepare(sql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`
+      start,
+      endExclusive,
+      ...binds
     ).all<{ device: string; views: number; visits: number }>();
 
     return results || [];
@@ -178,16 +188,20 @@ export class BreakdownStats {
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
 
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { whereSql, binds } = buildEventsFilterWhere(filter);
+
     const sql = `
       SELECT 
         browser,
         COUNT(*) as views,
-        COUNT(DISTINCT session_id) as visits
+        COUNT(DISTINCT visit_id) as visits
       FROM events
       WHERE site_id = ?
         AND created_at >= ?
-        AND created_at <= ?
+        AND created_at < ?
         AND event_type = 1
+        ${whereSql}
       GROUP BY browser
       ORDER BY views DESC
       LIMIT ?
@@ -195,8 +209,9 @@ export class BreakdownStats {
 
     const { results } = await this.db.prepare(sql).bind(
       this.siteId,
-      `${startDate}T00:00:00`,
-      `${endDate}T23:59:59`,
+      start,
+      endExclusive,
+      ...binds,
       limit
     ).all<{ browser: string; views: number; visits: number }>();
 
