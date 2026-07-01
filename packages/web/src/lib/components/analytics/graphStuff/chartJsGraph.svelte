@@ -206,6 +206,8 @@
 
 	// $: console.log(c);
 	const MountChart = () => {
+		if (!chartCanvas || chart) return;
+		const compact = window.matchMedia('(max-width: 767px)').matches;
 		const ctx = chartCanvas.getContext('2d');
 		chart = new Chart(ctx, {
 			type: chartType,
@@ -222,8 +224,8 @@
 						borderRadius: 0,
 						spacing: 20,
 						...(chartType == 'bar' ? { backgroundColor: usedColor.primary } : {}),
-						pointRadius: 0.5, // Removes the circle markers
-						pointHoverRadius: 2
+						pointRadius: 0,
+						pointHoverRadius: compact ? 3 : 4
 					}
 				]
 			},
@@ -233,9 +235,9 @@
 				animation: false,
 				layout: {
 					padding: {
-						bottom: 20,
-						left: 10,
-						right: 10
+						bottom: compact ? 4 : 20,
+						left: compact ? 0 : 10,
+						right: compact ? 0 : 10
 					}
 				},
 				scales: {
@@ -246,6 +248,7 @@
 							maxRotation: 0,
 							minRotation: 0,
 							padding: 10,
+							maxTicksLimit: compact ? 4 : 8,
 							color: 'rgb(121, 113, 107)',
 							font: {
 								size: 10
@@ -258,8 +261,10 @@
 					},
 					y: {
 						beginAtZero: true,
-						ticks: {
-							padding: 10,
+							ticks: {
+							padding: compact ? 6 : 10,
+							precision: 0,
+							maxTicksLimit: compact ? 4 : 6,
 							color: 'rgb(121, 113, 107)',
 							font: {
 								size: 10
@@ -330,6 +335,14 @@
 		)
 	);
 	let c = $derived(chartData.map((d) => d.myX));
+	let hasChartActivity = $derived(chartData.some((d) => Number(d.myY) > 0));
+
+	$effect(() => {
+		if (showChart && hasChartActivity && chartCanvas && !chart) {
+			MountChart();
+		}
+	});
+
 	$effect(() => {
 		if (chart && chartData) {
 			chart.data.labels = chartData.map((d) => d.myX);
@@ -377,8 +390,17 @@
 	</div>
 
 	{#if showChart}
-		<div class="mt-2 h-75 w-full rounded-none border border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 p-4">
-			<canvas bind:this={chartCanvas}></canvas>
-		</div>
+		{#if hasChartActivity}
+			<div class="mt-2 h-52 w-full rounded-none border border-stone-100 bg-stone-50/50 p-2 dark:border-stone-800 dark:bg-stone-900/50 md:h-75 md:p-4">
+				<canvas bind:this={chartCanvas}></canvas>
+			</div>
+		{:else}
+			<div class="mt-2 flex h-36 w-full items-center justify-center border border-stone-100 bg-stone-50/50 dark:border-stone-800 dark:bg-stone-900/50 md:h-56">
+				<div class="text-center">
+					<p class="text-sm font-serif italic text-stone-400">No traffic in this period</p>
+					<p class="mt-1 text-[9px] font-black uppercase tracking-[0.18em] text-stone-300 dark:text-stone-600">The chart will appear when data arrives</p>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>

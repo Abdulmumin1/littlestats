@@ -318,20 +318,20 @@
 				</button>
 			{/if}
 		</div>
-		<div class="flex min-h-[60vh] flex-col gap-8 rounded-none">
+		<div class="flex min-h-[60vh] flex-col gap-5 rounded-none md:gap-8">
 			<!-- Real-time indicator -->
-			{#if realtimeStats}
-				<div class="flex items-center gap-2 px-4 py-1.5 rounded-none bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-fit text-[10px] font-black text-stone-500 dark:text-stone-400 uppercase tracking-widest leading-none">
-					<span class="flex h-1.5 w-1.5 rounded-none">
+			<div class="flex h-7 items-center gap-2 px-4 rounded-none bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-fit text-[10px] font-black text-stone-500 dark:text-stone-400 uppercase tracking-widest leading-none">
+				<span class="relative flex h-1.5 w-1.5 rounded-none">
+					{#if realtimeStats}
 						<span class="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-none bg-green-400 opacity-75"></span>
-						<span class="relative inline-flex h-1.5 w-1.5 rounded-none bg-green-500"></span>
-					</span>
-					<span>{realtimeStats.activeVisitors} active visitors now</span>
-				</div>
-			{/if}
+					{/if}
+					<span class="relative inline-flex h-1.5 w-1.5 rounded-none {realtimeStats ? 'bg-green-500' : 'bg-stone-300 dark:bg-stone-700'}"></span>
+				</span>
+				<span>{realtimeStats?.activeVisitors ?? 0} active visitors now</span>
+			</div>
 			
 			<!-- Stats Cards -->
-			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 rounded-none">
+			<div class="grid grid-cols-2 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5 rounded-none [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
 				<ViewCard 
 					name="Views" 
 					number={stats.views} 
@@ -370,8 +370,8 @@
 			</div>
 			
 			<!-- Main Chart -->
-			<div class="rounded-none bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-6 relative overflow-hidden">
-				<div class="h-95 rounded-none">
+			<div class="rounded-none bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-3 md:p-6 relative overflow-hidden">
+				<div class="min-h-48 rounded-none md:min-h-95">
 					<ChartJsGraph
 						chartD={{ data: timeSeries, label: 'Views' }}
 						showChart={true}
@@ -386,7 +386,7 @@
 			<div class="grid grid-cols-1 gap-6 lg:grid-cols-2 rounded-none">
 				<!-- Top Pages -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
-					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
+					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Top Pages</span>
 						<button 
 							onclick={() => openModal('pages')}
@@ -413,7 +413,7 @@
 				
 				<!-- Top Referrers -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
-					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
+					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Top Referrers</span>
 						<button 
 							onclick={() => openModal('referrers')}
@@ -440,7 +440,7 @@
 				
 				<!-- Countries -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
-					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
+					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Countries</span>
 						<button 
 							onclick={() => openModal('countries')}
@@ -467,11 +467,11 @@
 				
 				<!-- Devices -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
-					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
+					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Devices</span>
 						<span class="text-xs font-bold text-stone-900 dark:text-white font-serif italic rounded-none">Views</span>
 					</div>
-					<div class="p-6 flex-1 rounded-none">
+					<div class="p-4 md:p-6 flex-1 rounded-none">
 						{#if devices.length === 0}
 							<p class="py-10 text-center text-stone-400 italic font-serif text-sm rounded-none">No data available</p>
 						{:else}

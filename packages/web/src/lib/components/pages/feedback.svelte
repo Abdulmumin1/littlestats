@@ -10,7 +10,7 @@
 		Tablet, Clock, CheckCircle, Archive, Eye, Trash2, 
 		ChevronLeft, ChevronRight, Filter, AlertCircle, X
 	} from 'lucide-svelte';
-	import { fade, slide, fly } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 
 	let { siteId, current_domain, demo = false, demoData = [] } = $props();
 
@@ -185,9 +185,13 @@
 	});
 </script>
 
-<div class="space-y-8 pb-20">
+<div class="space-y-6 pb-20 md:space-y-8">
+	<header class="px-2">
+		<h1 class="text-xl font-bold tracking-tight text-stone-900 dark:text-white">Feedback</h1>
+		<p class="mt-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Review messages from your visitors</p>
+	</header>
 	<!-- Header Stats -->
-	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+	<div class="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
 		<div class="bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300">
 			<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-1">Total Entries</p>
 			<p class="text-xl font-bold dark:text-white tabular-nums leading-tight mb-2">{total}</p>
@@ -201,8 +205,8 @@
 	<!-- Filter Bar -->
 	<div class="space-y-4 border-b border-stone-100 dark:border-stone-800 pb-4">
 		<div class="flex flex-wrap items-center justify-between gap-4">
-			<div class="flex items-center gap-2">
-				<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mr-2">Status</p>
+			<div class="flex w-full flex-wrap items-center gap-2">
+				<p class="w-full text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 sm:mr-2 sm:w-auto">Status</p>
 				{#each ['all', 'new', 'reviewed', 'resolved', 'archived'] as status, i}
 					<button
 						onclick={() => { statusFilter = status === 'all' ? '' : status; offset = 0; fetchFeedback(); }}
@@ -227,7 +231,7 @@
 		</div>
 
 		<div class="flex flex-wrap items-center gap-2">
-			<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mr-2">Categories</p>
+			<p class="w-full text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 sm:mr-2 sm:w-auto">Categories</p>
 			<button
 				onclick={() => { categoryFilter = ''; offset = 0; fetchFeedback(); }}
 				class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all duration-200 cursor-pointer
@@ -273,12 +277,12 @@
 			<!-- Feedback List -->
 			<div class="lg:col-span-7">
 				{#key statusFilter + offset + categoryFilter}
-					<div in:fly={{ y: 10, duration: 200 }} class="divide-y divide-stone-100 dark:divide-stone-800 border-t border-stone-100 dark:border-stone-800">
+					<div class="divide-y divide-stone-100 dark:divide-stone-800 border-t border-stone-100 dark:border-stone-800">
 						{#each feedbackList as feedback (feedback.id)}
 							<div animate:flip={{ duration: 300 }}>
 								<button
 									onclick={() => selectedFeedback = feedback}
-									class="w-full text-left p-6 transition-all duration-300 group relative overflow-hidden
+									class="w-full text-left p-4 md:p-6 transition-all duration-300 group relative overflow-hidden
 									{selectedFeedback?.id === feedback.id ? 'bg-white dark:bg-stone-800' : 'bg-stone-50 dark:bg-stone-900/50 hover:bg-white dark:hover:bg-stone-800'}"
 								>
 									{#if selectedFeedback?.id === feedback.id}

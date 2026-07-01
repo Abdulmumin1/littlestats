@@ -40,11 +40,11 @@
 	<Seo title="Dashboard - Littlestats" />
 </svelte:head>
 
-<div class="min-h-screen p-6 text-stone-900 dark:text-stone-100 space-y-8 max-w-7xl mx-auto rounded-none">
-	<main class="px-4 sm:px-6 lg:px-8 py-8 rounded-none">
+<div class="min-h-screen text-stone-900 dark:text-stone-100 max-w-7xl mx-auto rounded-none">
+	<main class="px-1 pb-28 pt-4 md:px-8 md:py-8 rounded-none space-y-8">
 		<div class="flex flex-col md:flex-row gap-10 rounded-none">
 			<!-- Sidebar -->
-			<aside class="w-full md:w-64 shrink-0 rounded-none">
+			<aside class="hidden w-full md:block md:w-64 shrink-0 rounded-none">
 				<div class="sticky top-24 space-y-1 rounded-none">
 					<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-4 ml-4">Dashboard</p>
 					<nav class="flex flex-col gap-1 rounded-none">
@@ -149,3 +149,7 @@
 	</main>
 </div>
 
+<nav class="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-2 rounded-full border border-white/60 bg-white/75 p-1.5 shadow-[0_12px_45px_rgba(28,25,23,0.18)] backdrop-blur-2xl backdrop-saturate-150 md:hidden dark:border-white/10 dark:bg-stone-900/75" aria-label="Dashboard navigation">
+	<a href="/sites" aria-current="page" class="mx-0.5 flex min-h-12 items-center justify-center gap-2 rounded-full bg-{$color}-600 px-3 text-xs font-bold text-white shadow-sm"><LayoutGrid size={18} /> Sites</a>
+	<a href="/settings" class="mx-0.5 flex min-h-12 items-center justify-center gap-2 rounded-full px-3 text-xs font-bold text-stone-500 dark:text-stone-400"><Settings size={18} /> Settings</a>
+</nav>

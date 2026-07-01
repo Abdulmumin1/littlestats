@@ -40,12 +40,12 @@
 
 <style>
 	.skeleton {
-		background: linear-gradient(90deg, rgb(245 245 244) 25%, rgb(231 229 228) 50%, rgb(245 245 244) 75%);
+		background: linear-gradient(90deg, rgb(231 229 228 / 0.34) 25%, rgb(214 211 209 / 0.3) 50%, rgb(231 229 228 / 0.34) 75%);
 		background-size: 200% 100%;
-		animation: shimmer 1.4s ease-in-out infinite;
+		animation: shimmer 2.4s ease-in-out infinite;
 	}
 	:global(.dark) .skeleton {
-		background: linear-gradient(90deg, rgb(28 25 23) 25%, rgb(41 37 36) 50%, rgb(28 25 23) 75%);
+		background: linear-gradient(90deg, rgb(68 64 60 / 0.2) 25%, rgb(87 83 78 / 0.18) 50%, rgb(68 64 60 / 0.2) 75%);
 		background-size: 200% 100%;
 	}
 	@keyframes shimmer {

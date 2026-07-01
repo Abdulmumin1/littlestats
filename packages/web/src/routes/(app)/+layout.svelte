@@ -10,7 +10,13 @@
 </script>
 
 <div class="ls-shell min-h-screen dark:bg-stone-900 rounded-none">
-	<div class="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 py-6 rounded-none">
+	<div class="mx-auto max-w-[100rem] rounded-none">
 		{@render children?.()}
 	</div>
 </div>
+
+<style>
+	.ls-shell :global(*:not(nav):not(nav *)) {
+		box-shadow: none !important;
+	}
+</style>
