@@ -7,6 +7,7 @@
 	import { Plus, Trash2, ArrowRight, Filter, BarChart3, GitBranch } from 'lucide-svelte';
 	import CustomSelect from '$lib/components/generals/customSelect.svelte';
 	import { color } from '$lib/colors/mixer.js';
+	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
 
 	let { data } = $props();
 	let siteId = $derived(data.siteId);
@@ -189,7 +190,7 @@
 	<Seo title={`${current_domain?.name || 'Site'} - Funnels`} />
 </svelte:head>
 
-<div class="space-y-8">
+<SitePageShell class="space-y-8">
 	<!-- Header -->
 	<div class="px-2 flex flex-wrap items-center justify-between gap-4">
 		<div>
@@ -427,7 +428,7 @@
 			{/if}
 		</div>
 	</div>
-</div>
+</SitePageShell>
 
 <!-- Saved Funnels Modal -->
 {#if showSavedModal}

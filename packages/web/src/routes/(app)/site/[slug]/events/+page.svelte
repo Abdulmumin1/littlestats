@@ -5,6 +5,7 @@
 	import { show_toast } from '$lib/toast.js';
 	import { api } from '$lib/api/analytics.ts';
 	import Events from '$lib/components/pages/events.svelte';
+	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
 
 	let { data } = $props();
 	let siteId = $derived(data.siteId);
@@ -105,12 +106,12 @@
 	<Seo title={`${current_domain?.name || 'Site'} - Event Analytics`} />
 </svelte:head>
 
-{#if loadingCounts && eventCounts.length === 0}
-	<LoadingState />
-{/if}
+<SitePageShell>
+	{#if loadingCounts && eventCounts.length === 0}
+		<LoadingState />
+	{/if}
 
-{#if error && eventLog.length === 0}
-	<div class="container mx-auto p-4 rounded-none">
+	{#if error && eventLog.length === 0}
 		<div class="rounded-none bg-red-100 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-200 border border-red-200 dark:border-red-900/30">
 			<p class="font-semibold rounded-none">Error loading events</p>
 			<p class="text-sm rounded-none">{error}</p>
@@ -121,19 +122,19 @@
 				Retry
 			</button>
 		</div>
-	</div>
-{/if}
+	{/if}
 
-<Events 
-	page_data={eventLog} 
-	{eventCounts} 
-	{selectedEventName}
-	{selectEvent}
-	{loadMore}
-	{nextCursor}
-	{loadingLog}
-	{totalLogEvents}
-	{logLimit}
-	rangeStart={dashboardStore?.dateRange?.startDate}
-	rangeEnd={dashboardStore?.dateRange?.endDate}
-/>
+	<Events 
+		page_data={eventLog} 
+		{eventCounts} 
+		{selectedEventName}
+		{selectEvent}
+		{loadMore}
+		{nextCursor}
+		{loadingLog}
+		{totalLogEvents}
+		{logLimit}
+		rangeStart={dashboardStore?.dateRange?.startDate}
+		rangeEnd={dashboardStore?.dateRange?.endDate}
+	/>
+</SitePageShell>

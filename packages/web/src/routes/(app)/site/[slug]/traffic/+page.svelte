@@ -1,6 +1,7 @@
 <script>
 	import Seo from '$lib/components/generals/seo.svelte';
 	import Traffic from '$lib/components/pages/traffic.svelte';
+	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
 
 	let { data } = $props();
 	let siteId = $derived(data.siteId);
@@ -11,4 +12,6 @@
 	<Seo title={`${current_domain?.name || 'Site'} - Traffic Analytics`} />
 </svelte:head>
 
-<Traffic {current_domain} domain_id={siteId} />
+<SitePageShell>
+	<Traffic {current_domain} domain_id={siteId} />
+</SitePageShell>

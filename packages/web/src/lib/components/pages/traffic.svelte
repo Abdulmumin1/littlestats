@@ -277,11 +277,13 @@
 
 <div class="space-y-8">
 	{#if loading && !stats}
-		<LoadingState />
+		<div class="flex min-h-[60vh] items-center justify-center">
+			<LoadingState />
+		</div>
 	{/if}
 
 	{#if error}
-		<div class="container mx-auto rounded-none">
+		<div class="flex min-h-[40vh] items-center rounded-none">
 			<div class="rounded-none bg-red-100 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-200">
 				<p class="font-semibold rounded-none">Error loading dashboard</p>
 				<p class="text-sm rounded-none">{error}</p>
@@ -318,7 +320,7 @@
 				</button>
 			{/if}
 		</div>
-		<div class="flex flex-col gap-8 rounded-none">
+		<div class="flex min-h-[60vh] flex-col gap-8 rounded-none">
 			<!-- Real-time indicator -->
 			{#if realtimeStats}
 				<div class="flex items-center gap-2 px-4 py-1.5 rounded-none bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-fit text-[10px] font-black text-stone-500 dark:text-stone-400 uppercase tracking-widest leading-none">

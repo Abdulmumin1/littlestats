@@ -9,6 +9,7 @@
 	import FunEl from '../../../../../lib/components/analytics/funEl.svelte';
 	import { writable } from 'svelte/store';
 	import { calctypeoptions } from '$lib/funnels/helpers.js';
+	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
 	import { Filter } from 'lucide-svelte';
 	import { show_toast } from '$lib/toast.js';
 
@@ -157,14 +158,15 @@
 	const current_domain = data.domains.find((e) => e.id === data.domain_id);
 </script>
 
-<div>
-	{#if loading}
-		<LoadingState />
-	{/if}
-</div>
+<SitePageShell>
+	<div>
+		{#if loading}
+			<LoadingState />
+		{/if}
+	</div>
 
-<section class="flex flex-col gap-3">
-	<section class="flex flex-wrap items-center justify-between gap-3">
+	<section class="flex flex-col gap-3">
+		<section class="flex flex-wrap items-center justify-between gap-3">
 		<!-- {fsteps.name} -->
 		{#if $funnelStepsContext.steps.length}
 			<div class="flex items-center gap-3 rounded-md bg-stone-700 px-4 py-2 dark:text-white">
@@ -196,14 +198,15 @@
 				<FunEl uniquePages={urls_page} availableSteps={steps_events} />
 			</div>
 		</div>
+		</section>
 	</section>
-</section>
-{#if $funnelStepsContext.steps.length}
-	{#key funnelCounts || funnelSteps}
-		<Funnels {funnelCounts} {funnelStepsContext} />
-	{/key}
-{:else}
-	<div class=" px-100 flex h-[80vh] w-full items-center justify-center dark:text-white">
-		<p class="inline-flex gap-2 text-xl"><span><Filter /></span>Create new funnel</p>
-	</div>
-{/if}
+	{#if $funnelStepsContext.steps.length}
+		{#key funnelCounts || funnelSteps}
+			<Funnels {funnelCounts} {funnelStepsContext} />
+		{/key}
+	{:else}
+		<div class=" px-100 flex h-[80vh] w-full items-center justify-center dark:text-white">
+			<p class="inline-flex gap-2 text-xl"><span><Filter /></span>Create new funnel</p>
+		</div>
+	{/if}
+</SitePageShell>
