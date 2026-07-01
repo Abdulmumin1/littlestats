@@ -3,7 +3,7 @@
 	import { show_toast } from '$lib/toast.js';
 	import { Loader, ArrowRight, Plus } from 'lucide-svelte';
 	import DomainCard from './domainCard.svelte';
-	import { fly, slide } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
 	import Seo from '../../../lib/components/generals/seo.svelte';
 	import { api } from '$lib/api/analytics.ts';
@@ -97,7 +97,7 @@
 	<Seo title="Domain Setting - Littlestats" />
 </svelte:head>
 
-<div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-8">
+<div class="flex flex-1 flex-col gap-8">
 	<header class="px-2">
 		<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight">Domain Management</h1>
 		<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Add and manage your tracked websites</p>

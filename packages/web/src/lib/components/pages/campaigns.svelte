@@ -94,24 +94,30 @@
 		const byBucket = new Map();
 		for (const e of filtered) {
 			const bucket = buildBucket(e);
-			const row = byBucket.get(bucket) || { bucket, visits: 0, conversions: 0 };
+			const row = byBucket.get(bucket) || { bucket, visitIds: new Set(), conversionVisitIds: new Set() };
+			const visitId = e?.session_id || e?.user_id;
 
-			if (e?.event_type === 'pageview') {
-				row.visits += 1;
-			} else {
+			if (visitId) row.visitIds.add(visitId);
+			if (e?.event_type !== 'pageview') {
 				const name = e?.event_name || e?.event_type;
-				if (!selectedGoal || name === selectedGoal) {
-					row.conversions += 1;
+				if (visitId && (!selectedGoal || name === selectedGoal)) {
+					row.conversionVisitIds.add(visitId);
 				}
 			}
 
 			byBucket.set(bucket, row);
 		}
 
-		return Array.from(byBucket.values()).map((r) => ({
-			...r,
-			conversionRate: r.visits > 0 ? Math.round((r.conversions / r.visits) * 10000) / 100 : 0
-		}));
+		return Array.from(byBucket.values()).map((r) => {
+			const visits = r.visitIds.size;
+			const conversions = r.conversionVisitIds.size;
+			return {
+				bucket: r.bucket,
+				visits,
+				conversions,
+				conversionRate: visits > 0 ? Math.round((conversions / visits) * 10000) / 100 : 0
+			};
+		});
 	}
 
 	function computeStackedSeriesFromEvents() {

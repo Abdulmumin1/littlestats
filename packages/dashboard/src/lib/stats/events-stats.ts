@@ -57,7 +57,7 @@ export class EventsStats {
       eventNameClause = 'AND event_type = 1';
     } else if (eventNameFilter === 'Page Exit') {
       eventNameClause = 'AND event_type = 3';
-    } else if (eventNameFilter === 'Heartbeat') {
+    } else if (eventNameFilter === 'Identify') {
       eventNameClause = 'AND event_type = 4';
     } else if (eventNameFilter) {
       eventNameClause = 'AND event_type = 2 AND event_name = ?';
@@ -93,7 +93,7 @@ export class EventsStats {
           WHEN event_type = 1 THEN 'Page View'
           WHEN event_type = 2 THEN COALESCE(NULLIF(event_name, 'null'), 'Custom Event')
           WHEN event_type = 3 THEN 'Page Exit'
-          WHEN event_type = 4 THEN 'Heartbeat'
+          WHEN event_type = 4 THEN 'Identify'
           ELSE 'Unknown'
         END as event_name,
         COALESCE(url_path, '/') as url,

@@ -2,7 +2,7 @@
 	import { formatDate } from '$lib/utils.js';
 	import { run } from 'svelte/legacy';
 
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import Chart from 'chart.js/auto';
 	// import { sortViews, transformViewDataForGraph } from './viewDataUtils.js';
 	import { color, colorList } from '$lib/colors/mixer.js';
@@ -202,7 +202,7 @@
 			} catch {}
 		}
 	});
-	let chartType = $state(bar ? 'bar' : line ? 'line' : 'line'); // NEW state for chart type
+	let chartType = $state(untrack(() => (bar ? 'bar' : line ? 'line' : 'line')));
 
 	// $: console.log(c);
 	const MountChart = () => {
@@ -230,6 +230,7 @@
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
+				animation: false,
 				layout: {
 					padding: {
 						bottom: 20,

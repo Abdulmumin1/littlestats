@@ -38,6 +38,8 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       this.feedbackWidget = null;
       this.feedbackInitialized = false;
       this.saveCacheTimeout = null;
+      this.pageStartedAt = Date.now();
+      this.pageExitSent = false;
       this.init();
     }
     
@@ -115,7 +117,10 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       
       // Flush cache on page unload
       window.addEventListener('beforeunload', () => this.flushCache());
-      window.addEventListener('pagehide', () => this.flushCache());
+      window.addEventListener('pagehide', () => {
+        this.trackPageExit();
+        this.flushCache();
+      });
       
       // Lazy-load feedback widget only when first needed
       if (this.options.feedback !== false && this.options.feedbackUi !== false) {
@@ -135,9 +140,24 @@ export async function generateTrackerScript(env: Env): Promise<string> {
     
     handleNavigation() {
       if (this.currentUrl !== location.href) {
+        this.trackPageExit();
         this.currentUrl = location.href;
+        this.pageStartedAt = Date.now();
+        this.pageExitSent = false;
         this.track();
       }
+    }
+
+    trackPageExit() {
+      if (this.pageExitSent) return;
+      this.pageExitSent = true;
+
+      const payload = this.getPayload();
+      const previousUrl = new URL(this.currentUrl, location.origin);
+      payload.type = 'page_exit';
+      payload.url = previousUrl.pathname + previousUrl.search;
+      payload.duration = Math.min(1800, Math.max(0, Math.round((Date.now() - this.pageStartedAt) / 1000)));
+      this.send(payload);
     }
     
     track(eventName, eventData) {

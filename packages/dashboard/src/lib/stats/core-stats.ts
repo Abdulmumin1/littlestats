@@ -50,18 +50,28 @@ export class CoreStats {
     const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const statsSql = `
-      SELECT 
+      WITH relevant AS (
+        SELECT event_type, visit_id, session_id, engagement_time
+        FROM events
+        WHERE site_id = ?
+          AND created_at >= ?
+          AND created_at < ?
+          AND event_type IN (1, 3)
+          ${whereSql}
+      ),
+      visit_counts AS (
+        SELECT visit_id, COUNT(*) AS pageviews
+        FROM relevant
+        WHERE event_type = 1
+        GROUP BY visit_id
+      )
+      SELECT
         SUM(CASE WHEN event_type = 1 THEN 1 ELSE 0 END) as views,
-        COUNT(DISTINCT CASE WHEN event_type = 1 THEN visit_id END) as visits,
+        (SELECT COUNT(*) FROM visit_counts) as visits,
         COUNT(DISTINCT CASE WHEN event_type = 1 THEN session_id END) as visitors,
-        SUM(CASE WHEN event_type = 3 AND engagement_time <= 10 THEN 1 ELSE 0 END) as bounce_count,
+        (SELECT COUNT(*) FROM visit_counts WHERE pageviews = 1) as bounce_count,
         SUM(CASE WHEN event_type = 3 THEN COALESCE(engagement_time, 0) ELSE 0 END) as total_duration
-      FROM events
-      WHERE site_id = ?
-        AND created_at >= ?
-        AND created_at < ?
-        AND event_type IN (1, 3)
-        ${whereSql}
+      FROM relevant
     `;
 
     const result = await this.db.prepare(statsSql).bind(

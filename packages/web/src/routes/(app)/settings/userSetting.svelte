@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { Moon, Sun, Palette, Check } from 'lucide-svelte';
 	import { color, colorList } from '$lib/colors/mixer.js';
-	import { fly } from 'svelte/transition';
 
 	let isDark = $state(false);
 
@@ -29,7 +28,7 @@
 	const colors = Object.keys(colorList);
 </script>
 
-<div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-8 rounded-none">
+<div class="flex flex-1 flex-col gap-8 rounded-none">
 	<header class="px-2 rounded-none">
 		<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight rounded-none">Appearance</h1>
 		<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1 rounded-none">Customize your interface theme and accents</p>
@@ -51,6 +50,7 @@
 			</div>
 			<button
 				onclick={toggleDarkMode}
+				aria-label="Toggle dark mode"
 				class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-none border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-2 {isDark ? `bg-${$color}-600` : 'bg-stone-200 dark:bg-stone-700'}"
 				role="switch"
 				aria-checked={isDark}
@@ -70,7 +70,7 @@
 			Accent Color
 		</h2>
 		<div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-			{#each colors as c}
+			{#each colors as c (c)}
 				<button
 					onclick={() => setAccentColor(c)}
 					class="group relative flex flex-col items-center gap-2 transition-all"

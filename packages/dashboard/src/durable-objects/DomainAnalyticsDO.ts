@@ -538,7 +538,10 @@ export class DomainAnalyticsDO {
       city: null,
       language: payload.language || null,
       timezone: payload.timezone || null,
-      engagementTime: null,
+      engagementTime:
+        eventType === 3 && typeof payload.duration === "number" && Number.isFinite(payload.duration)
+          ? Math.min(1800, Math.max(0, Math.round(payload.duration)))
+          : null,
       createdAt: now,
       // Campaign tracking
       utmSource,

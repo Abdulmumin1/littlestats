@@ -7,7 +7,7 @@
 	import { formatNumber } from '$lib/slug/helpers.js';
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
 	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
-	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
+	import TrafficSkeleton from '$lib/components/analytics/graphStuff/trafficSkeleton.svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import { Activity, Eye, Globe, Monitor, Smartphone, Tablet } from 'lucide-svelte';
 	
@@ -277,9 +277,7 @@
 
 <div class="space-y-8">
 	{#if loading && !stats}
-		<div class="flex min-h-[60vh] items-center justify-center">
-			<LoadingState />
-		</div>
+		<TrafficSkeleton />
 	{/if}
 
 	{#if error}
@@ -339,30 +337,35 @@
 					number={stats.views} 
 					percentage={stats.change.views}
 					icon={Eye}
+					hint="Page loads during the selected period"
 				/>
 				<ViewCard 
 					name="Visits" 
 					number={stats.visits} 
 					percentage={stats.change.visits}
 					icon={Activity}
+					hint="Distinct browsing sessions"
 				/>
 				<ViewCard 
 					name="Visitors" 
 					number={stats.visitors} 
 					percentage={stats.change.visitors}
 					icon={Globe}
+					hint="Distinct visitors during the selected period"
 				/>
 				<ViewCard 
 					name="Bounce Rate" 
 					number={stats.bounceRate} 
 					percentage={stats.change.bounceRate}
 					type="percent"
+					hint="Visits with exactly one page view"
 				/>
                 <ViewCard 
 					name="Avg. Session" 
 					number={stats.avgDuration} 
 					percentage={stats.change.avgDuration}
 					type="time"
+					hint="Average recorded visit duration"
 				/>
 			</div>
 			
