@@ -184,6 +184,8 @@ export class AnalyticsAPI {
 	private wsUrl: string;
 	private ws: WebSocket | null = null;
 	private wsCallbacks: Map<string, ((data: RealtimeStats) => void)[]> = new Map();
+	private wsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
+	private wsSiteId: string | null = null;
 
 	constructor(baseUrl = '') {
 		// Default to empty string for same-origin proxy (no CORS)
@@ -243,7 +245,11 @@ export class AnalyticsAPI {
 	}
 
 	// Stats
-	async getStatsSummary(siteId: string, filter?: StatsFilter): Promise<StatsSummary> {
+	async getStatsSummary(
+		siteId: string,
+		filter?: StatsFilter,
+		signal?: AbortSignal
+	): Promise<StatsSummary> {
 		const params = new URLSearchParams();
 		if (filter?.startDate) params.set('start', filter.startDate);
 		if (filter?.endDate) params.set('end', filter.endDate);
@@ -251,13 +257,14 @@ export class AnalyticsAPI {
 		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
 		if (filter?.country) params.set('country', filter.country);
 
-		return this.fetch(`/api/v2/sites/${siteId}/stats?${params}`);
+		return this.fetch(`/api/v2/sites/${siteId}/stats?${params}`, { signal });
 	}
 
 	async getTimeSeries(
 		siteId: string,
 		filter?: StatsFilter,
-		granularity: 'hour' | 'day' = 'day'
+		granularity: 'hour' | 'day' = 'day',
+		signal?: AbortSignal
 	): Promise<TimeSeriesResponse> {
 		const params = new URLSearchParams();
 		if (filter?.startDate) params.set('start', filter.startDate);
@@ -267,13 +274,13 @@ export class AnalyticsAPI {
 		if (filter?.country) params.set('country', filter.country);
 		params.set('granularity', granularity);
 
-		return this.fetch(`/api/v2/sites/${siteId}/timeseries?${params}`);
+		return this.fetch(`/api/v2/sites/${siteId}/timeseries?${params}`, { signal });
 	}
 
 	// Breakdown Data
 	async getReferrers(
 		siteId: string,
-		options?: { limit?: number; filter?: StatsFilter; q?: string }
+		options?: { limit?: number; filter?: StatsFilter; q?: string; signal?: AbortSignal }
 	): Promise<{ referrers: ReferrerData[] }> {
 		const params = new URLSearchParams();
 		params.set('limit', String(options?.limit ?? 10));
@@ -284,12 +291,12 @@ export class AnalyticsAPI {
 		if (filter?.urlPattern) params.set('page', filter.urlPattern);
 		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
 		if (filter?.country) params.set('country', filter.country);
-		return this.fetch(`/api/v2/sites/${siteId}/referrers?${params}`);
+		return this.fetch(`/api/v2/sites/${siteId}/referrers?${params}`, { signal: options?.signal });
 	}
 
 	async getPages(
 		siteId: string,
-		options?: { limit?: number; filter?: StatsFilter; q?: string }
+		options?: { limit?: number; filter?: StatsFilter; q?: string; signal?: AbortSignal }
 	): Promise<{ pages: PageData[] }> {
 		const params = new URLSearchParams();
 		params.set('limit', String(options?.limit ?? 10));
@@ -300,12 +307,12 @@ export class AnalyticsAPI {
 		if (filter?.urlPattern) params.set('page', filter.urlPattern);
 		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
 		if (filter?.country) params.set('country', filter.country);
-		return this.fetch(`/api/v2/sites/${siteId}/pages?${params}`);
+		return this.fetch(`/api/v2/sites/${siteId}/pages?${params}`, { signal: options?.signal });
 	}
 
 	async getCountries(
 		siteId: string,
-		options?: { limit?: number; filter?: StatsFilter; q?: string }
+		options?: { limit?: number; filter?: StatsFilter; q?: string; signal?: AbortSignal }
 	): Promise<{ countries: CountryData[] }> {
 		const params = new URLSearchParams();
 		params.set('limit', String(options?.limit ?? 10));
@@ -316,11 +323,21 @@ export class AnalyticsAPI {
 		if (filter?.urlPattern) params.set('page', filter.urlPattern);
 		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
 		if (filter?.country) params.set('country', filter.country);
-		return this.fetch(`/api/v2/sites/${siteId}/countries?${params}`);
+		return this.fetch(`/api/v2/sites/${siteId}/countries?${params}`, { signal: options?.signal });
 	}
 
-	async getDevices(siteId: string): Promise<{ devices: DeviceData[] }> {
-		return this.fetch(`/api/v2/sites/${siteId}/devices`);
+	async getDevices(
+		siteId: string,
+		filter?: StatsFilter,
+		signal?: AbortSignal
+	): Promise<{ devices: DeviceData[] }> {
+		const params = new URLSearchParams();
+		if (filter?.startDate) params.set('start', filter.startDate);
+		if (filter?.endDate) params.set('end', filter.endDate);
+		if (filter?.urlPattern) params.set('page', filter.urlPattern);
+		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
+		if (filter?.country) params.set('country', filter.country);
+		return this.fetch(`/api/v2/sites/${siteId}/devices?${params}`, { signal });
 	}
 
 	async getBrowsers(siteId: string, limit = 10): Promise<{ browsers: BrowserData[] }> {
@@ -472,6 +489,42 @@ export class AnalyticsAPI {
 	}
 
 	// Real-time WebSocket
+	private openRealtimeSocket(siteId: string): void {
+		if (this.wsReconnectTimer) {
+			clearTimeout(this.wsReconnectTimer);
+			this.wsReconnectTimer = null;
+		}
+
+		this.wsSiteId = siteId;
+		const socket = new WebSocket(`${this.wsUrl}/api/v2/realtime/${siteId}`);
+		this.ws = socket;
+
+		socket.onmessage = (event) => {
+			try {
+				const data = JSON.parse(event.data);
+				if (data.type === 'stats_update') {
+					this.wsCallbacks.get(siteId)?.forEach((cb) => cb(data.data));
+				}
+			} catch (error) {
+				console.error('Invalid realtime message:', error);
+			}
+		};
+
+		socket.onerror = (error) => {
+			console.error('WebSocket error:', error);
+		};
+
+		socket.onclose = () => {
+			if (this.ws === socket) this.ws = null;
+			if (this.wsCallbacks.get(siteId)?.length) {
+				this.wsReconnectTimer = setTimeout(() => {
+					this.wsReconnectTimer = null;
+					if (this.wsCallbacks.get(siteId)?.length) this.openRealtimeSocket(siteId);
+				}, 5000);
+			}
+		};
+	}
+
 	connectRealtime(siteId: string, onUpdate: (data: RealtimeStats) => void): () => void {
 		if (!browser) return () => {};
 
@@ -479,46 +532,34 @@ export class AnalyticsAPI {
 		if (!this.wsCallbacks.has(siteId)) {
 			this.wsCallbacks.set(siteId, []);
 		}
-		this.wsCallbacks.get(siteId)!.push(onUpdate);
+		const callbacks = this.wsCallbacks.get(siteId)!;
+		if (!callbacks.includes(onUpdate)) callbacks.push(onUpdate);
 
 		// Connect if not already connected
-		if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
-			this.ws = new WebSocket(`${this.wsUrl}/api/v2/realtime/${siteId}`);
-
-			this.ws.onmessage = (event) => {
-				const data = JSON.parse(event.data);
-				if (data.type === 'stats_update') {
-					// Notify all callbacks for this site
-					this.wsCallbacks.get(siteId)?.forEach((cb) => cb(data.data));
-				}
-			};
-
-			this.ws.onerror = (error) => {
-				console.error('WebSocket error:', error);
-			};
-
-			this.ws.onclose = () => {
-				// Reconnect after 5 seconds
-				setTimeout(() => {
-					if (this.wsCallbacks.get(siteId)?.length) {
-						this.connectRealtime(siteId, onUpdate);
-					}
-				}, 5000);
-			};
+		if (!this.ws || this.ws.readyState === WebSocket.CLOSED || this.wsSiteId !== siteId) {
+			this.openRealtimeSocket(siteId);
 		}
 
 		// Return disconnect function
 		return () => {
-			const callbacks = this.wsCallbacks.get(siteId);
-			if (callbacks) {
-				const index = callbacks.indexOf(onUpdate);
+			const siteCallbacks = this.wsCallbacks.get(siteId);
+			if (siteCallbacks) {
+				const index = siteCallbacks.indexOf(onUpdate);
 				if (index > -1) {
-					callbacks.splice(index, 1);
+					siteCallbacks.splice(index, 1);
 				}
 				// Close WS if no more callbacks
-				if (callbacks.length === 0 && this.ws) {
+				if (siteCallbacks.length === 0) {
+					this.wsCallbacks.delete(siteId);
+					if (this.wsReconnectTimer) {
+						clearTimeout(this.wsReconnectTimer);
+						this.wsReconnectTimer = null;
+					}
+				}
+				if (siteCallbacks.length === 0 && this.wsSiteId === siteId && this.ws) {
 					this.ws.close();
 					this.ws = null;
+					this.wsSiteId = null;
 				}
 			}
 		};

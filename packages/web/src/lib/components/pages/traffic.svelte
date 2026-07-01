@@ -1,10 +1,8 @@
 <script>
 	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
-	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { color } from '$lib/colors/mixer.js';
 	import { api } from '$lib/api/analytics.ts';
 	import { formatNumber } from '$lib/slug/helpers.js';
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
@@ -12,9 +10,8 @@
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import { Activity, Eye, Globe, Monitor, Smartphone, Tablet } from 'lucide-svelte';
-	import { fade } from 'svelte/transition';
 	
-	let { page_data, current_domain, domain_id, demoData = null } = $props();
+	let { domain_id, demoData = null } = $props();
 	let siteId = $derived(domain_id);
 	let isDemo = $derived(!!demoData);
 	
@@ -48,15 +45,17 @@
 	let modalLoading = $state(false);
 	let modalError = $state(null);
 	let modalItems = $state([]);
+	let modalAbortController = null;
+	let modalRequestId = 0;
 
-	async function openModal(type) {
+	function openModal(type) {
 		activeModal = type;
 		modalSearch = '';
 		modalError = null;
-		await fetchModalData();
 	}
 
 	function closeModal() {
+		modalAbortController?.abort();
 		activeModal = null;
 		modalSearch = '';
 		modalItems = [];
@@ -65,6 +64,10 @@
 
 	async function fetchModalData() {
 		if (!activeModal || !siteId) return;
+		const requestId = ++modalRequestId;
+		modalAbortController?.abort();
+		modalAbortController = new AbortController();
+		const { signal } = modalAbortController;
 		
 		// Use demo data for modals
 		if (isDemo && demoData) {
@@ -89,13 +92,13 @@
 					});
 				}
 				
-				modalItems = items;
+				if (requestId === modalRequestId) modalItems = items;
 			} catch (err) {
 				console.error('Modal fetch error:', err);
 				modalError = err.message || 'Failed to load data';
 				modalItems = [];
 			} finally {
-				modalLoading = false;
+				if (requestId === modalRequestId) modalLoading = false;
 			}
 			return;
 		}
@@ -111,28 +114,35 @@
 			};
 
 			if (activeModal === 'pages') {
-				const res = await api.getPages(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined });
-				modalItems = res.pages || [];
+				const res = await api.getPages(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined, signal });
+				if (requestId === modalRequestId) modalItems = res.pages || [];
 			} else if (activeModal === 'referrers') {
-				const res = await api.getReferrers(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined });
-				modalItems = res.referrers || [];
+				const res = await api.getReferrers(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined, signal });
+				if (requestId === modalRequestId) modalItems = res.referrers || [];
 			} else if (activeModal === 'countries') {
-				const res = await api.getCountries(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined });
-				modalItems = res.countries || [];
+				const res = await api.getCountries(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined, signal });
+				if (requestId === modalRequestId) modalItems = res.countries || [];
 			}
 		} catch (err) {
+			if (signal.aborted) return;
 			console.error('Modal fetch error:', err);
-			modalError = err.message || 'Failed to load data';
-			modalItems = [];
+			if (requestId === modalRequestId) {
+				modalError = err.message || 'Failed to load data';
+				modalItems = [];
+			}
 		} finally {
-			modalLoading = false;
+			if (requestId === modalRequestId) modalLoading = false;
 		}
 	}
 
 	$effect(() => {
-		if (activeModal) {
-			fetchModalData();
-		}
+		if (!activeModal) return;
+		const delay = modalSearch.trim() ? 200 : 0;
+		const timeout = setTimeout(fetchModalData, delay);
+		return () => {
+			clearTimeout(timeout);
+			modalAbortController?.abort();
+		};
 	});
 
 	let modalData = $derived.by(() => modalItems);
@@ -162,15 +172,6 @@
 		goto(nextSearchParams({ [kind]: nextValue }), { keepfocus: true, noScroll: true, replaceState: false });
 	}
 
-	let modalSearchTimeout;
-	$effect(() => {
-		if (!activeModal) return;
-		clearTimeout(modalSearchTimeout);
-		modalSearchTimeout = setTimeout(() => {
-			fetchModalData();
-		}, 200);
-	});
-
 	function onKeyDown(e) {
 		if (e.key === 'Escape' && activeModal) {
 			closeModal();
@@ -189,10 +190,16 @@
 
 	let timeSeriesGranularity = $derived.by(() => (rangeDays <= 2 ? 'hour' : 'day'));
 	let chartSortInterval = $derived.by(() => (rangeDays <= 2 ? 1 : rangeDays));
+	let dashboardAbortController = null;
+	let dashboardRequestId = 0;
 	
 	// Fetch all data
 	async function fetchDashboardData() {
 		if (!siteId) return;
+		const requestId = ++dashboardRequestId;
+		dashboardAbortController?.abort();
+		dashboardAbortController = new AbortController();
+		const { signal } = dashboardAbortController;
 		
 		loading = true;
 		error = null;
@@ -206,7 +213,7 @@
 				pages = demoData.pages || [];
 				countries = demoData.countries || [];
 				devices = demoData.devices || [];
-				loading = false;
+				if (requestId === dashboardRequestId) loading = false;
 				return;
 			}
 			
@@ -218,13 +225,14 @@
 			};
 
 			const [statsData, seriesData, refsData, pagesData, countriesData, devicesData] = await Promise.all([
-				api.getStatsSummary(siteId, filter),
-				api.getTimeSeries(siteId, filter, timeSeriesGranularity),
-				api.getReferrers(siteId, { limit: 5, filter }),
-				api.getPages(siteId, { limit: 5, filter }),
-				api.getCountries(siteId, { limit: 5, filter }),
-				api.getDevices(siteId)
+				api.getStatsSummary(siteId, filter, signal),
+				api.getTimeSeries(siteId, filter, timeSeriesGranularity, signal),
+				api.getReferrers(siteId, { limit: 5, filter, signal }),
+				api.getPages(siteId, { limit: 5, filter, signal }),
+				api.getCountries(siteId, { limit: 5, filter, signal }),
+				api.getDevices(siteId, filter, signal)
 			]);
+			if (requestId !== dashboardRequestId) return;
 			
 			stats = statsData;
 			timeSeries = seriesData.data || [];
@@ -233,36 +241,28 @@
 			countries = countriesData.countries || [];
 			devices = devicesData.devices || [];
 		} catch (err) {
+			if (signal.aborted) return;
 			console.error('Dashboard error:', err);
-			error = err.message || 'Failed to load dashboard data';
+			if (requestId === dashboardRequestId) error = err.message || 'Failed to load dashboard data';
 		} finally {
-			loading = false;
+			if (requestId === dashboardRequestId) loading = false;
 		}
 	}
 	
 	// Real-time updates (disabled in demo mode)
-	let disconnectRealtime = $state(null);
-	
-	function setupRealtime() {
-		if (!siteId || !browser || isDemo) return;
-		
-		disconnectRealtime = api.connectRealtime(siteId, (data) => {
-			realtimeStats = data;
-		});
-	}
-	
 	$effect(() => {
 		if (siteId && dashboardStore.dateRange) {
 			fetchDashboardData();
-			setupRealtime();
 		}
+		return () => dashboardAbortController?.abort();
 	});
 	
-	
-	onDestroy(() => {
-		if (disconnectRealtime) {
-			disconnectRealtime();
-		}
+	$effect(() => {
+		if (!siteId || !browser || isDemo) return;
+		realtimeStats = null;
+		return api.connectRealtime(siteId, (data) => {
+			realtimeStats = data;
+		});
 	});
 	
 	// Calculate device icon
@@ -547,7 +547,7 @@
 								<p class="text-stone-400 italic font-serif text-sm">{modalError}</p>
 							</div>
 						{:else}
-							{#each modalData as item}
+							{#each modalData as item (item.path || item.referrer || item.code || item.country)}
 								{@const name = item.path || item.referrer || item.country || 'Unknown'}
 								{@const filterKind = activeModal === 'pages' ? 'page' : activeModal === 'referrers' ? 'referrer' : 'country'}
 								{@const filterValue = activeModal === 'pages'

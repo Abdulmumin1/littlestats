@@ -11,6 +11,11 @@ type Variables = {
 
 const analyticsRouter = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+function boundedInt(value: string | undefined, fallback: number, max: number): number {
+  const parsed = Number.parseInt(value || '', 10);
+  return Number.isFinite(parsed) ? Math.min(max, Math.max(1, parsed)) : fallback;
+}
+
 // All analytics routes require authentication
 analyticsRouter.use("*", authMiddleware);
 
@@ -49,7 +54,7 @@ analyticsRouter.get("/:siteId/timeseries", async (c) => {
     referrerDomain: c.req.query("referrer"),
     country: c.req.query("country"),
   };
-  const granularity = c.req.query("granularity") as 'hour' | 'day' || 'day';
+  const granularity = c.req.query("granularity") === 'hour' ? 'hour' : 'day';
 
   const api = new DashboardAPI(c.env.DB, siteId);
   const data = await api.getTimeSeries(filter, granularity);
@@ -58,7 +63,7 @@ analyticsRouter.get("/:siteId/timeseries", async (c) => {
 
 analyticsRouter.get("/:siteId/referrers", async (c) => {
   const siteId = c.req.param("siteId");
-  const limit = parseInt(c.req.query("limit") || "10");
+  const limit = boundedInt(c.req.query("limit"), 10, 100);
   const q = c.req.query("q");
 
   const filter = {
@@ -76,7 +81,7 @@ analyticsRouter.get("/:siteId/referrers", async (c) => {
 
 analyticsRouter.get("/:siteId/pages", async (c) => {
   const siteId = c.req.param("siteId");
-  const limit = parseInt(c.req.query("limit") || "10");
+  const limit = boundedInt(c.req.query("limit"), 10, 100);
   const q = c.req.query("q");
 
   const filter = {
@@ -94,7 +99,7 @@ analyticsRouter.get("/:siteId/pages", async (c) => {
 
 analyticsRouter.get("/:siteId/countries", async (c) => {
   const siteId = c.req.param("siteId");
-  const limit = parseInt(c.req.query("limit") || "10");
+  const limit = boundedInt(c.req.query("limit"), 10, 100);
   const q = c.req.query("q");
 
   const filter = {
@@ -113,23 +118,39 @@ analyticsRouter.get("/:siteId/countries", async (c) => {
 analyticsRouter.get("/:siteId/devices", async (c) => {
   const siteId = c.req.param("siteId");
 
+  const filter = {
+    startDate: c.req.query("start"),
+    endDate: c.req.query("end"),
+    urlPattern: c.req.query("page"),
+    referrerDomain: c.req.query("referrer"),
+    country: c.req.query("country"),
+  };
+
   const api = new DashboardAPI(c.env.DB, siteId);
-  const devices = await api.getDeviceBreakdown({});
+  const devices = await api.getDeviceBreakdown(filter);
   return c.json({ devices });
 });
 
 analyticsRouter.get("/:siteId/browsers", async (c) => {
   const siteId = c.req.param("siteId");
-  const limit = parseInt(c.req.query("limit") || "10");
+  const limit = boundedInt(c.req.query("limit"), 10, 100);
+
+  const filter = {
+    startDate: c.req.query("start"),
+    endDate: c.req.query("end"),
+    urlPattern: c.req.query("page"),
+    referrerDomain: c.req.query("referrer"),
+    country: c.req.query("country"),
+  };
 
   const api = new DashboardAPI(c.env.DB, siteId);
-  const browsers = await api.getBrowserBreakdown({}, limit);
+  const browsers = await api.getBrowserBreakdown(filter, limit);
   return c.json({ browsers });
 });
 
 analyticsRouter.get("/:siteId/events", async (c) => {
   const siteId = c.req.param("siteId");
-  const limit = parseInt(c.req.query("limit") || "100");
+  const limit = boundedInt(c.req.query("limit"), 100, 250);
   const cursor = c.req.query("cursor");
   const eventName = c.req.query("eventName");
 
@@ -177,7 +198,7 @@ analyticsRouter.get("/:siteId/event-names", async (c) => {
 
 analyticsRouter.get("/:siteId/campaigns", async (c) => {
   const siteId = c.req.param("siteId");
-  const limit = parseInt(c.req.query("limit") || "20");
+  const limit = boundedInt(c.req.query("limit"), 20, 100);
 
   const filter = {
     startDate: c.req.query("start"),
@@ -202,7 +223,7 @@ analyticsRouter.get("/:siteId/campaigns/segmented-timeseries", async (c) => {
   const groupBy = (c.req.query("groupBy") || "source") as "source" | "medium";
   const metric = (c.req.query("metric") || "conversions") as "conversions" | "visits";
   const granularity = (c.req.query("granularity") || "day") as "day" | "hour";
-  const segmentsLimit = parseInt(c.req.query("segmentsLimit") || "6");
+  const segmentsLimit = boundedInt(c.req.query("segmentsLimit"), 6, 12);
 
   const goalEventName = c.req.query("goal") || undefined;
 
