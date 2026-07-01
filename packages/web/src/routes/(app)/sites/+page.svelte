@@ -6,7 +6,6 @@
 	import DarkMode from '$lib/components/generals/darkMode.svelte';
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
-	import { goto } from '$app/navigation';
 	import { LayoutGrid, Globe, Plus, ArrowRight, Activity, Users, Eye, Settings } from 'lucide-svelte';
 	import { page } from '$app/stores';
 
@@ -22,7 +21,7 @@
 		try {
 			const response = await api.getSites();
 			sites = response.sites || [];
-			if (sites.length === 0) goto('/setup');
+			// Onboarding redirect is now handled server-side in +page.server.js
 		} catch (err) {
 			console.error('Sites fetch error:', err);
 			error = err.message || 'Failed to load sites';

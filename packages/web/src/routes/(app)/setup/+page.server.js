@@ -29,6 +29,8 @@ export async function load({ locals, fetch, cookies, request }) {
 			}
 		}
 	} catch (error) {
+		// Re-throw SvelteKit redirects so the framework handles them
+		if (error?.status && error?.location) throw error;
 		console.error('Setup load error:', error);
 	}
 	
