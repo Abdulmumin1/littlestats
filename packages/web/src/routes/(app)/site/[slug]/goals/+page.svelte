@@ -3,6 +3,7 @@
 	import { color } from '$lib/colors/mixer.js';
 	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
 	import { Target, TrendingUp } from 'lucide-svelte';
+	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
 
 	let { data } = $props();
 	let siteId = $derived(data.siteId);
@@ -127,7 +128,7 @@
 	});
 </script>
 
-<div class="space-y-8">
+<SitePageShell class="space-y-8">
 	<!-- Header with Goal Selector -->
 	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-2">
 		<div>
@@ -304,4 +305,4 @@
 			</div>
 		{/if}
 	{/if}
-</div>
+</SitePageShell>

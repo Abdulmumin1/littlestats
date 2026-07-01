@@ -244,7 +244,7 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+	<div class="grid min-h-[60vh] grid-cols-1 content-start gap-6 lg:grid-cols-12">
 		<!-- Funnel Builder (Left) -->
 		<div class="lg:col-span-4 space-y-4">
 			<!-- Funnel Config -->
@@ -371,7 +371,7 @@
 		</div>
 
 		<!-- Funnel Results (Right) -->
-		<div class="lg:col-span-8 space-y-6">
+		<div class="lg:col-span-8 min-h-[60vh] space-y-6">
 			{#if loading}
 				<div class="h-100 flex items-center justify-center">
 					<LoadingState />

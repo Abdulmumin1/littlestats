@@ -8,6 +8,7 @@
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
 	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
+	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
 
 	// New filter state
 	let searchQuery = '';
@@ -285,8 +286,9 @@
 {#if loading}
 	<LoadingState />
 {/if}
-<div class="mx-auto text-gray-100">
-	<div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3 rounded-none">
+<SitePageShell>
+	<div class="text-gray-100">
+		<div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3 rounded-none">
 		<div
 			class="rounded-none bg-{$color}-200 flex flex-col gap-3 bg-opacity-35 p-4 py-8 text-center dark:bg-stone-800 border border-stone-100 dark:border-stone-700 shadow-none"
 		>
@@ -363,8 +365,9 @@
 				</div>
 			{/each}
 		</div>
+		</div>
 	</div>
-</div>
+</SitePageShell>
 
 <style>
 	.load-bar,

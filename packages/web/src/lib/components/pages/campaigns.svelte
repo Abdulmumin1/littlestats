@@ -404,17 +404,17 @@
 	</div>
 
 	{#if loading}
-		<div class="flex items-center justify-center py-12 rounded-none">
+		<div class="flex min-h-[60vh] items-center justify-center rounded-none">
 			<div class="w-6 h-6 border-2 border-stone-200 dark:border-stone-800 border-t-stone-900 dark:border-t-white rounded-none animate-spin"></div>
 		</div>
 	{:else if campaigns.length === 0}
-		<div class="text-center py-16 bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800">
+		<div class="flex min-h-[60vh] flex-col items-center justify-center text-center py-16 bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800">
 			<Megaphone size={32} class="mx-auto text-stone-300 dark:text-stone-700 mb-3" />
 			<p class="text-stone-500 dark:text-stone-400 text-sm font-serif italic">No traffic data yet</p>
 			<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Visitors will appear once they arrive</p>
 		</div>
 	{:else}
-		<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 rounded-none">
+		<div class="grid min-h-[60vh] grid-cols-2 content-start gap-4 rounded-none sm:grid-cols-4">
 			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
 				<div class="flex items-center gap-2 text-[11px] font-medium text-stone-500 dark:text-stone-400 mb-2">
 					<Megaphone size={12} />
