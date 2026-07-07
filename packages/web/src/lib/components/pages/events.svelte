@@ -6,6 +6,7 @@
 
 	import { Search, Activity, Globe, Users, MoreVertical, Check, ChevronDown } from 'lucide-svelte';
 	import CustomSelect from '$lib/components/generals/customSelect.svelte';
+	import { getInclusiveRangeDays } from '$lib/utils/dateRange.js';
 	import { runWorker } from '$lib/workers/workerClient.js';
 
 	let { 
@@ -23,11 +24,7 @@
 	} = $props();
 
 	let rangeDays = $derived.by(() => {
-		if (!rangeStart || !rangeEnd) return 1;
-		const startTime = new Date(rangeStart).getTime();
-		const endTime = new Date(rangeEnd).getTime();
-		if (Number.isNaN(startTime) || Number.isNaN(endTime)) return 1;
-		return Math.max(1, Math.ceil((endTime - startTime) / (1000 * 60 * 60 * 24)));
+		return getInclusiveRangeDays(rangeStart, rangeEnd);
 	});
 
 	let sortInterval = $derived.by(() => (rangeDays <= 2 ? 1 : rangeDays));

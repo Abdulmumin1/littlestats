@@ -1,13 +1,11 @@
 <script>
 	import { formatDate } from '$lib/utils.js';
-	import { run } from 'svelte/legacy';
-
+	import { isDateKey } from '$lib/utils/dateRange.js';
 	import { onMount, untrack } from 'svelte';
 	import Chart from 'chart.js/auto';
 	// import { sortViews, transformViewDataForGraph } from './viewDataUtils.js';
 	import { color, colorList } from '$lib/colors/mixer.js';
 	import { ChevronDown, ChevronUp } from 'lucide-svelte';
-	import { slide } from 'svelte/transition';
 
 	/**
 	 * @typedef {Object} Props
@@ -30,62 +28,6 @@
 	let chartCanvas = $state(null);
 	let chart = $state(null);
 
-	function isToday(dateString) {
-		if (!dateString) return false;
-		const d = new Date(dateString);
-		const today = new Date();
-		return d.getDate() === today.getDate() &&
-			d.getMonth() === today.getMonth() &&
-			d.getFullYear() === today.getFullYear();
-	}
-
-	function sortViewsByHour(viewRecords) {
-		const now = new Date();
-		const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-		const intervals = [
-			{ label: 'a while ago', min: 0, max: 1 },
-			{ label: '1 - 4hr ago', min: 1, max: 4 },
-			{ label: '4 - 8hr ago', min: 4, max: 8 },
-			{ label: '8 - 12hr ago', min: 8, max: 12 },
-			{ label: '12 - 16hr ago', min: 12, max: 16 },
-			{ label: '16 - 20hr ago', min: 16, max: 20 },
-			{ label: '20 - 24hr ago', min: 20, max: 24 }
-		];
-
-		const counts = {};
-		intervals.forEach((interval) => {
-			counts[interval.label] = 0;
-		});
-
-		viewRecords.forEach((record) => {
-			const recordDate = new Date(record.timestamp);
-			if (isNaN(recordDate.getTime())) {
-				console.warn(`Invalid date encountered: ${record.timestamp}`);
-				return;
-			}
-			if (recordDate < twentyFourHoursAgo) return;
-
-			const hoursAgo = (now.getTime() - recordDate.getTime()) / (1000 * 60 * 60);
-			const incrementBy = typeof record?.views === 'number' ? record.views : 1;
-
-			for (const interval of intervals) {
-				if (hoursAgo >= interval.min && hoursAgo < interval.max) {
-					counts[interval.label] += incrementBy;
-					break;
-				}
-			}
-		});
-		
-		const reversedIntervals = [...intervals].reverse();
-		const sortedCounts = {};
-		reversedIntervals.forEach(interval => {
-			sortedCounts[interval.label] = counts[interval.label];
-		});
-
-		return sortedCounts;
-	}
-
 	function formatHourLabel(dateString) {
 		const d = new Date(dateString);
 		if (isNaN(d.getTime())) return dateString;
@@ -97,22 +39,30 @@
 		});
 	}
 
+	function parseHourBoundary(value, endOfDay = false) {
+		if (!value) return null;
+		if (isDateKey(value)) {
+			return new Date(`${value}T${endOfDay ? '23:00:00.000Z' : '00:00:00.000Z'}`);
+		}
+
+		const date = new Date(value);
+		return Number.isNaN(date.getTime()) ? null : date;
+	}
+
 	function sortViewsByHours(viewRecords, rangeStartDate, rangeEndDate) {
 		const counts = new Map();
 		for (const record of viewRecords) {
 			const time = new Date(record.timestamp).getTime();
 			if (isNaN(time)) continue;
 			const d = new Date(time);
-			d.setMinutes(0, 0, 0);
+			d.setUTCMinutes(0, 0, 0);
 			const key = d.toISOString();
 			const incrementBy = typeof record?.views === 'number' ? record.views : 1;
 			counts.set(key, (counts.get(key) || 0) + incrementBy);
 		}
 
-		const start = rangeStartDate ? new Date(rangeStartDate) : null;
-		const end = rangeEndDate ? new Date(rangeEndDate) : null;
-		let startHour = start && !isNaN(start.getTime()) ? start : null;
-		let endHour = end && !isNaN(end.getTime()) ? end : null;
+		let startHour = parseHourBoundary(rangeStartDate);
+		let endHour = parseHourBoundary(rangeEndDate, true);
 
 		if (!startHour || !endHour) {
 			const keys = Array.from(counts.keys()).sort();
@@ -121,19 +71,15 @@
 			endHour = new Date(keys[keys.length - 1]);
 		}
 
-		startHour.setMinutes(0, 0, 0);
-		endHour.setMinutes(0, 0, 0);
-
-		if (startHour.getTime() === endHour.getTime()) {
-			endHour.setHours(endHour.getHours() + 23);
-		}
+		startHour.setUTCMinutes(0, 0, 0);
+		endHour.setUTCMinutes(0, 0, 0);
 
 		const results = {};
 		const cur = new Date(startHour);
 		while (cur <= endHour) {
 			const key = cur.toISOString();
 			results[key] = counts.get(key) || 0;
-			cur.setHours(cur.getHours() + 1);
+			cur.setUTCHours(cur.getUTCHours() + 1);
 		}
 		return results;
 	}
@@ -323,14 +269,14 @@
 		MountChart(); // Mount the new chart with updated type
 	}
 
-	let usedColor = $derived(colorList[$color] ?? greenColors);
+	let usedColor = $derived(colorList[$color] ?? colorList.green);
 	let viewRecords = $derived(chartD.data);
 	let chartData = $derived(
 		transformViewDataForGraph(
 			sorted
 				? viewRecords
 				: sortInterval <= 1
-					? (rangeEnd && isToday(rangeEnd) ? sortViewsByHour(viewRecords) : sortViewsByHours(viewRecords, rangeStart, rangeEnd))
+					? sortViewsByHours(viewRecords, rangeStart, rangeEnd)
 					: sortViewsByDays(viewRecords, rangeStart, rangeEnd)
 		)
 	);

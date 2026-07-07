@@ -2,6 +2,7 @@
 	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
 	import { api } from '$lib/api/analytics.ts';
 	import { formatDate } from '$lib/utils.js';
+	import { fromDateKey, toLocalDateKey } from '$lib/utils/dateRange.js';
 	import { page } from '$app/stores';
 	import { color } from '$lib/colors/mixer.js';
 	import { CalendarHeart, CalendarRange, LayoutDashboard, Megaphone, Settings, Globe, GitBranch, Mailbox, Menu, X } from 'lucide-svelte';
@@ -28,8 +29,8 @@
 	let isOpen = $state(false);
 	let mobileMenuOpen = $state(false);
 	let newFeedbackCount = $state(0);
-	let selectedStartDate = $state(new Date(dashboardStore.dateRange.startDate));
-	let selectedEndDate = $state(new Date(dashboardStore.dateRange.endDate));
+	let selectedStartDate = $state(fromDateKey(dashboardStore.dateRange.startDate) ?? new Date());
+	let selectedEndDate = $state(fromDateKey(dashboardStore.dateRange.endDate) ?? new Date());
 	const domain_options = $derived(data.domains.map((e) => ({ value: e.id, label: e.name })));
 
 	$effect(() => {
@@ -50,12 +51,21 @@
 			cancelled = true;
 		};
 	});
+
+	$effect(() => {
+		if (isOpen) return;
+
+		const nextStart = fromDateKey(dashboardStore.dateRange.startDate);
+		const nextEnd = fromDateKey(dashboardStore.dateRange.endDate);
+		if (nextStart) selectedStartDate = nextStart;
+		if (nextEnd) selectedEndDate = nextEnd;
+	});
 </script>
 
 <PickDate bind:isOpen bind:startDate={selectedStartDate} bind:endDate={selectedEndDate} on:close={(e) => {
 	dashboardStore.setDateRange(
-		new Date(e.detail.startDate).toISOString().split('T')[0],
-		new Date(e.detail.endDate).toISOString().split('T')[0]
+		toLocalDateKey(e.detail.startDate),
+		toLocalDateKey(e.detail.endDate)
 	);
 }} />
 

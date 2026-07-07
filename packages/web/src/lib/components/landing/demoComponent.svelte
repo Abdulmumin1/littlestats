@@ -3,6 +3,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { formatNumber } from '$lib/slug/helpers.js';
+	import { getInclusiveRangeDays } from '$lib/utils/dateRange.js';
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
 	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
@@ -138,11 +139,7 @@
 	let rangeDays = $derived.by(() => {
 		const start = dashboardStore?.dateRange?.startDate;
 		const end = dashboardStore?.dateRange?.endDate;
-		if (!start || !end) return 1;
-		const startTime = new Date(start).getTime();
-		const endTime = new Date(end).getTime();
-		if (Number.isNaN(startTime) || Number.isNaN(endTime)) return 1;
-		return Math.max(1, Math.ceil((endTime - startTime) / (1000 * 60 * 60 * 24)));
+		return getInclusiveRangeDays(start, end);
 	});
 
 	let timeSeriesGranularity = $derived.by(() => (rangeDays <= 2 ? 'hour' : 'day'));

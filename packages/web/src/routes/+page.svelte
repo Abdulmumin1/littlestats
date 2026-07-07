@@ -26,10 +26,11 @@
 	import Campaigns from '$lib/components/pages/campaigns.svelte';
     import Traffic from '$lib/components/pages/traffic.svelte'; // Use real Traffic component
     import Feedback from '$lib/components/pages/feedback.svelte';
-    import Dropdown from '$lib/components/generals/dropdown.svelte';
+	import Dropdown from '$lib/components/generals/dropdown.svelte';
     import DarkMode from '$lib/components/generals/darkMode.svelte';
 	import { defaultRange as globalRange, optis } from '$lib/globalstate.svelte.js';
     import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
+	import { toLocalDateKey } from '$lib/utils/dateRange.js';
     import { writable } from 'svelte/store';
 
     // Icons
@@ -129,12 +130,7 @@
     // Sync globalRange to dashboardStore for DemoComponent
     $effect(() => {
         const [start, end] = globalRange.getRange();
-        // globalRange uses ISO strings, dashboardStore expects YYYY-MM-DD strings usually, 
-        // but based on dashboardStore definition it handles it. 
-        // Let's ensure format matches what dashboardStore typically has.
-        const startDate = new Date(start).toISOString().split('T')[0];
-        const endDate = new Date(end).toISOString().split('T')[0];
-        dashboardStore.setDateRange(startDate, endDate);
+        dashboardStore.setDateRange(toLocalDateKey(start), toLocalDateKey(end));
     });
 
     // Lazy compute funnelData - only when funnels tab is active
