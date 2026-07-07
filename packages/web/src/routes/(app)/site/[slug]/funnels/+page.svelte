@@ -1,6 +1,6 @@
 <script>
 	import Seo from '$lib/components/generals/seo.svelte';
-	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
 	import { show_toast } from '$lib/toast.js';
 	import { api } from '$lib/api/analytics.ts';
@@ -350,82 +350,112 @@
 
 		<!-- Funnel Results (Right) -->
 		<div class="lg:col-span-8 space-y-6">
-			{#if loading}
-				<div class="h-100 flex items-center justify-center">
-					<LoadingState />
-				</div>
-			{:else if error}
-				<div class="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 p-6 text-center">
-					<p class="text-sm text-red-800 dark:text-red-200">{error}</p>
-				</div>
-			{:else if funnelResult && funnelResult.steps.length > 0}
-				<!-- Summary Cards -->
-				<div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4">
-						<div class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">Total Entries</div>
-						<p class="text-2xl font-bold text-stone-900 dark:text-white tabular-nums">{funnelResult.totalEntries.toLocaleString()}</p>
-					</div>
-					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4">
-						<div class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">Completed</div>
-						<p class="text-2xl font-bold text-stone-900 dark:text-white tabular-nums">{funnelResult.steps[funnelResult.steps.length - 1]?.count.toLocaleString() || 0}</p>
-					</div>
-					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4">
-						<div class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">Conversion Rate</div>
-						<p class="text-2xl font-bold text-stone-900 dark:text-white tabular-nums">{funnelResult.totalConversionRate}%</p>
-					</div>
-				</div>
-
-				<!-- Funnel Visualization -->
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-6">
-					<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-6">Funnel Breakdown</h3>
-					<div class="space-y-4">
-						{#each funnelResult.steps as step, index}
-							{@const maxCount = funnelResult.steps[0]?.count || 1}
-							{@const barWidth = Math.max(5, (step.count / maxCount) * 100)}
-							<div class="space-y-2">
-								<div class="flex items-center justify-between">
-									<div class="flex items-center gap-3">
-										<div class="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white shrink-0" style="background: {colors[index % colors.length]}">
-											{step.step}
+			<LoadingBoundary {loading} label="Loading funnel analysis">
+				{#snippet fallback()}
+					<div class="space-y-6">
+						<div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+							{#each Array(3) as _, index (index)}
+								<div class="space-y-3 border border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900">
+									<div class="h-3 w-24 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+									<div class="h-8 w-20 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+								</div>
+							{/each}
+						</div>
+						<div class="space-y-4 border border-stone-100 bg-stone-50 p-6 dark:border-stone-800 dark:bg-stone-900">
+							<div class="h-3 w-32 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+							{#each Array(4) as _, index (index)}
+								<div class="space-y-2">
+									<div class="flex items-center justify-between gap-4">
+										<div class="flex items-center gap-3">
+											<div class="h-6 w-6 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+											<div class="space-y-2">
+												<div class="h-4 w-36 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+												<div class="h-3 w-16 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+											</div>
 										</div>
-										<div>
-											<p class="text-sm font-bold text-stone-900 dark:text-white">{step.name}</p>
-											<p class="text-[10px] font-black uppercase tracking-widest text-stone-400">{step.type}</p>
+										<div class="space-y-2">
+											<div class="ml-auto h-4 w-16 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+											<div class="h-3 w-20 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
 										</div>
 									</div>
-									<div class="text-right">
-										<p class="text-sm font-bold text-stone-900 dark:text-white tabular-nums">{step.count.toLocaleString()}</p>
-										{#if index > 0}
-											<p class="text-[10px] font-black uppercase tracking-widest text-stone-400">
-												{step.conversionRate}% from prev
-											</p>
+									<div class="h-8 w-full animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				{/snippet}
+
+				{#if error}
+					<div class="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-900/30 p-6 text-center">
+						<p class="text-sm text-red-800 dark:text-red-200">{error}</p>
+					</div>
+				{:else if funnelResult && funnelResult.steps.length > 0}
+					<div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+						<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4">
+							<div class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">Total Entries</div>
+							<p class="text-2xl font-bold text-stone-900 dark:text-white tabular-nums">{funnelResult.totalEntries.toLocaleString()}</p>
+						</div>
+						<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4">
+							<div class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">Completed</div>
+							<p class="text-2xl font-bold text-stone-900 dark:text-white tabular-nums">{funnelResult.steps[funnelResult.steps.length - 1]?.count.toLocaleString() || 0}</p>
+						</div>
+						<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4">
+							<div class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">Conversion Rate</div>
+							<p class="text-2xl font-bold text-stone-900 dark:text-white tabular-nums">{funnelResult.totalConversionRate}%</p>
+						</div>
+					</div>
+
+					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-6">
+						<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-6">Funnel Breakdown</h3>
+						<div class="space-y-4">
+							{#each funnelResult.steps as step, index (step.name + '-' + index)}
+								{@const maxCount = funnelResult.steps[0]?.count || 1}
+								{@const barWidth = Math.max(5, (step.count / maxCount) * 100)}
+								<div class="space-y-2">
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-3">
+											<div class="w-6 h-6 flex items-center justify-center text-[10px] font-black text-white shrink-0" style="background: {colors[index % colors.length]}">
+												{step.step}
+											</div>
+											<div>
+												<p class="text-sm font-bold text-stone-900 dark:text-white">{step.name}</p>
+												<p class="text-[10px] font-black uppercase tracking-widest text-stone-400">{step.type}</p>
+											</div>
+										</div>
+										<div class="text-right">
+											<p class="text-sm font-bold text-stone-900 dark:text-white tabular-nums">{step.count.toLocaleString()}</p>
+											{#if index > 0}
+												<p class="text-[10px] font-black uppercase tracking-widest text-stone-400">
+													{step.conversionRate}% from prev
+												</p>
+											{/if}
+										</div>
+									</div>
+									<div class="h-8 bg-stone-200 dark:bg-stone-800 relative overflow-hidden">
+										<div
+											class="h-full transition-all duration-500"
+											style="width: {barWidth}%; background: {colors[index % colors.length]}; opacity: 0.8;"
+										></div>
+										{#if index > 0 && step.dropOffRate > 0}
+											<div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-500">
+												-{step.dropOffRate}% drop
+											</div>
 										{/if}
 									</div>
 								</div>
-								<div class="h-8 bg-stone-200 dark:bg-stone-800 relative overflow-hidden">
-									<div
-										class="h-full transition-all duration-500"
-										style="width: {barWidth}%; background: {colors[index % colors.length]}; opacity: 0.8;"
-									></div>
-									{#if index > 0 && step.dropOffRate > 0}
-										<div class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-red-500">
-											-{step.dropOffRate}% drop
-										</div>
-									{/if}
-								</div>
-							</div>
-						{/each}
+							{/each}
+						</div>
 					</div>
-				</div>
-			{:else}
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-12 text-center h-100 flex flex-col items-center justify-center">
-					<BarChart3 size={48} class="mx-auto text-stone-300 dark:text-stone-600 mb-4" />
-					<h3 class="text-lg font-bold text-stone-900 dark:text-white mb-2">Analyze Your Journey</h3>
-					<p class="text-sm text-stone-500 dark:text-stone-400 max-w-md mx-auto">
-						Add at least 2 steps to analyze how users move through your conversion flow.
-					</p>
-				</div>
-			{/if}
+				{:else}
+					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-12 text-center h-100 flex flex-col items-center justify-center">
+						<BarChart3 size={48} class="mx-auto text-stone-300 dark:text-stone-600 mb-4" />
+						<h3 class="text-lg font-bold text-stone-900 dark:text-white mb-2">Analyze Your Journey</h3>
+						<p class="text-sm text-stone-500 dark:text-stone-400 max-w-md mx-auto">
+							Add at least 2 steps to analyze how users move through your conversion flow.
+						</p>
+					</div>
+				{/if}
+			</LoadingBoundary>
 		</div>
 	</div>
 </SitePageShell>
@@ -461,7 +491,7 @@
 					</div>
 				{:else}
 					<div class="space-y-1">
-						{#each savedFunnels as funnel}
+						{#each savedFunnels as funnel (funnel.id)}
 							<div class="group flex items-center gap-1">
 								<button
 									type="button"

@@ -1,6 +1,7 @@
 <script>
 	import { api } from '$lib/api/analytics.ts';
 	import { color } from '$lib/colors/mixer.js';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
 	import { Target, TrendingUp } from 'lucide-svelte';
 	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
@@ -129,180 +130,253 @@
 </script>
 
 <SitePageShell class="space-y-8">
-	<!-- Header with Goal Selector -->
-	<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-2">
-		<div>
-			<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight">Goals</h1>
-			<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Track conversion events</p>
-		</div>
-		
-		{#if eventNames.length > 0}
-			<select
-				bind:value={selectedGoal}
-				class="px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-			>
-				{#each eventNames as name}
-					<option value={name}>{name}</option>
-				{/each}
-			</select>
-		{/if}
-	</div>
-
-	{#if loading}
-		<div class="flex items-center justify-center py-12 rounded-none">
-			<div class="w-6 h-6 border-2 border-stone-200 dark:border-stone-800 border-t-stone-900 dark:border-t-white rounded-none animate-spin"></div>
-		</div>
-	{:else if eventNames.length === 0}
-		<div class="text-center py-16 bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800">
-			<Target size={32} class="mx-auto text-stone-300 dark:text-stone-700 mb-3" />
-			<p class="text-stone-500 dark:text-stone-400 text-sm font-serif italic">No custom events tracked yet</p>
-			<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Events will appear here once tracked</p>
-		</div>
-	{:else if goalSummary}
-		<!-- Stats Cards -->
-		<div class="grid grid-cols-2 gap-4 rounded-none">
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none">
-				<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
-					<Target size={12} />
-					Conversions
-				</div>
-				<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">
-					{goalSummary.conversions.toLocaleString()}
-				</p>
-			</div>
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none">
-				<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
-					<TrendingUp size={12} />
-					Conversion Rate
-				</div>
-				<p class={`text-xl font-bold text-${$color}-600 dark:text-${$color}-400 tabular-nums leading-none`}>
-					{goalSummary.conversionRate}%
-				</p>
-			</div>
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none col-span-2">
-				<div class="flex flex-wrap items-center gap-3">
-					<input
-						bind:value={attributionSearch}
-						placeholder="Search attribution"
-						class="flex-1 min-w-48 px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-					/>
-					<select
-						bind:value={sortBy}
-						class="px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-					>
-						<option value="conversions">Sort: Conversions</option>
-						<option value="conversionRate">Sort: Rate</option>
-						<option value="name">Sort: Name</option>
-					</select>
-					<select
-						bind:value={sortDir}
-						class="px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-					>
-						<option value="desc">Direction: Desc</option>
-						<option value="asc">Direction: Asc</option>
-					</select>
-				</div>
-				<div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<div class="px-4 py-3 bg-white/60 dark:bg-stone-950/40 border border-stone-100 dark:border-stone-800 rounded-none">
-						<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Top source by conversions</p>
-						{#if bestAttributionByConv}
-							<p class="text-sm font-bold text-stone-900 dark:text-white truncate mt-1">{formatBucket(bestAttributionByConv.bucket)}</p>
-							<p class="text-xs font-bold text-stone-600 dark:text-stone-300 tabular-nums mt-1">
-								{bestAttributionByConv.conversions.toLocaleString()} conv
-							</p>
-						{:else}
-							<p class="text-xs font-bold text-stone-400 mt-1">—</p>
-						{/if}
+	<LoadingBoundary {loading} label="Loading goal analytics">
+		{#snippet fallback()}
+			<div class="space-y-8">
+				<div class="flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
+					<div class="space-y-2">
+						<div class="h-7 w-28 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+						<div class="h-3 w-44 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
 					</div>
-					<div class="px-4 py-3 bg-white/60 dark:bg-stone-950/40 border border-stone-100 dark:border-stone-800 rounded-none">
-						<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Top source by rate</p>
-						{#if bestAttributionByRate}
-							<p class="text-sm font-bold text-stone-900 dark:text-white truncate mt-1">{formatBucket(bestAttributionByRate.bucket)}</p>
-							<p class={`text-xs font-bold tabular-nums mt-1 ${bestAttributionByRate.conversionRate > 0 ? `text-${$color}-600 dark:text-${$color}-400` : 'text-stone-400'}`}>
-								{bestAttributionByRate.conversionRate}%
-							</p>
-						{:else}
-							<p class="text-xs font-bold text-stone-400 mt-1">—</p>
-						{/if}
+					<div class="h-10 w-44 animate-pulse border border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-900"></div>
+				</div>
+
+				<div class="grid grid-cols-2 gap-4">
+					{#each Array(2) as _, index (index)}
+						<div class="space-y-3 border border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900">
+							<div class="h-3 w-24 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+							<div class="h-7 w-16 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+						</div>
+					{/each}
+					<div class="col-span-2 space-y-4 border border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900">
+						<div class="flex flex-wrap gap-3">
+							<div class="h-10 min-w-48 flex-1 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+							<div class="h-10 w-40 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+							<div class="h-10 w-40 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+						</div>
+						<div class="grid gap-3 sm:grid-cols-2">
+							{#each Array(2) as _, index (index)}
+								<div class="space-y-3 border border-stone-100 bg-white/60 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/40">
+									<div class="h-3 w-36 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+									<div class="h-5 w-44 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+									<div class="h-4 w-20 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+								</div>
+							{/each}
+						</div>
 					</div>
 				</div>
-			</div>
-		</div>
 
-		<!-- Attribution Table -->
-		{#if goalSummary.byBucket.length > 0}
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col shadow-none">
-				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
-					<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Attribution</h2>
-					<span class="text-xs font-bold text-stone-900 dark:text-white font-serif italic text-opacity-50">Source Performance</span>
-				</div>
-				<div class="p-2 rounded-none">
-					<div class="divide-y divide-stone-50 dark:divide-stone-800 rounded-none">
-						{#each attributionRows as row}
-							<div class="px-5 py-3 flex items-center justify-between hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300">
-								<span class="text-sm font-bold text-stone-900 dark:text-white truncate flex-1">
-									{formatBucket(row.bucket)}
-								</span>
-								<div class="flex items-center gap-6 text-sm ml-4 rounded-none">
-									<div class="text-right rounded-none">
-										<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{row.conversions}</span>
-										<span class="text-[10px] font-black uppercase tracking-tighter text-stone-400 ml-1 opacity-50">conv</span>
-									</div>
-									<span class={`tabular-nums w-16 text-right text-xs font-bold ${row.conversionRate > 0 ? `text-${$color}-600 dark:text-${$color}-400` : 'text-stone-400'}`}>
-										{row.conversionRate}%
-									</span>
+				<div class="overflow-hidden border border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-900">
+					<div class="flex items-center justify-between border-b border-stone-100 bg-white/50 px-6 py-4 dark:border-stone-800 dark:bg-stone-900/50">
+						<div class="h-3 w-24 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+						<div class="h-4 w-28 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+					</div>
+					<div class="space-y-2 p-2">
+						{#each Array(6) as _, index (index)}
+							<div class="flex items-center justify-between px-5 py-3">
+								<div class="h-4 w-48 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+								<div class="flex items-center gap-6">
+									<div class="h-4 w-12 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+									<div class="h-4 w-14 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
 								</div>
 							</div>
 						{/each}
 					</div>
 				</div>
-			</div>
-		{/if}
 
-		<!-- Recent Conversions -->
-		{#if goalSummary.timeSeries.length > 0}
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col shadow-none">
-				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
-					<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Daily Conversions</h2>
-					<span class="text-xs font-bold text-stone-900 dark:text-white font-serif italic text-opacity-50">Timeline</span>
-				</div>
-				<div class="p-2 rounded-none">
-					<div class="px-4 py-3 bg-white/60 dark:bg-stone-950/40 border border-stone-100 dark:border-stone-800 rounded-none">
-						<div class="flex items-center justify-between gap-4">
-							<div class="min-w-0">
-								<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Trend</p>
-								<p class="text-xs font-bold text-stone-900 dark:text-white tabular-nums mt-1">
-									Max {seriesMax.toLocaleString()}
-								</p>
-							</div>
-							<svg viewBox="0 0 240 56" class="w-60 h-14 shrink-0">
-								{#each seriesBars as b (b.date)}
-									<rect
-										x={b.x}
-										y={b.y}
-										width={b.w}
-										height={b.h}
-										rx={1}
-										class={b.v > 0 ? `fill-${$color}-600 dark:fill-${$color}-400` : 'fill-stone-200 dark:fill-stone-800'}
-									>
-										<title>{b.date}: {b.v}</title>
-									</rect>
-								{/each}
-							</svg>
-						</div>
+				<div class="overflow-hidden border border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-900">
+					<div class="flex items-center justify-between border-b border-stone-100 bg-white/50 px-6 py-4 dark:border-stone-800 dark:bg-stone-900/50">
+						<div class="h-3 w-32 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+						<div class="h-4 w-20 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
 					</div>
-					<div class="divide-y divide-stone-50 dark:divide-stone-800 max-h-64 overflow-y-auto rounded-none">
-						{#each goalSummary.timeSeries.slice().reverse() as row}
-							<div class="px-5 py-3 flex items-center justify-between hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300">
-								<span class="text-xs font-mono text-stone-500 dark:text-stone-400">{row.date}</span>
-								<span class="text-sm font-bold text-stone-900 dark:text-white tabular-nums">
-									{row.conversions}
-								</span>
+					<div class="space-y-3 p-2">
+						<div class="flex items-center justify-between gap-4 border border-stone-100 bg-white/60 px-4 py-3 dark:border-stone-800 dark:bg-stone-950/40">
+							<div class="space-y-2">
+								<div class="h-3 w-12 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+								<div class="h-4 w-16 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+							</div>
+							<div class="h-14 w-60 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+						</div>
+						{#each Array(5) as _, index (index)}
+							<div class="flex items-center justify-between px-5 py-3">
+								<div class="h-4 w-28 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+								<div class="h-4 w-10 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
 							</div>
 						{/each}
 					</div>
 				</div>
 			</div>
-		{/if}
-	{/if}
+		{/snippet}
+
+		<div class="space-y-8">
+			<div class="flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight">Goals</h1>
+					<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Track conversion events</p>
+				</div>
+
+				{#if eventNames.length > 0}
+					<select
+						bind:value={selectedGoal}
+						class="px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
+					>
+						{#each eventNames as name (name)}
+							<option value={name}>{name}</option>
+						{/each}
+					</select>
+				{/if}
+			</div>
+
+			{#if eventNames.length === 0}
+				<div class="text-center py-16 bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800">
+					<Target size={32} class="mx-auto text-stone-300 dark:text-stone-700 mb-3" />
+					<p class="text-stone-500 dark:text-stone-400 text-sm font-serif italic">No custom events tracked yet</p>
+					<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Events will appear here once tracked</p>
+				</div>
+			{:else if goalSummary}
+				<div class="grid grid-cols-2 gap-4 rounded-none">
+					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none">
+						<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
+							<Target size={12} />
+							Conversions
+						</div>
+						<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">
+							{goalSummary.conversions.toLocaleString()}
+						</p>
+					</div>
+					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none">
+						<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
+							<TrendingUp size={12} />
+							Conversion Rate
+						</div>
+						<p class={`text-xl font-bold text-${$color}-600 dark:text-${$color}-400 tabular-nums leading-none`}>
+							{goalSummary.conversionRate}%
+						</p>
+					</div>
+					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none col-span-2">
+						<div class="flex flex-wrap items-center gap-3">
+							<input
+								bind:value={attributionSearch}
+								placeholder="Search attribution"
+								class="flex-1 min-w-48 px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
+							/>
+							<select
+								bind:value={sortBy}
+								class="px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
+							>
+								<option value="conversions">Sort: Conversions</option>
+								<option value="conversionRate">Sort: Rate</option>
+								<option value="name">Sort: Name</option>
+							</select>
+							<select
+								bind:value={sortDir}
+								class="px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
+							>
+								<option value="desc">Direction: Desc</option>
+								<option value="asc">Direction: Asc</option>
+							</select>
+						</div>
+						<div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<div class="px-4 py-3 bg-white/60 dark:bg-stone-950/40 border border-stone-100 dark:border-stone-800 rounded-none">
+								<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Top source by conversions</p>
+								{#if bestAttributionByConv}
+									<p class="text-sm font-bold text-stone-900 dark:text-white truncate mt-1">{formatBucket(bestAttributionByConv.bucket)}</p>
+									<p class="text-xs font-bold text-stone-600 dark:text-stone-300 tabular-nums mt-1">
+										{bestAttributionByConv.conversions.toLocaleString()} conv
+									</p>
+								{:else}
+									<p class="text-xs font-bold text-stone-400 mt-1">—</p>
+								{/if}
+							</div>
+							<div class="px-4 py-3 bg-white/60 dark:bg-stone-950/40 border border-stone-100 dark:border-stone-800 rounded-none">
+								<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Top source by rate</p>
+								{#if bestAttributionByRate}
+									<p class="text-sm font-bold text-stone-900 dark:text-white truncate mt-1">{formatBucket(bestAttributionByRate.bucket)}</p>
+									<p class={`text-xs font-bold tabular-nums mt-1 ${bestAttributionByRate.conversionRate > 0 ? `text-${$color}-600 dark:text-${$color}-400` : 'text-stone-400'}`}>
+										{bestAttributionByRate.conversionRate}%
+									</p>
+								{:else}
+									<p class="text-xs font-bold text-stone-400 mt-1">—</p>
+								{/if}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				{#if goalSummary.byBucket.length > 0}
+					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col shadow-none">
+						<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
+							<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Attribution</h2>
+							<span class="text-xs font-bold text-stone-900 dark:text-white font-serif italic text-opacity-50">Source Performance</span>
+						</div>
+						<div class="p-2 rounded-none">
+							<div class="divide-y divide-stone-50 dark:divide-stone-800 rounded-none">
+								{#each attributionRows as row (row.bucket)}
+									<div class="px-5 py-3 flex items-center justify-between hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300">
+										<span class="text-sm font-bold text-stone-900 dark:text-white truncate flex-1">
+											{formatBucket(row.bucket)}
+										</span>
+										<div class="flex items-center gap-6 text-sm ml-4 rounded-none">
+											<div class="text-right rounded-none">
+												<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{row.conversions}</span>
+												<span class="text-[10px] font-black uppercase tracking-tighter text-stone-400 ml-1 opacity-50">conv</span>
+											</div>
+											<span class={`tabular-nums w-16 text-right text-xs font-bold ${row.conversionRate > 0 ? `text-${$color}-600 dark:text-${$color}-400` : 'text-stone-400'}`}>
+												{row.conversionRate}%
+											</span>
+										</div>
+									</div>
+								{/each}
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				{#if goalSummary.timeSeries.length > 0}
+					<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col shadow-none">
+						<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
+							<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Daily Conversions</h2>
+							<span class="text-xs font-bold text-stone-900 dark:text-white font-serif italic text-opacity-50">Timeline</span>
+						</div>
+						<div class="p-2 rounded-none">
+							<div class="px-4 py-3 bg-white/60 dark:bg-stone-950/40 border border-stone-100 dark:border-stone-800 rounded-none">
+								<div class="flex items-center justify-between gap-4">
+									<div class="min-w-0">
+										<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Trend</p>
+										<p class="text-xs font-bold text-stone-900 dark:text-white tabular-nums mt-1">
+											Max {seriesMax.toLocaleString()}
+										</p>
+									</div>
+									<svg viewBox="0 0 240 56" class="w-60 h-14 shrink-0">
+										{#each seriesBars as b (b.date)}
+											<rect
+												x={b.x}
+												y={b.y}
+												width={b.w}
+												height={b.h}
+												rx={1}
+												class={b.v > 0 ? `fill-${$color}-600 dark:fill-${$color}-400` : 'fill-stone-200 dark:fill-stone-800'}
+											>
+												<title>{b.date}: {b.v}</title>
+											</rect>
+										{/each}
+									</svg>
+								</div>
+							</div>
+							<div class="divide-y divide-stone-50 dark:divide-stone-800 max-h-64 overflow-y-auto rounded-none">
+								{#each goalSummary.timeSeries.slice().reverse() as row (row.date)}
+									<div class="px-5 py-3 flex items-center justify-between hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300">
+										<span class="text-xs font-mono text-stone-500 dark:text-stone-400">{row.date}</span>
+										<span class="text-sm font-bold text-stone-900 dark:text-white tabular-nums">
+											{row.conversions}
+										</span>
+									</div>
+								{/each}
+							</div>
+						</div>
+					</div>
+				{/if}
+			{/if}
+		</div>
+	</LoadingBoundary>
 </SitePageShell>

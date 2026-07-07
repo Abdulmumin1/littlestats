@@ -3,6 +3,7 @@
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import { flip } from 'svelte/animate';
 	import { 
@@ -255,11 +256,13 @@
 		</div>
 	</div>
 
-	{#if loading && feedbackList.length === 0}
+	<LoadingBoundary loading={loading && feedbackList.length === 0} label="Loading feedback">
+		{#snippet fallback()}
 		<div class="flex min-h-[60vh] items-center justify-center">
 			<LoadingState />
 		</div>
-	{:else if feedbackList.length === 0}
+		{/snippet}
+	{#if feedbackList.length === 0}
 		<div in:fade class="flex min-h-[60vh] flex-col items-center justify-center py-32 border border-dashed border-stone-200 dark:border-stone-800 bg-stone-50/30 dark:bg-stone-950/30">
 			<AlertCircle size={32} class="text-stone-300 dark:text-stone-700 mb-4" />
 			<p class="text-sm font-serif italic text-stone-400">No feedback found for this selection</p>
@@ -535,4 +538,5 @@
 			</div>
 		</div>
 	{/if}
+	</LoadingBoundary>
 </div>

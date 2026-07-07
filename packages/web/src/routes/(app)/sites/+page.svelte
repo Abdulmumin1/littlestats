@@ -4,6 +4,7 @@
 	import Seo from '$lib/components/generals/seo.svelte';
 	import InsideNav from '$lib/components/generals/insideNav.svelte';
 	import DarkMode from '$lib/components/generals/darkMode.svelte';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
 	import { LayoutGrid, Globe, Plus, ArrowRight, Activity, Users, Eye, Settings } from 'lucide-svelte';
@@ -84,13 +85,15 @@
 					<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Manage your domains</p>
 				</header>
 
-				{#if loading}
+				<LoadingBoundary {loading} label="Loading sites">
+					{#snippet fallback()}
 					<div class="grid grid-cols-1 gap-4 animate-pulse rounded-none">
-						{#each Array(3) as _}
+						{#each Array(3) as _, index (index)}
 							<div class="h-20 rounded-none bg-stone-100 dark:bg-stone-900/50 border border-stone-200/50 dark:border-stone-800/50"></div>
 						{/each}
 					</div>
-				{:else if error}
+					{/snippet}
+				{#if error}
 					<div class="p-8 rounded-none border-2 border-dashed border-red-100 dark:border-red-900/20 text-center space-y-4">
 						<p class="text-red-600 dark:text-red-400 text-sm font-serif italic">{error}</p>
 						<button onclick={loadSites} class="px-6 py-2 rounded-none bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors">Retry</button>
@@ -144,6 +147,7 @@
 						{/each}
 					</div>
 				{/if}
+				</LoadingBoundary>
 			</div>
 		</div>
 	</main>

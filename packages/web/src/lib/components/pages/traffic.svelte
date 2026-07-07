@@ -5,16 +5,18 @@
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/api/analytics.ts';
 	import { formatNumber } from '$lib/slug/helpers.js';
+	import { getInclusiveRangeDays } from '$lib/utils/dateRange.js';
 	import ViewCard from '$lib/components/analytics/viewCard.svelte';
 	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
 	import TrafficSkeleton from '$lib/components/analytics/graphStuff/trafficSkeleton.svelte';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
 	import { Activity, Eye, Globe, Monitor, Smartphone, Tablet } from 'lucide-svelte';
-	
+
 	let { domain_id, demoData = null } = $props();
 	let siteId = $derived(domain_id);
 	let isDemo = $derived(!!demoData);
-	
+
 	// State
 	let loading = $state(true);
 	let error = $state(null);
@@ -68,7 +70,7 @@
 		modalAbortController?.abort();
 		modalAbortController = new AbortController();
 		const { signal } = modalAbortController;
-		
+
 		// Use demo data for modals
 		if (isDemo && demoData) {
 			modalLoading = true;
@@ -82,7 +84,7 @@
 				} else if (activeModal === 'countries') {
 					items = demoData.allCountries || demoData.countries || [];
 				}
-				
+
 				// Filter by search if provided
 				if (modalSearch.trim()) {
 					const search = modalSearch.trim().toLowerCase();
@@ -91,7 +93,7 @@
 						return name.toLowerCase().includes(search);
 					});
 				}
-				
+
 				if (requestId === modalRequestId) modalItems = items;
 			} catch (err) {
 				console.error('Modal fetch error:', err);
@@ -102,7 +104,7 @@
 			}
 			return;
 		}
-		
+
 		modalLoading = true;
 		modalError = null;
 		try {
@@ -181,18 +183,14 @@
 	let rangeDays = $derived.by(() => {
 		const start = dashboardStore?.dateRange?.startDate;
 		const end = dashboardStore?.dateRange?.endDate;
-		if (!start || !end) return 1;
-		const startTime = new Date(start).getTime();
-		const endTime = new Date(end).getTime();
-		if (Number.isNaN(startTime) || Number.isNaN(endTime)) return 1;
-		return Math.max(1, Math.ceil((endTime - startTime) / (1000 * 60 * 60 * 24)));
+		return getInclusiveRangeDays(start, end);
 	});
 
 	let timeSeriesGranularity = $derived.by(() => (rangeDays <= 2 ? 'hour' : 'day'));
 	let chartSortInterval = $derived.by(() => (rangeDays <= 2 ? 1 : rangeDays));
 	let dashboardAbortController = null;
 	let dashboardRequestId = 0;
-	
+
 	// Fetch all data
 	async function fetchDashboardData() {
 		if (!siteId) return;
@@ -200,10 +198,10 @@
 		dashboardAbortController?.abort();
 		dashboardAbortController = new AbortController();
 		const { signal } = dashboardAbortController;
-		
+
 		loading = true;
 		error = null;
-		
+
 		try {
 			// Use demo data if provided
 			if (isDemo && demoData) {
@@ -216,7 +214,7 @@
 				if (requestId === dashboardRequestId) loading = false;
 				return;
 			}
-			
+
 			const filter = {
 				...dashboardStore.dateRange,
 				urlPattern: drilldown.pagePath || undefined,
@@ -233,7 +231,7 @@
 				api.getDevices(siteId, filter, signal)
 			]);
 			if (requestId !== dashboardRequestId) return;
-			
+
 			stats = statsData;
 			timeSeries = seriesData.data || [];
 			referrers = refsData.referrers || [];
@@ -248,7 +246,7 @@
 			if (requestId === dashboardRequestId) loading = false;
 		}
 	}
-	
+
 	// Real-time updates (disabled in demo mode)
 	$effect(() => {
 		if (siteId && dashboardStore.dateRange) {
@@ -256,7 +254,7 @@
 		}
 		return () => dashboardAbortController?.abort();
 	});
-	
+
 	$effect(() => {
 		if (!siteId || !browser || isDemo) return;
 		realtimeStats = null;
@@ -264,7 +262,7 @@
 			realtimeStats = data;
 		});
 	});
-	
+
 	// Calculate device icon
 	function getDeviceIcon(device) {
 		switch (device?.toLowerCase()) {
@@ -275,17 +273,18 @@
 	}
 </script>
 
-<div class="space-y-8">
-	{#if loading && !stats}
+<LoadingBoundary loading={loading && !stats} label="Loading traffic analytics">
+	{#snippet fallback()}
 		<TrafficSkeleton />
-	{/if}
+	{/snippet}
 
+	<div class="space-y-8">
 	{#if error}
 		<div class="flex min-h-[40vh] items-center rounded-none">
 			<div class="rounded-none bg-red-100 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-200">
 				<p class="font-semibold rounded-none">Error loading dashboard</p>
 				<p class="text-sm rounded-none">{error}</p>
-				<button 
+				<button
 					onclick={fetchDashboardData}
 					class="mt-2 rounded-none bg-red-200 px-4 py-2 text-sm font-medium hover:bg-red-300 dark:bg-red-800 dark:hover:bg-red-700"
 				>
@@ -296,28 +295,30 @@
 	{/if}
 
 	{#if stats}
-		<div class="flex flex-wrap gap-2">
-			{#if drilldown.pagePath}
-				<button onclick={() => toggleFilter('page', drilldown.pagePath)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
-					Page: {drilldown.pagePath}
-				</button>
-			{/if}
-			{#if drilldown.referrer}
-				<button onclick={() => toggleFilter('referrer', drilldown.referrer)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
-					Referrer: {drilldown.referrer}
-				</button>
-			{/if}
-			{#if drilldown.country}
-				<button onclick={() => toggleFilter('country', drilldown.country)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
-					Country: {drilldown.country}
-				</button>
-			{/if}
-			{#if drilldown.pagePath || drilldown.referrer || drilldown.country}
-				<button onclick={() => goto(nextSearchParams({ page: null, referrer: null, country: null }), { keepfocus: true, noScroll: true })} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 rounded-none">
-					Clear
-				</button>
-			{/if}
-		</div>
+	{#if drilldown.pagePath || drilldown.referrer || drilldown.country || drilldown.pagePath}
+	<div class="flex flex-wrap gap-2">
+		{#if drilldown.pagePath}
+			<button onclick={() => toggleFilter('page', drilldown.pagePath)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
+				Page: {drilldown.pagePath}
+			</button>
+		{/if}
+		{#if drilldown.referrer}
+			<button onclick={() => toggleFilter('referrer', drilldown.referrer)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
+				Referrer: {drilldown.referrer}
+			</button>
+		{/if}
+		{#if drilldown.country}
+			<button onclick={() => toggleFilter('country', drilldown.country)} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-none">
+				Country: {drilldown.country}
+			</button>
+		{/if}
+		{#if drilldown.pagePath || drilldown.referrer || drilldown.country}
+			<button onclick={() => goto(nextSearchParams({ page: null, referrer: null, country: null }), { keepfocus: true, noScroll: true })} class="px-3 py-1 text-[10px] font-black uppercase tracking-widest border border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 rounded-none">
+				Clear
+			</button>
+		{/if}
+	</div>
+{/if}
 		<div class="flex min-h-[60vh] flex-col gap-5 rounded-none md:gap-8">
 			<!-- Real-time indicator -->
 			<div class="flex h-7 items-center gap-2 px-4 rounded-none bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-fit text-[10px] font-black text-stone-500 dark:text-stone-400 uppercase tracking-widest leading-none">
@@ -329,46 +330,46 @@
 				</span>
 				<span>{realtimeStats?.activeVisitors ?? 0} active visitors now</span>
 			</div>
-			
+
 			<!-- Stats Cards -->
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5 rounded-none [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
-				<ViewCard 
-					name="Views" 
-					number={stats.views} 
+				<ViewCard
+					name="Views"
+					number={stats.views}
 					percentage={stats.change.views}
 					icon={Eye}
 					hint="Page loads during the selected period"
 				/>
-				<ViewCard 
-					name="Visits" 
-					number={stats.visits} 
+				<ViewCard
+					name="Visits"
+					number={stats.visits}
 					percentage={stats.change.visits}
 					icon={Activity}
 					hint="Distinct browsing sessions"
 				/>
-				<ViewCard 
-					name="Visitors" 
-					number={stats.visitors} 
+				<ViewCard
+					name="Visitors"
+					number={stats.visitors}
 					percentage={stats.change.visitors}
 					icon={Globe}
 					hint="Distinct visitors during the selected period"
 				/>
-				<ViewCard 
-					name="Bounce Rate" 
-					number={stats.bounceRate} 
+				<ViewCard
+					name="Bounce Rate"
+					number={stats.bounceRate}
 					percentage={stats.change.bounceRate}
 					type="percent"
 					hint="Visits with exactly one page view"
 				/>
-                <ViewCard 
-					name="Avg. Session" 
-					number={stats.avgDuration} 
+                <ViewCard
+					name="Avg. Session"
+					number={stats.avgDuration}
 					percentage={stats.change.avgDuration}
 					type="time"
 					hint="Average recorded visit duration"
 				/>
 			</div>
-			
+
 			<!-- Main Chart -->
 			<div class="rounded-none bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-3 md:p-6 relative overflow-hidden">
 				<div class="min-h-48 rounded-none md:min-h-95">
@@ -381,14 +382,14 @@
 					/>
 				</div>
 			</div>
-			
+
 			<!-- Breakdown Sections -->
 			<div class="grid grid-cols-1 gap-6 lg:grid-cols-2 rounded-none">
 				<!-- Top Pages -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
 					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Top Pages</span>
-						<button 
+						<button
 							onclick={() => openModal('pages')}
 							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
 						>
@@ -410,12 +411,12 @@
 						{/if}
 					</div>
 				</div>
-				
+
 				<!-- Top Referrers -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
 					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Top Referrers</span>
-						<button 
+						<button
 							onclick={() => openModal('referrers')}
 							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
 						>
@@ -437,12 +438,12 @@
 						{/if}
 					</div>
 				</div>
-				
+
 				<!-- Countries -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
 					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Countries</span>
-						<button 
+						<button
 							onclick={() => openModal('countries')}
 							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
 						>
@@ -464,7 +465,7 @@
 						{/if}
 					</div>
 				</div>
-				
+
 				<!-- Devices -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
 					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
@@ -487,7 +488,7 @@
 											<span class="text-[10px] font-black text-stone-900 dark:text-white tabular-nums leading-none rounded-none">{formatNumber(device.views || 0)}</span>
 										</div>
 										<div class="h-1 rounded-none bg-stone-200 dark:bg-stone-800 overflow-hidden">
-											<div 
+											<div
 												class="h-full bg-stone-900 dark:bg-stone-100 transition-all duration-500 rounded-none"
 												style="width: {stats.views > 0 ? (device.views / stats.views) * 100 : 0}%"
 											></div>
@@ -503,16 +504,16 @@
 	{/if}
 
 	{#if activeModal}
-		<div 
+		<div
 			class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/20 backdrop-blur-sm p-4 sm:p-6 "
 		>
-			<button 
+			<button
 				type="button"
 				class="absolute inset-0 cursor-default border-none bg-transparent"
 				onclick={closeModal}
 				aria-label="Close modal"
 			></button>
-			<div 
+			<div
 				class="relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full min-h-[40vh] max-w-2xl max-h-[80vh] flex flex-col shadow-2xl rounded-none cursor-auto"
 				role="dialog"
 				aria-modal="true"
@@ -525,14 +526,14 @@
 						</h3>
 						<p class="text-xs font-bold text-stone-900 dark:text-white font-serif italic truncate">Site Overview</p>
 					</div>
-					<button 
+					<button
 						onclick={closeModal}
 						class="text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors p-2"
 					>
 						<Activity size={16} class="rotate-45" />
 					</button>
 				</div>
-				
+
 				<div class="p-4 border-b border-stone-100 dark:border-stone-800">
 					<input
 						bind:value={modalSearch}
@@ -578,12 +579,12 @@
 						{/if}
 					</div>
 				</div>
-				
+
 				<div class="px-6 py-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-950/50 flex justify-between items-center">
 					<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
 						{modalData.length} items
 					</span>
-					<button 
+					<button
 						onclick={closeModal}
 						class="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:opacity-90 transition-opacity rounded-none"
 					>
@@ -593,4 +594,5 @@
 			</div>
 		</div>
 	{/if}
-</div>
+	</div>
+</LoadingBoundary>

@@ -4,6 +4,7 @@
 	import { defaultRange as globalRange, optis, datacache } from '$lib/globalstate.svelte.js';
 	import { deserialize } from '$app/forms';
 	import Dropdown from '../../../../../lib/components/generals/dropdown.svelte';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import LoadingState from '$lib/components/analytics/graphStuff/loadingState.svelte';
 	import Funnels from '../../../../../lib/components/pages/funnels.svelte';
 	import FunEl from '../../../../../lib/components/analytics/funEl.svelte';
@@ -154,59 +155,89 @@
 		loading = false;
 	});
 
-	const domain_options = data.domains.map((e) => ({ value: e.id, label: e.name }));
-	const current_domain = data.domains.find((e) => e.id === data.domain_id);
+	let domain_options = $derived(data.domains.map((e) => ({ value: e.id, label: e.name })));
+	let current_domain = $derived(data.domains.find((e) => e.id === data.domain_id));
 </script>
 
 <SitePageShell>
-	<div>
-		{#if loading}
-			<LoadingState />
-		{/if}
-	</div>
-
-	<section class="flex flex-col gap-3">
-		<section class="flex flex-wrap items-center justify-between gap-3">
-		<!-- {fsteps.name} -->
-		{#if $funnelStepsContext.steps.length}
-			<div class="flex items-center gap-3 rounded-md bg-stone-700 px-4 py-2 dark:text-white">
-				<div class="flex">
-					{#each fsteps.steps as step}
-						<div class="-m-1 h-4 w-4 rounded-xl" style="background:{step.color};"></div>
-					{/each}
+	<LoadingBoundary {loading} label="Loading funnel analytics">
+		{#snippet fallback()}
+			<div class="space-y-6">
+				<div class="flex flex-wrap items-center justify-between gap-3">
+					<div class="h-10 w-48 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+					<div class="flex flex-wrap gap-2">
+						<div class="h-10 w-36 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+						<div class="h-10 w-44 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+					</div>
 				</div>
-				{fsteps.name}
+				<div class="space-y-5 border border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900">
+					<div class="h-6 w-40 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+					<div class="grid gap-4 md:grid-cols-3">
+						{#each Array(3) as _, index (index)}
+							<div class="space-y-2 border border-stone-100 bg-white/60 p-4 dark:border-stone-800 dark:bg-stone-950/40">
+								<div class="h-3 w-20 animate-pulse bg-stone-100 dark:bg-stone-800/70"></div>
+								<div class="h-9 w-full animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+							</div>
+						{/each}
+					</div>
+					<div class="space-y-3">
+						{#each Array(5) as _, index (index)}
+							<div class="space-y-2">
+								<div class="flex items-center justify-between">
+									<div class="h-4 w-40 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+									<div class="h-4 w-16 animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+								</div>
+								<div class="h-8 w-full animate-pulse bg-stone-100 dark:bg-stone-800/80"></div>
+							</div>
+						{/each}
+					</div>
+				</div>
 			</div>
-		{:else}
-			<div></div>
-		{/if}
+		{/snippet}
 
-		<div class="flex flex-wrap gap-2 dark:text-white">
+		<section class="flex flex-col gap-3">
+			<section class="flex flex-wrap items-center justify-between gap-3">
+			<!-- {fsteps.name} -->
 			{#if $funnelStepsContext.steps.length}
-				<Dropdown
-					on:change={(e) => {
-						funnelStepsContext.update((cur) => {
-							return { ...cur, type: e.detail.value };
-						});
-					}}
-					title="Sorting Type"
-					value={funnelType}
-					options={calctypeoptions}
-				></Dropdown>
+				<div class="flex items-center gap-3 rounded-md bg-stone-700 px-4 py-2 dark:text-white">
+					<div class="flex">
+						{#each fsteps.steps as step (step.id ?? `${step.type}-${step.value}`)}
+							<div class="-m-1 h-4 w-4 rounded-xl" style="background:{step.color};"></div>
+						{/each}
+					</div>
+					{fsteps.name}
+				</div>
+			{:else}
+				<div></div>
 			{/if}
-			<div class="ml-auto self-end justify-self-end">
-				<FunEl uniquePages={urls_page} availableSteps={steps_events} />
+
+			<div class="flex flex-wrap gap-2 dark:text-white">
+				{#if $funnelStepsContext.steps.length}
+					<Dropdown
+						on:change={(e) => {
+							funnelStepsContext.update((cur) => {
+								return { ...cur, type: e.detail.value };
+							});
+						}}
+						title="Sorting Type"
+						value={funnelType}
+						options={calctypeoptions}
+					></Dropdown>
+				{/if}
+				<div class="ml-auto self-end justify-self-end">
+					<FunEl uniquePages={urls_page} availableSteps={steps_events} />
+				</div>
 			</div>
-		</div>
+			</section>
 		</section>
-	</section>
-	{#if $funnelStepsContext.steps.length}
-		{#key funnelCounts || funnelSteps}
-			<Funnels {funnelCounts} {funnelStepsContext} />
-		{/key}
-	{:else}
-		<div class=" px-100 flex h-[80vh] w-full items-center justify-center dark:text-white">
-			<p class="inline-flex gap-2 text-xl"><span><Filter /></span>Create new funnel</p>
-		</div>
-	{/if}
+		{#if $funnelStepsContext.steps.length}
+			{#key funnelCounts || funnelSteps}
+				<Funnels {funnelCounts} {funnelStepsContext} />
+			{/key}
+		{:else}
+			<div class=" px-100 flex h-[80vh] w-full items-center justify-center dark:text-white">
+				<p class="inline-flex gap-2 text-xl"><span><Filter /></span>Create new funnel</p>
+			</div>
+		{/if}
+	</LoadingBoundary>
 </SitePageShell>
