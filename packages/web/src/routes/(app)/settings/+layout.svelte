@@ -28,7 +28,7 @@
 		<div class="flex flex-col md:flex-row gap-10 rounded-none">
 			<!-- Sidebar -->
 			<aside class="hidden w-full md:block md:w-64 shrink-0 rounded-none">
-				<div class="sticky top-24 space-y-1 rounded-none">
+				<div class="sticky top-8 space-y-1 rounded-none">
 					<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-4 ml-4">Settings</p>
 					<nav class="flex flex-col gap-1 rounded-none">
 						{#each navLinks as link}
