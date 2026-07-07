@@ -4,7 +4,6 @@
 	import { show_toast } from '$lib/toast.js';
 	import { CreditCard, Settings, Calendar, Clock, Receipt, ExternalLink, BarChart2, Globe } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
-	import { fly } from 'svelte/transition';
 	import { color } from '$lib/colors/mixer.js';
 	import { formatDate } from '$lib/utils.js';
 	import Seo from '$lib/components/generals/seo.svelte';
@@ -73,7 +72,7 @@
 	<Seo title="Subscription - Littlestats" />
 </svelte:head>
 
-<div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-8 rounded-none">
+<div class="flex flex-1 flex-col gap-8 rounded-none">
 	<header class="px-2 rounded-none">
 		<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight rounded-none">Manage Your Subscription</h1>
 		<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1 rounded-none">View billing details and manage your plan</p>

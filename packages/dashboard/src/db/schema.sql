@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS events (
   
   -- Event classification
   event_type INTEGER NOT NULL CHECK (event_type IN (1, 2, 3, 4)),
-  -- 1 = pageview, 2 = custom_event, 3 = page_exit, 4 = heartbeat
+  -- 1 = pageview, 2 = custom_event, 3 = page_exit, 4 = identify
   
   -- URL info
   url_path TEXT NOT NULL,

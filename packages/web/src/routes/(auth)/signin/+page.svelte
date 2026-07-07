@@ -5,7 +5,7 @@
 	import Logo from '../../../lib/components/generals/logo.svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import Seo from '../../../lib/components/generals/seo.svelte';
-	import { signIn, getCallbackURL } from '$lib/auth.ts';
+	import { signIn } from '$lib/auth.ts';
 
 	let { data } = $props();
 
@@ -13,6 +13,10 @@
 	let password = $state('');
 	let email = $state('');
 	let errMessage = $state('');
+
+	function dashboardCallback(path) {
+		return new URL(path, window.location.origin).toString();
+	}
 
 	function setError(message) {
 		errMessage = message;
@@ -33,7 +37,7 @@
 		errMessage = '';
 
 		try {
-			const callbackURL = getCallbackURL(data.redirectTo || '/sites');
+			const callbackURL = dashboardCallback(data.redirectTo || '/sites');
 			const result = await signIn.email({
 				email,
 				password,
@@ -58,7 +62,7 @@
 		loading = true;
 		
 		try {
-			const callbackURL = getCallbackURL(data.redirectTo || '/sites');
+			const callbackURL = dashboardCallback(data.redirectTo || '/sites');
 			await signIn.social({
 				provider: 'google',
 				callbackURL

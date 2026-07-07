@@ -1,7 +1,15 @@
+import { toLocalDateKey } from '$lib/utils/dateRange.js';
+
 class DashboardStore {
+    #getDefaultRange() {
+        return {
+            startDate: toLocalDateKey(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            endDate: toLocalDateKey(new Date())
+        };
+    }
+
     dateRange = $state({
-        startDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0]
+        ...this.#getDefaultRange()
     });
 
     setDateRange(start, end) {

@@ -6,6 +6,7 @@
 	import { api } from '$lib/api/analytics.ts';
 	import Events from '$lib/components/pages/events.svelte';
 	import SitePageShell from '$lib/components/layout/site-page-shell.svelte';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 
 	let { data } = $props();
 	let siteId = $derived(data.siteId);
@@ -24,6 +25,9 @@
 	let nextCursor = $state(null);
 	let selectedEventName = $state(null);
 	const maxRowsInMemory = 2000;
+	let showInitialLoading = $derived(
+		!error && (loadingCounts || loadingLog) && eventCounts.length === 0 && eventLog.length === 0
+	);
 
 	// Fetch event name counts for the full date range
 	async function fetchEventCounts() {
@@ -107,10 +111,10 @@
 </svelte:head>
 
 <SitePageShell>
-	{#if loadingCounts && eventCounts.length === 0}
+	<LoadingBoundary loading={showInitialLoading} label="Loading event analytics">
+		{#snippet fallback()}
 		<LoadingState />
-	{/if}
-
+		{/snippet}
 	{#if error && eventLog.length === 0}
 		<div class="rounded-none bg-red-100 p-4 text-red-800 dark:bg-red-900/20 dark:text-red-200 border border-red-200 dark:border-red-900/30">
 			<p class="font-semibold rounded-none">Error loading events</p>
@@ -122,19 +126,20 @@
 				Retry
 			</button>
 		</div>
+	{:else}
+		<Events
+			page_data={eventLog}
+			{eventCounts}
+			{selectedEventName}
+			{selectEvent}
+			{loadMore}
+			{nextCursor}
+			{loadingLog}
+			{totalLogEvents}
+			{logLimit}
+			rangeStart={dashboardStore?.dateRange?.startDate}
+			rangeEnd={dashboardStore?.dateRange?.endDate}
+		/>
 	{/if}
-
-	<Events 
-		page_data={eventLog} 
-		{eventCounts} 
-		{selectedEventName}
-		{selectEvent}
-		{loadMore}
-		{nextCursor}
-		{loadingLog}
-		{totalLogEvents}
-		{logLimit}
-		rangeStart={dashboardStore?.dateRange?.startDate}
-		rangeEnd={dashboardStore?.dateRange?.endDate}
-	/>
+	</LoadingBoundary>
 </SitePageShell>

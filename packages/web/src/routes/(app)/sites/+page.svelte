@@ -4,6 +4,7 @@
 	import Seo from '$lib/components/generals/seo.svelte';
 	import InsideNav from '$lib/components/generals/insideNav.svelte';
 	import DarkMode from '$lib/components/generals/darkMode.svelte';
+	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
 	import { LayoutGrid, Globe, Plus, ArrowRight, Activity, Users, Eye, Settings } from 'lucide-svelte';
@@ -40,11 +41,11 @@
 	<Seo title="Dashboard - Littlestats" />
 </svelte:head>
 
-<div class="min-h-screen p-6 text-stone-900 dark:text-stone-100 space-y-8 max-w-7xl mx-auto rounded-none">
-	<main class="px-4 sm:px-6 lg:px-8 py-8 rounded-none">
+<div class="min-h-screen text-stone-900 dark:text-stone-100 max-w-7xl mx-auto rounded-none">
+	<main class="px-1 pb-28 pt-4 md:px-8 md:py-8 rounded-none space-y-8">
 		<div class="flex flex-col md:flex-row gap-10 rounded-none">
 			<!-- Sidebar -->
-			<aside class="w-full md:w-64 shrink-0 rounded-none">
+			<aside class="hidden w-full md:block md:w-64 shrink-0 rounded-none">
 				<div class="sticky top-24 space-y-1 rounded-none">
 					<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-4 ml-4">Dashboard</p>
 					<nav class="flex flex-col gap-1 rounded-none">
@@ -84,13 +85,15 @@
 					<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Manage your domains</p>
 				</header>
 
-				{#if loading}
+				<LoadingBoundary {loading} label="Loading sites">
+					{#snippet fallback()}
 					<div class="grid grid-cols-1 gap-4 animate-pulse rounded-none">
-						{#each Array(3) as _}
+						{#each Array(3) as _, index (index)}
 							<div class="h-20 rounded-none bg-stone-100 dark:bg-stone-900/50 border border-stone-200/50 dark:border-stone-800/50"></div>
 						{/each}
 					</div>
-				{:else if error}
+					{/snippet}
+				{#if error}
 					<div class="p-8 rounded-none border-2 border-dashed border-red-100 dark:border-red-900/20 text-center space-y-4">
 						<p class="text-red-600 dark:text-red-400 text-sm font-serif italic">{error}</p>
 						<button onclick={loadSites} class="px-6 py-2 rounded-none bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition-colors">Retry</button>
@@ -144,8 +147,13 @@
 						{/each}
 					</div>
 				{/if}
+				</LoadingBoundary>
 			</div>
 		</div>
 	</main>
 </div>
 
+<nav class="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-2 rounded-full border border-white/60 bg-white/75 p-1.5 shadow-[0_12px_45px_rgba(28,25,23,0.18)] backdrop-blur-2xl backdrop-saturate-150 md:hidden dark:border-white/10 dark:bg-stone-900/75" aria-label="Dashboard navigation">
+	<a href="/sites" aria-current="page" class="mx-0.5 flex min-h-12 items-center justify-center gap-2 rounded-full bg-{$color}-600 px-3 text-xs font-bold text-white shadow-sm"><LayoutGrid size={18} /> Sites</a>
+	<a href="/settings" class="mx-0.5 flex min-h-12 items-center justify-center gap-2 rounded-full px-3 text-xs font-bold text-stone-500 dark:text-stone-400"><Settings size={18} /> Settings</a>
+</nav>

@@ -11,6 +11,7 @@ export interface TrackPayload {
   timezone?: string;
   name?: string; // for custom events
   data?: Record<string, any>; // event properties
+  duration?: number; // active page duration in seconds for page_exit
   id?: string; // for identify
   cache?: {
     visitId: string;
@@ -26,7 +27,7 @@ export interface Event {
   siteId: string;
   sessionId: string;
   visitId: string;
-  eventType: 1 | 2 | 3 | 4; // 1=pageview, 2=custom, 3=exit, 4=heartbeat
+  eventType: 1 | 2 | 3 | 4; // 1=pageview, 2=custom, 3=exit, 4=identify
   urlPath: string;
   urlQuery: string | null;
   urlHash: string | null;

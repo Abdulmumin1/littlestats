@@ -3,13 +3,12 @@
 
 import { createAuthClient } from "better-auth/client";
 
-// Get the API URL from environment or use default
-const authBaseURL = import.meta.env.VITE_DASHBOARD_URL || 'https://stats.littlestats.click';
-
-// Get the frontend base URL
-const frontendBaseURL = typeof window !== 'undefined' 
-  ? window.location.origin 
-  : (import.meta.env.VITE_APP_URL || 'http://localhost:5173');
+// Local `.env` values must never be baked into a production auth bundle.
+// Cloudflare runtime vars are not available through `import.meta.env`, so use
+// the configured URL only in Vite development and pin production to the API.
+const authBaseURL = import.meta.env.DEV
+  ? (import.meta.env.VITE_DASHBOARD_URL || 'http://localhost:8787')
+  : 'https://stats.littlestats.click';
 
 // Create better-auth client with credentials enabled for cookie sharing
 export const authClient = createAuthClient({
@@ -39,12 +38,5 @@ export const {
   oauth,
   credential,
 } = authClient;
-
-// Helper to build full callback URL
-export function getCallbackURL(path: string = '/sites'): string {
-  // Remove leading slash if present to avoid double slashes
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${frontendBaseURL}${cleanPath}`;
-}
 
 export default authClient;

@@ -18,8 +18,8 @@ export class CampaignsStats {
     const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const conversionExpr = goalEventName
-      ? `SUM(CASE WHEN event_type = 2 AND event_name = '${goalEventName.replace(/'/g, "''")}' THEN 1 ELSE 0 END)`
-      : `SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END)`;
+      ? `COUNT(DISTINCT CASE WHEN event_type = 2 AND event_name = '${goalEventName.replace(/'/g, "''")}' THEN visit_id END)`
+      : `COUNT(DISTINCT CASE WHEN event_type = 2 THEN visit_id END)`;
 
     const sql = `
       SELECT 
@@ -68,7 +68,7 @@ export class CampaignsStats {
 
     const totalSql = `
       SELECT 
-        COUNT(CASE WHEN event_type = 2 AND event_name = ? THEN 1 END) as conversions,
+        COUNT(DISTINCT CASE WHEN event_type = 2 AND event_name = ? THEN visit_id END) as conversions,
         COUNT(DISTINCT visit_id) as total_visits
       FROM events
       WHERE site_id = ?
@@ -110,7 +110,7 @@ export class CampaignsStats {
       )
       SELECT 
         attributed_bucket as bucket,
-        COUNT(*) as conversions
+        COUNT(DISTINCT visit_id) as conversions
       FROM visit_attribution
       GROUP BY attributed_bucket
       ORDER BY conversions DESC
@@ -210,8 +210,8 @@ export class CampaignsStats {
     const metricExpr = metric === 'visits'
       ? 'COUNT(DISTINCT visit_id)'
       : goalEventName
-        ? `SUM(CASE WHEN event_type = 2 AND event_name = '${goalEventName.replace(/'/g, "''")}' THEN 1 ELSE 0 END)`
-        : 'SUM(CASE WHEN event_type = 2 THEN 1 ELSE 0 END)';
+        ? `COUNT(DISTINCT CASE WHEN event_type = 2 AND event_name = '${goalEventName.replace(/'/g, "''")}' THEN visit_id END)`
+        : 'COUNT(DISTINCT CASE WHEN event_type = 2 THEN visit_id END)';
 
     const excludeNonCampaigns = `
       AND campaign_bucket IS NOT NULL

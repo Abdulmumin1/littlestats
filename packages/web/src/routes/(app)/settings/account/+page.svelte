@@ -1,6 +1,5 @@
 <script>
 	import { onMount } from 'svelte';
-	import { fly } from 'svelte/transition';
 	import { User, Mail, CreditCard } from 'lucide-svelte';
 	import { color } from '$lib/colors/mixer.js';
 	import Seo from '../../../../lib/components/generals/seo.svelte';
@@ -26,7 +25,7 @@
 	<Seo title="Account Settings - Littlestats" />
 </svelte:head>
 
-<div in:fly={{ y: 13, duration: 100 }} class="flex flex-1 flex-col gap-8 rounded-none">
+<div class="flex flex-1 flex-col gap-8 rounded-none">
 	<header class="px-2 rounded-none">
 		<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight rounded-none">Account Management</h1>
 		<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mt-1 rounded-none">Manage your profile & settings</p>

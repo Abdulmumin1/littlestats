@@ -2,11 +2,8 @@
 	import { color } from '$lib/colors/mixer.js';
 	import { ArrowDown, ArrowUp } from 'lucide-svelte';
 	import { formatNumber } from '$lib/slug/helpers.js';
-	import { createEventDispatcher } from 'svelte';
-	import { fly, slide } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { defaultRange as globalRange } from '$lib/globalstate.svelte.js';
-
-	const dispatch = createEventDispatcher();
 
 	let increase = $state('up');
 	/**
@@ -17,6 +14,8 @@
 	 * @property {string} [percentange]
 	 * @property {boolean} [filter_on]
 	 * @property {string} [type]
+	 * @property {any} [icon]
+	 * @property {string} [hint]
 	 */
 
 	/** @type {Props} */
@@ -27,15 +26,10 @@
 		percentange = $bindable('504%'),
 		percentage = undefined,
 		filter_on = false,
-		type = 'normal'
+		type = 'normal',
+		icon: Icon = undefined,
+		hint = ''
 	} = $props();
-
-	function sendFilter() {
-		dispatch('chart_filter', {
-			type,
-			query: name
-		});
-	}
 
 	function formatDuration(seconds) {
 		// Calculate hours, minutes, and remaining seconds
@@ -89,11 +83,14 @@
 </script>
 
 <div
-	onclick={sendFilter}
-	class="views cursor-pointer bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 hover:border-stone-200 dark:hover:border-stone-700 rounded-none shadow-none"
+	title={hint}
+	class="views bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 hover:border-stone-200 dark:hover:border-stone-700 rounded-none shadow-none"
 	class:active={filter_on}
 >
-	<p class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-1">{name}</p>
+	<div class="mb-1 flex items-center justify-between gap-2 text-stone-400">
+		<p class="text-[10px] font-black uppercase tracking-[0.2em]">{name}</p>
+		{#if Icon}<Icon size={14} stroke-width={1.8} aria-hidden="true" />{/if}
+	</div>
 	<p class="text-xl font-bold dark:text-white tabular-nums leading-tight mb-2">
 		{type == 'time'
 			? formatDuration(parseInt(isNaN(number) ? 0 : number))
@@ -128,9 +125,6 @@
 <style>
 	.views.active {
 		border-width: 2px;
-		border-color: var(--accent-color);
-	}
-	.dark .views.active {
 		border-color: var(--accent-color);
 	}
 </style>
