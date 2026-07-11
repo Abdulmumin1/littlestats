@@ -92,14 +92,14 @@
 		for (const record of viewRecords) {
 			const time = new Date(record.timestamp).getTime();
 			if (isNaN(time)) continue;
-			
+
 			// Use local date string to avoid timezone shifts
 			const d = new Date(time);
 			const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-			
+
 			const incrementBy = typeof record?.views === 'number' ? record.views : 1;
 			dateCounts.set(dateKey, (dateCounts.get(dateKey) || 0) + incrementBy);
-			
+
 			minTime = Math.min(minTime, time);
 			maxTime = Math.max(maxTime, time);
 		}
@@ -107,7 +107,7 @@
 		// 2. Determine display boundaries
 		const start = rangeStartDate ? new Date(rangeStartDate) : (minTime === Infinity ? new Date() : new Date(minTime));
 		const end = rangeEndDate ? new Date(rangeEndDate) : (maxTime === -Infinity ? new Date() : new Date(maxTime));
-		
+
 		// Normalize to start of local day
 		start.setHours(0, 0, 0, 0);
 		end.setHours(0, 0, 0, 0);
@@ -115,7 +115,7 @@
 		// 3. Fill in results including zeros for all days in range
 		const results = {};
 		let current = new Date(start);
-		
+
 		// Ensure we loop through the entire range including the end date
 		while (current <= end) {
 			const dateKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
@@ -231,6 +231,12 @@
 		});
 	};
 
+	function destroyChart() {
+		if (!chart) return;
+		chart.destroy();
+		chart = null;
+	}
+
 	onMount(() => {
 		if (showChart && chartCanvas) {
 			MountChart();
@@ -249,6 +255,7 @@
 		return () => {
 			unsubscribeColor();
 			window.removeEventListener('resize', handleResize);
+			destroyChart();
 		};
 	});
 
@@ -264,9 +271,9 @@
 			showChart = true;
 		}
 		if (chartType == type) return;
-		chartType = type; // chartType = chartType === 'line' ? 'bar' : 'line'; // Toggle between line and bar
-		chart.destroy(); // Destroy current chart instance
-		MountChart(); // Mount the new chart with updated type
+		chartType = type;
+		destroyChart();
+		MountChart();
 	}
 
 	let usedColor = $derived(colorList[$color] ?? colorList.green);
@@ -299,49 +306,14 @@
 	});
 </script>
 
-<div class="w-full rounded-none p-2">
-	<div class="flex items-center justify-between text-sm mb-4">
-		<div class="flex items-center gap-2">
-			<button class="flex items-center gap-1 text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors" onclick={toggleChart}>
-				{#if showChart}
-					<ChevronUp size={16} />
-				{:else}
-					<ChevronDown size={16} />
-				{/if}
-			</button>
-			<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Traffic Overview</span>
-		</div>
-		
-		<!-- Standardized Toggle -->
-		{#if !(bar || line)}
-			<div class="flex bg-stone-100/50 dark:bg-stone-800/40 p-1 border border-stone-200 dark:border-stone-800">
-				<button
-					onclick={() => toggleChartType('line')}
-					class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all border border-transparent {chartType == 'line'
-						? `bg-white/70 dark:bg-stone-900/60 text-stone-900 dark:text-white border-stone-200 dark:border-stone-700`
-						: 'text-stone-500 hover:text-stone-900 dark:hover:text-white'}"
-				>
-					Line
-				</button>
-				<button
-					onclick={() => toggleChartType('bar')}
-					class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all border border-transparent {chartType == 'bar'
-						? `bg-white/70 dark:bg-stone-900/60 text-stone-900 dark:text-white border-stone-200 dark:border-stone-700`
-						: 'text-stone-500 hover:text-stone-900 dark:hover:text-white'}"
-				>
-					Bar
-				</button>
-			</div>
-		{/if}
-	</div>
-
+<div class="w-full rounded-none">
 	{#if showChart}
 		{#if hasChartActivity}
-			<div class="mt-2 h-52 w-full rounded-none border border-stone-100 bg-stone-50/50 p-2 dark:border-stone-800 dark:bg-stone-900/50 md:h-75 md:p-4">
+			<div class="h-52 w-full md:h-75">
 				<canvas bind:this={chartCanvas}></canvas>
 			</div>
 		{:else}
-			<div class="mt-2 flex h-36 w-full items-center justify-center border border-stone-100 bg-stone-50/50 dark:border-stone-800 dark:bg-stone-900/50 md:h-56">
+			<div class="flex h-36 w-full items-center justify-center md:h-56">
 				<div class="text-center">
 					<p class="text-sm font-serif italic text-stone-400">No traffic in this period</p>
 					<p class="mt-1 text-[9px] font-black uppercase tracking-[0.18em] text-stone-300 dark:text-stone-600">The chart will appear when data arrives</p>

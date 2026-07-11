@@ -9,8 +9,9 @@
 	import { getInclusiveRangeDays } from '$lib/utils/dateRange.js';
 	import { runWorker } from '$lib/workers/workerClient.js';
 
-	let { 
+	let {
 		page_data = [],
+		chartData = null,
 		eventCounts = [],
 		selectedEventName = null,
 		selectEvent = () => {},
@@ -69,7 +70,7 @@
 
 	// Active event is determined by selectedEventName or first in list
 	let activeEventTitle = $derived(selectedEventName || (events.length > 0 ? events[0][0] : '-'));
-	
+
 	// For the chart and detail views, use page_data (the paginated event log)
 	let activeEventData = $derived(page_data || []);
 
@@ -161,12 +162,12 @@
 	let filterPage = $state('');
 	let filterReferrer = $state('');
 	let filterHasCampaign = $state(false);
-	
+
 	// Debounced search values for performance
 	let debouncedEventSearch = $state('');
 	let debouncedDetailSearch = $state('');
 	let searchDebounceTimer = null;
-	
+
 	$effect(() => {
 		const value = eventSearch;
 		clearTimeout(searchDebounceTimer);
@@ -174,7 +175,7 @@
 			debouncedEventSearch = value;
 		}, 150);
 	});
-	
+
 	$effect(() => {
 		const value = detailSearch;
 		clearTimeout(searchDebounceTimer);
@@ -247,19 +248,19 @@
 		const dataSnapshot = $state.snapshot(filteredActiveEventData);
 		workerRequestId += 1;
 		const currentRequestId = workerRequestId;
-		
+
 		if (!dataSnapshot || dataSnapshot.length === 0) {
 			sortedReferals = [];
 			sortedCountryData = [];
 			return;
 		}
-		
+
 		try {
 			const [referals, countries] = await Promise.all([
 				runWorker('sortReferals', dataSnapshot),
 				runWorker('sortCountryData', dataSnapshot)
 			]);
-			
+
 			// Only update if this is still the latest request
 			if (currentRequestId === workerRequestId) {
 				sortedReferals = referals;
@@ -306,18 +307,18 @@
 	const BUFFER_ROWS = 10; // Extra rows to render above/below viewport
 	let tableScrollTop = $state(0);
 	let tableViewportHeight = $state(700); // Default max-h value
-	
+
 	let virtualWindow = $derived.by(() => {
 		const totalRows = filteredActiveEventData.length;
 		if (totalRows <= 100) {
 			// Small dataset - render all
 			return { start: 0, end: totalRows, topPadding: 0, bottomPadding: 0 };
 		}
-		
+
 		const startRow = Math.max(0, Math.floor(tableScrollTop / ROW_HEIGHT) - BUFFER_ROWS);
 		const visibleRows = Math.ceil(tableViewportHeight / ROW_HEIGHT) + BUFFER_ROWS * 2;
 		const endRow = Math.min(totalRows, startRow + visibleRows);
-		
+
 		return {
 			start: startRow,
 			end: endRow,
@@ -325,7 +326,7 @@
 			bottomPadding: Math.max(0, (totalRows - endRow) * ROW_HEIGHT)
 		};
 	});
-	
+
 	let visibleTableRows = $derived(
 		filteredActiveEventData.slice(virtualWindow.start, virtualWindow.end)
 	);
@@ -470,11 +471,11 @@
 				</div>
 			</div>
 
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-6 relative overflow-hidden shadow-none">
+			<div >
 				<ChartJsGraph
 					chartD={{
-						data: filteredActiveEventData,
-						label: activeEventTitle
+						data: chartData || filteredActiveEventData,
+						label: chartData ? `${activeEventTitle} · 14-day trend` : activeEventTitle
 					}}
 					{sortInterval}
 					{rangeStart}
@@ -487,7 +488,7 @@
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden shadow-none">
 					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Referrers</span>
-						<button 
+						<button
 							onclick={() => openModal('referrers')}
 							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
 						>
@@ -519,7 +520,7 @@
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden shadow-none">
 					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
 						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Countries</span>
-						<button 
+						<button
 							onclick={() => openModal('countries')}
 							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
 						>
@@ -713,16 +714,16 @@
 	</div>
 
 	{#if activeModal}
-		<div 
+		<div
 			class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/20 backdrop-blur-sm p-4 sm:p-6"
 		>
-			<button 
+			<button
 				type="button"
 				class="absolute inset-0 cursor-default border-none bg-transparent"
 				onclick={closeModal}
 				aria-label="Close modal"
 			></button>
-			<div 
+			<div
 				class="relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl rounded-none cursor-auto"
 				role="dialog"
 				aria-modal="true"
@@ -735,14 +736,14 @@
 						</h3>
 						<p class="text-xs font-bold text-stone-900 dark:text-white font-serif italic truncate">{activeEventTitle}</p>
 					</div>
-					<button 
+					<button
 						onclick={closeModal}
 						class="text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors p-2"
 					>
 						<MoreVertical size={16} class="rotate-45" />
 					</button>
 				</div>
-				
+
 				<div class="p-4 border-b border-stone-100 dark:border-stone-800">
 					<input
 						bind:value={modalSearch}
@@ -771,12 +772,12 @@
 						{/each}
 					</div>
 				</div>
-				
+
 				<div class="px-6 py-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-950/50 flex justify-between items-center">
 					<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
 						{modalData.length} items
 					</span>
-					<button 
+					<button
 						onclick={closeModal}
 						class="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:opacity-90 transition-opacity rounded-none"
 					>

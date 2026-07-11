@@ -319,9 +319,9 @@
 		{/if}
 	</div>
 {/if}
-		<div class="flex min-h-[60vh] flex-col gap-5 rounded-none md:gap-8">
+		<div class="flex min-h-[60vh] flex-col  rounded-none ">
 			<!-- Real-time indicator -->
-			<div class="flex h-7 items-center gap-2 px-4 rounded-none bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-fit text-[10px] font-black text-stone-500 dark:text-stone-400 uppercase tracking-widest leading-none">
+			<div class="flex mb-5 md:mb-8 h-7 items-center gap-2 px-4 rounded-none bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-fit text-[10px] font-black text-stone-500 dark:text-stone-400 uppercase tracking-widest leading-none">
 				<span class="relative flex h-1.5 w-1.5 rounded-none">
 					{#if realtimeStats}
 						<span class="absolute inline-flex h-1.5 w-1.5 animate-ping rounded-none bg-green-400 opacity-75"></span>
@@ -332,7 +332,7 @@
 			</div>
 
 			<!-- Stats Cards -->
-			<div class="grid grid-cols-2 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5 rounded-none [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
+			<div class="grid mb-5 md:mb-8 grid-cols-2 gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-5 rounded-none [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
 				<ViewCard
 					name="Views"
 					number={stats.views}
@@ -371,8 +371,7 @@
 			</div>
 
 			<!-- Main Chart -->
-			<div class="rounded-none bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 p-3 md:p-6 relative overflow-hidden">
-				<div class="min-h-48 rounded-none md:min-h-95">
+				<div class="rounded-none">
 					<ChartJsGraph
 						chartD={{ data: timeSeries, label: 'Views' }}
 						showChart={true}
@@ -381,7 +380,6 @@
 						rangeEnd={dashboardStore?.dateRange?.endDate}
 					/>
 				</div>
-			</div>
 
 			<!-- Breakdown Sections -->
 			<div class="grid grid-cols-1 gap-6 lg:grid-cols-2 rounded-none">

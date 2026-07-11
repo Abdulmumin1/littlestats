@@ -49,16 +49,65 @@
     // Defer mock data generation using requestIdleCallback
     let dummyies = $state([]);
     let dataGenerated = $state(false);
+
+	function smoothLandingTraffic(series, radius = 5) {
+		return series.map((point, index) => {
+			let weightedViews = 0;
+			let totalWeight = 0;
+
+			for (let offset = -radius; offset <= radius; offset += 1) {
+				const neighbour = series[index + offset];
+				if (!neighbour) continue;
+				const weight = radius + 1 - Math.abs(offset);
+				weightedViews += neighbour.views * weight;
+				totalWeight += weight;
+			}
+
+			return {
+				...point,
+				views: Math.max(0, Math.round(weightedViews / totalWeight))
+			};
+		});
+	}
+
+	function buildRollingEventSeries(events, range, windowDays = 14) {
+		if (!range?.startDate || !range?.endDate) return [];
+		const counts = new Map();
+		for (const event of events) {
+			const date = new Date(event.timestamp);
+			if (Number.isNaN(date.getTime())) continue;
+			const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+			counts.set(key, (counts.get(key) || 0) + 1);
+		}
+
+		const current = new Date(`${range.startDate}T00:00:00`);
+		const end = new Date(`${range.endDate}T00:00:00`);
+		const dailyCounts = [];
+		const series = [];
+		let rollingTotal = 0;
+
+		while (current <= end) {
+			const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+			const count = counts.get(key) || 0;
+			dailyCounts.push(count);
+			rollingTotal += count;
+			if (dailyCounts.length > windowDays) rollingTotal -= dailyCounts.shift();
+			series.push({ timestamp: `${key}T00:00:00`, views: rollingTotal });
+			current.setDate(current.getDate() + 1);
+		}
+
+		return series;
+	}
     
     $effect(() => {
         if (typeof requestIdleCallback !== 'undefined') {
             requestIdleCallback(() => {
-                dummyies = generateRandomEvents(1000);
+                dummyies = generateRandomEvents(5000);
                 dataGenerated = true;
             });
         } else {
             setTimeout(() => {
-                dummyies = generateRandomEvents(1000);
+                dummyies = generateRandomEvents(5000);
                 dataGenerated = true;
             }, 0);
         }
@@ -68,6 +117,13 @@
     
     // Cache eventCounts - only recompute when events_dummies changes
     let eventCounts = $derived(activeTab === 'events' && dataGenerated ? getMockEventCounts(events_dummies, dashboardStore.dateRange) : []);
+	let selectedDemoEvent = $state('Payment Completed');
+	let selectedDemoEventData = $derived(
+		events_dummies.filter(event => event.event_type !== 'pageview' && event.event_name === selectedDemoEvent)
+	);
+	let selectedDemoEventChartData = $derived(
+		smoothLandingTraffic(buildRollingEventSeries(selectedDemoEventData, dashboardStore.dateRange), 2)
+	);
 
     // Lazy compute trafficDemoData - only when traffic tab is active
     let trafficDemoData = $derived.by(() => {
@@ -81,7 +137,7 @@
         
         return {
             stats: getMockStatsSummary(events_dummies, dateRange),
-            timeSeries: getMockTimeSeries(events_dummies, dateRange, 'day').map(d => ({
+            timeSeries: smoothLandingTraffic(getMockTimeSeries(events_dummies, dateRange, 'day')).map(d => ({
                 timestamp: d.timestamp,
                 views: d.views,
                 visits: d.visits,
@@ -354,10 +410,15 @@
                          <div in:fade={{duration: 300}}>
                             {#if dataGenerated}
                                 <Events 
-                                    page_data={events_dummies} 
+                                    page_data={selectedDemoEventData}
+                                    chartData={selectedDemoEventChartData}
                                     {eventCounts} 
+                                    selectedEventName={selectedDemoEvent}
+                                    selectEvent={(eventName) => selectedDemoEvent = eventName}
+                                    rangeStart={dashboardStore.dateRange.startDate}
+                                    rangeEnd={dashboardStore.dateRange.endDate}
                                     loadingLog={false}
-                                    totalLogEvents={events_dummies.length}
+                                    totalLogEvents={selectedDemoEventData.length}
                                 />
                             {:else}
                                 <div class="flex items-center justify-center h-64 text-stone-400">Loading...</div>

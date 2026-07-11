@@ -1,40 +1,57 @@
-<div role="status" aria-live="polite" class="space-y-8" aria-label="Loading traffic analytics">
+<div role="status" aria-live="polite" aria-label="Loading traffic analytics" class="flex min-h-[60vh] flex-col">
 	<span class="sr-only">Loading traffic analytics</span>
 
-	<div class="skeleton h-7 w-48 border border-stone-100 dark:border-stone-800"></div>
+	<div class="skeleton mb-5 h-7 w-48 border border-stone-200 dark:border-stone-800 md:mb-8"></div>
 
-	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+	<div
+		class="mb-5 grid grid-cols-2 gap-3 rounded-none sm:grid-cols-2 md:mb-8 md:gap-4 lg:grid-cols-5 [&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1"
+	>
 		{#each Array(5) as _, index (index)}
-			<div class="h-28 space-y-3 border border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900">
-				<div class="skeleton h-2.5 w-20"></div>
-				<div class="skeleton h-7 w-24"></div>
-				<div class="skeleton h-2.5 w-14"></div>
+			<div class="h-24 space-y-2 border border-stone-100 bg-stone-50 p-4 dark:border-stone-800 dark:bg-stone-900">
+				<div class="flex items-center justify-between">
+					<div class="skeleton h-2.5 w-16"></div>
+					<div class="skeleton size-3.5"></div>
+				</div>
+				<div class="skeleton h-6 w-20"></div>
+				<div class="skeleton h-2.5 w-12"></div>
 			</div>
 		{/each}
 	</div>
 
-	<div class="border border-stone-100 bg-stone-50 p-6 dark:border-stone-800 dark:bg-stone-900">
-		<div class="mb-8 flex items-center justify-between">
-			<div class="skeleton h-2.5 w-32"></div>
-			<div class="skeleton h-9 w-28"></div>
-		</div>
-		<div class="skeleton h-72 w-full"></div>
-	</div>
+	<div class="skeleton h-52 w-full md:h-75"></div>
 
-	<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-		{#each Array(4) as _, sectionIndex (sectionIndex)}
-			<div class="border border-stone-100 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-900">
-				<div class="mb-4 flex items-center justify-between px-2 py-2">
+	<div class="grid grid-cols-1 gap-6 rounded-none lg:grid-cols-2">
+		{#each Array(3) as _, sectionIndex (sectionIndex)}
+			<div class="flex flex-col overflow-hidden rounded-none border border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-900">
+				<div class="flex h-14 items-center justify-between border-b border-stone-100 bg-white/50 px-4 dark:border-stone-800 dark:bg-stone-900/50 md:px-6">
 					<div class="skeleton h-2.5 w-24"></div>
 					<div class="skeleton h-2.5 w-16"></div>
 				</div>
-				<div class="space-y-1">
+				<div class="flex-1 space-y-0.5 p-2">
 					{#each Array(5) as _, rowIndex (rowIndex)}
-						<div class="skeleton h-11"></div>
+						<div class="skeleton h-[46px] border border-stone-200/60 dark:border-stone-800"></div>
 					{/each}
 				</div>
 			</div>
 		{/each}
+
+		<div class="flex flex-col overflow-hidden rounded-none border border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-900">
+			<div class="flex h-14 items-center justify-between border-b border-stone-100 bg-white/50 px-4 dark:border-stone-800 dark:bg-stone-900/50 md:px-6">
+				<div class="skeleton h-2.5 w-20"></div>
+				<div class="skeleton h-2.5 w-10"></div>
+			</div>
+			<div class="flex-1 space-y-4 p-4 md:p-6">
+				{#each Array(3) as _, rowIndex (rowIndex)}
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<div class="skeleton h-3 w-24"></div>
+							<div class="skeleton h-2.5 w-8"></div>
+						</div>
+						<div class="skeleton h-1 w-full"></div>
+					</div>
+				{/each}
+			</div>
+		</div>
 	</div>
 </div>
 

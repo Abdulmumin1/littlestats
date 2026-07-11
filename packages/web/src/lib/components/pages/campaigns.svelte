@@ -76,64 +76,29 @@
 		return `${source}|${medium}|${campaign}`;
 	}
 
-	function computeGoalNamesFromEvents() {
+	function computeDemoAnalytics() {
 		const range = getEffectiveRange();
 		const filtered = filterEventsLocal(events, range);
-		const set = new Set();
-		for (const e of filtered) {
-			if (e?.event_type === 'pageview') continue;
-			const name = e?.event_name || e?.event_type;
-			if (name) set.add(name);
-		}
-		return Array.from(set.values()).sort((a, b) => String(a).localeCompare(String(b)));
-	}
-
-	function computeCampaignRowsFromEvents() {
-		const range = getEffectiveRange();
-		const filtered = filterEventsLocal(events, range);
-
+		const goals = new Set();
 		const byBucket = new Map();
-		for (const e of filtered) {
-			const bucket = buildBucket(e);
-			const row = byBucket.get(bucket) || { bucket, visitIds: new Set(), conversionVisitIds: new Set() };
-			const visitId = e?.session_id || e?.user_id;
-
-			if (visitId) row.visitIds.add(visitId);
-			if (e?.event_type !== 'pageview') {
-				const name = e?.event_name || e?.event_type;
-				if (visitId && (!selectedGoal || name === selectedGoal)) {
-					row.conversionVisitIds.add(visitId);
-				}
-			}
-
-			byBucket.set(bucket, row);
-		}
-
-		return Array.from(byBucket.values()).map((r) => {
-			const visits = r.visitIds.size;
-			const conversions = r.conversionVisitIds.size;
-			return {
-				bucket: r.bucket,
-				visits,
-				conversions,
-				conversionRate: visits > 0 ? Math.round((conversions / visits) * 10000) / 100 : 0
-			};
-		});
-	}
-
-	function computeStackedSeriesFromEvents() {
-		const range = getEffectiveRange();
-		const filtered = filterEventsLocal(events, range);
-
 		const segTotals = new Map();
 		const byDay = new Map();
 
 		for (const e of filtered) {
 			const dt = new Date(e.timestamp);
 			if (Number.isNaN(dt.getTime())) continue;
-			const dayKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+			const isPageview = e?.event_type === 'pageview';
+			const name = e?.event_name || e?.event_type;
+			if (!isPageview && name) goals.add(name);
 
+			const dayKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
 			const bucket = buildBucket(e);
+			const visitId = e?.session_id || e?.user_id;
+			const row = byBucket.get(bucket) || { bucket, visitIds: new Set(), conversionVisitIds: new Set() };
+			if (visitId) row.visitIds.add(visitId);
+			if (!isPageview && visitId && (!selectedGoal || name === selectedGoal)) row.conversionVisitIds.add(visitId);
+			byBucket.set(bucket, row);
+
 			let segKey = 'Other';
 			if (bucket === 'Direct') {
 				segKey = 'Direct';
@@ -143,14 +108,8 @@
 			}
 
 			let metricVal = 0;
-			if (stackedMetric === 'visits') {
-				metricVal = e?.event_type === 'pageview' ? 1 : 0;
-			} else {
-				if (e?.event_type !== 'pageview') {
-					const name = e?.event_name || e?.event_type;
-					metricVal = !selectedGoal || name === selectedGoal ? 1 : 0;
-				}
-			}
+			if (stackedMetric === 'visits') metricVal = isPageview ? 1 : 0;
+			else if (!isPageview) metricVal = !selectedGoal || name === selectedGoal ? 1 : 0;
 
 			if (!metricVal) continue;
 
@@ -175,18 +134,35 @@
 			})
 			.sort((a, b) => String(a.timestamp).localeCompare(String(b.timestamp)));
 
+		const campaignRows = Array.from(byBucket.values()).map((row) => {
+			const visits = row.visitIds.size;
+			const conversions = row.conversionVisitIds.size;
+			return {
+				bucket: row.bucket,
+				visits,
+				conversions,
+				conversionRate: visits > 0 ? Math.round((conversions / visits) * 10000) / 100 : 0
+			};
+		});
+
 		return {
-			granularity: 'day',
-			metric: stackedMetric,
-			groupBy: stackedGroupBy,
-			segments,
-			points
+			goalNames: Array.from(goals).sort((a, b) => String(a).localeCompare(String(b))),
+			campaignRows,
+			stackedSeries: {
+				granularity: 'day',
+				metric: stackedMetric,
+				groupBy: stackedGroupBy,
+				segments,
+				points
+			}
 		};
 	}
 
+	let demoAnalytics = $derived.by(() => (demo ? computeDemoAnalytics() : null));
+
 	async function fetchGoalNames() {
 		if (demo) {
-			goalNames = computeGoalNamesFromEvents();
+			goalNames = demoAnalytics?.goalNames || [];
 			return;
 		}
 		if (!siteId) return;
@@ -203,7 +179,7 @@
 		if (demo) {
 			loading = true;
 			try {
-				campaigns = computeCampaignRowsFromEvents().slice(0, Number(limit) || 20);
+				campaigns = (demoAnalytics?.campaignRows || []).slice(0, Number(limit) || 20);
 			} finally {
 				loading = false;
 			}
@@ -227,7 +203,7 @@
 		if (demo) {
 			stackedLoading = true;
 			try {
-				stackedSeries = computeStackedSeriesFromEvents();
+				stackedSeries = demoAnalytics?.stackedSeries || null;
 			} finally {
 				stackedLoading = false;
 			}

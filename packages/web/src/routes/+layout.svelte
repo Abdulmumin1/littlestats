@@ -1,5 +1,6 @@
 <script>
 	import '../app.css';
+	import '$lib/charts/ditherTheme.js';
 	import { show_toast } from '$lib/toast.js';
 	import Toast from '$lib/components/generals/toast.svelte';
 	import { color, colorList } from '$lib/colors/mixer.js';
