@@ -7,6 +7,16 @@ function randomFromArray(arr) {
 	return arr[randomInt(0, arr.length - 1)];
 }
 
+function randomWeighted(entries) {
+	const total = entries.reduce((sum, [, weight]) => sum + weight, 0);
+	let roll = Math.random() * total;
+	for (const [value, weight] of entries) {
+		roll -= weight;
+		if (roll <= 0) return value;
+	}
+	return entries.at(-1)[0];
+}
+
 function generateRandomIp() {
 	return `${randomInt(1, 254)}.${randomInt(0, 254)}.${randomInt(0, 254)}.${randomInt(1, 254)}`;
 }
@@ -35,7 +45,16 @@ const user_ips = user_ids.map(() => generateRandomIp()); // Ensures similar coun
 
 const session_ids = generateUUIDs(randomInt(100, 2000));
 // Arrays for random selection
-const eventTypes = ['customEvent', 'pageview', 'pageExit', 'formSubmit', 'videoPlay', 'error', 'hover', 'scroll'];
+const eventTypes = [
+	['pageview', 36],
+	['customEvent', 32],
+	['scroll', 12],
+	['formSubmit', 7],
+	['pageExit', 6],
+	['hover', 4],
+	['videoPlay', 2],
+	['error', 1]
+];
 const urls = ['/', '/about', '/contact', '/pricing', '/features', '/blog', '/signup', '/dashboard', '/settings'];
 const referrers = [
 	'',
@@ -60,27 +79,48 @@ const timezones = ['Africa/Lagos', 'America/New_York', 'Europe/London', 'Asia/To
 const screens = ['1920x1080', '1366x768', '1440x900', '1536x864', '1280x720', '2560x1440', '1024x768'];
 const languages = ['en-US', 'fr-FR', 'es-ES', 'de-DE', 'zh-CN', 'it-IT', 'ru-RU', 'ja-JP'];
 const eventNames = [
-	'Page View',            // General page visit
-	'Sign Up',             // User registration
-	'Login',               // User logs in
-	'Start Free Trial',    // Begins a free trial
-	'Upgrade Plan',        // Upgrades to a paid plan
-	'Subscription Renewal',// Subscription renewal event
-	'Cancellation',        // Subscription cancellation
-	'Feature Used',        // User engages with a core feature
-	'Integration Connected', // Connects third-party integration
-	'Download Report',     // Downloads analytics report
-	'Invite Team Member',  // Invites a teammate
-	'Change Settings',     // Updates account settings
-	'Contact Support',     // Reaches out for help
-	'Form Submission',     // Submits a form (e.g., lead gen, survey)
-	'Checkout Started',    // Begins payment process
-	'Payment Completed',   // Successfully pays
-	'Churned',             // User stops using the service
-	'Feedback Given',      // Provides product feedback
-	'Webinar Registered',  // Signs up for a webinar
-	'Documentation Visit'  // Views API/docs
+	['Feature Used', 22],
+	['Login', 16],
+	['Documentation Visit', 11],
+	['Sign Up', 9],
+	['Start Free Trial', 7],
+	['Checkout Started', 5],
+	['Payment Completed', 3],
+	['Upgrade Plan', 4],
+	['Integration Connected', 5],
+	['Download Report', 4],
+	['Invite Team Member', 3],
+	['Change Settings', 3],
+	['Form Submission', 3],
+	['Contact Support', 1.5],
+	['Feedback Given', 1.5],
+	['Subscription Renewal', 1.5],
+	['Webinar Registered', 1],
+	['Cancellation', 0.7],
+	['Churned', 0.3]
 ];
+
+const eventUrls = {
+	'Payment Completed': '/checkout/success',
+	'Checkout Started': '/checkout',
+	'Upgrade Plan': '/settings/billing',
+	'Subscription Renewal': '/settings/billing',
+	'Cancellation': '/settings/billing',
+	'Churned': '/settings/billing',
+	'Sign Up': '/signup',
+	'Start Free Trial': '/signup',
+	'Login': '/login',
+	'Feature Used': '/dashboard',
+	'Integration Connected': '/settings/integrations',
+	'Download Report': '/reports',
+	'Invite Team Member': '/settings/team',
+	'Change Settings': '/settings',
+	'Contact Support': '/support',
+	'Form Submission': '/contact',
+	'Feedback Given': '/dashboard',
+	'Webinar Registered': '/webinars',
+	'Documentation Visit': '/docs'
+};
 const buttonColors = ['blue', 'red', 'green', 'yellow', 'purple', 'black', 'orange'];
 const campaigns = ['summer-sale', 'winter-discount', 'spring-offer', 'autumn-promo', 'black-friday', 'cyber-monday'];
 const interactionTypes = ['click', 'hover', 'drag', 'drop', 'input', 'keypress'];
@@ -98,8 +138,9 @@ export function generateRandomEvents(
 ) {
 	let dummy = [];
 	for (let i = 0; i < num; i++) {
-		const event_type = randomFromArray(eventTypes);
-		const url = randomFromArray(urls);
+		const event_type = randomWeighted(eventTypes);
+		const event_name = event_type === 'pageview' ? 'Page View' : randomWeighted(eventNames);
+		const url = eventUrls[event_name] || randomFromArray(urls);
 		const referrer = randomFromArray(referrers);
 		const user_agent = randomFromArray(userAgents);
 		const timestamp = randomDate(startDate, endDate);
@@ -112,8 +153,6 @@ export function generateRandomEvents(
 		const session_id = randomFromArray(session_ids);
 		const screen = randomFromArray(screens);
 		const language = randomFromArray(languages);
-		const event_name = randomFromArray(eventNames);
-
 		// Event data with added variety
 		const eventDataObj = {
 			buttonId: 'cta-button',
@@ -666,5 +705,4 @@ export function getMockFeedback(count = 50) {
     
     return feedback.sort((a, b) => b.createdAt - a.createdAt);
 }
-
 
