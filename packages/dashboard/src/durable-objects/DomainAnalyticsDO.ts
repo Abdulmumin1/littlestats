@@ -10,6 +10,14 @@ const HEARTBEAT_INTERVAL = 5000; // 5 seconds
 const FLUSH_INTERVAL = 30 * 1000; // 30 seconds for dev
 const MAX_EVENTS_BEFORE_FLUSH = 20; // 20 events for dev
 const WEBSOCKET_PING_INTERVAL = 30000; // 30 seconds
+// Cloudflare D1 enforces a per-statement bound-variable limit (historically 100).
+// Stay well below it so the multi-row events insert doesn't trip D1's SQLite layer.
+const D1_MAX_VARIABLES_PER_STATEMENT = 100;
+const D1_VARIABLE_SAFETY_MARGIN = 20;
+const EVENT_TABLE_COLUMNS = 20;
+const EVENTS_PER_INSERT_BATCH = Math.floor(
+  (D1_MAX_VARIABLES_PER_STATEMENT - D1_VARIABLE_SAFETY_MARGIN) / EVENT_TABLE_COLUMNS
+); // 4 rows × 20 columns = 80 variables
 
 export class DomainAnalyticsDO {
   private state: DurableObjectState;
@@ -901,9 +909,10 @@ export class DomainAnalyticsDO {
       campaign_bucket: event.campaignBucket,
     }));
 
-    // Batch insert events (reduced to 5 per batch to stay under SQLite limits)
-    for (let i = 0; i < events.length; i += 5) {
-      const batch = events.slice(i, i + 5);
+    // Batch insert events to stay under D1's per-statement variable limit.
+    // 20 columns × 4 rows = 80 variables (below the 100-variable cap).
+    for (let i = 0; i < events.length; i += EVENTS_PER_INSERT_BATCH) {
+      const batch = events.slice(i, i + EVENTS_PER_INSERT_BATCH);
       const placeholders = batch.map(() => 
         "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
       ).join(", ");
