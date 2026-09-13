@@ -1,5 +1,4 @@
 <script>
-	import { defaultRange as DateRange } from './../../globalstate.svelte.js';
 	import { DatePicker } from '@svelte-plugins/datepicker';
 	import { format } from 'date-fns';
 	import { X } from 'lucide-svelte';
@@ -69,12 +68,6 @@
 		showPresetsPane = window.innerWidth >= 640;
 	}
 
-	$effect(() => {
-		if (startDate || endDate) {
-			dispatch('dateChange', { startDate, endDate });
-		}
-	});
-
 	function save() {
 		// A single calendar click represents one complete day. The datepicker
 		// leaves endDate empty while it waits for a second click, so normalize
@@ -83,8 +76,6 @@
 		startDate = startDate || endDate;
 		endDate = endDate || startDate;
 
-		DateRange.setCustom(true);
-		DateRange.setRange(startDate, endDate);
 		dispatch('close', { startDate, endDate });
 		closeModal();
 	}

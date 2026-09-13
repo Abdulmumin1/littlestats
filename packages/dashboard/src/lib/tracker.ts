@@ -23,6 +23,7 @@ interface SessionData {
 }
 
 interface TrackPayload {
+  eventId?: string;
   type: 'pageview' | 'event' | 'identify' | 'page_exit';
   website: string;
   url?: string;
@@ -37,6 +38,7 @@ interface TrackPayload {
   cache?: CacheData;
   visitorId?: string;
   userAgent?: string;
+  duration?: number;
 }
 
 class LittleStatsTracker {
@@ -55,13 +57,11 @@ class LittleStatsTracker {
   private cache: CacheData;
   private visitorId: string;
   private pageStartTime: number;
-  private buffer: TrackPayload[] = [];
-  private flushInterval?: number;
 
   constructor(siteId: string, endpoint?: string) {
     this.siteId = siteId;
     this.endpoint = endpoint || this.detectEndpoint();
-    this.currentUrl = location.href;
+    this.currentUrl = this.pageUrl();
     this.currentRef = document.referrer;
     this.cache = this.loadCache();
     this.visitorId = this.getVisitorId();
@@ -115,6 +115,10 @@ class LittleStatsTracker {
     }
   }
 
+  private pageUrl(): string {
+    return location.pathname + location.search;
+  }
+
   private getVisitorId(): string {
     try {
       let vid = localStorage.getItem(this.config.VISITOR_KEY);
@@ -138,8 +142,9 @@ class LittleStatsTracker {
 
   private getPayload(): TrackPayload {
     return {
+      eventId: this.generateUUID(),
       website: this.siteId,
-      url: location.pathname + location.search,
+      url: this.pageUrl(),
       referrer: document.referrer,
       screen: `${screen.width}x${screen.height}`,
       language: navigator.language,
@@ -153,7 +158,7 @@ class LittleStatsTracker {
 
   private init(): void {
     // Track initial pageview
-    this.trackPageView();
+    this.trackPageViewInternal();
 
     // Setup SPA navigation detection
     this.setupSPADetection();
@@ -161,20 +166,14 @@ class LittleStatsTracker {
     // Setup activity tracking
     this.setupActivityTracking();
 
-    // Setup heartbeat for engagement time
-    this.setupHeartbeat();
-
     // Setup beforeunload handler
     this.setupBeforeUnload();
-
-    // Setup periodic flush
-    this.setupPeriodicFlush();
 
     // Setup visibility tracking
     this.setupVisibilityTracking();
   }
 
-  private trackPageView(): void {
+  private trackPageViewInternal(): void {
     // Debounce: Don't track if same URL within 2 seconds
     const now = Date.now();
     const lastView = sessionStorage.getItem('ls_last_view');
@@ -218,12 +217,11 @@ class LittleStatsTracker {
     // Handle popstate (back/forward buttons)
     window.addEventListener('popstate', () => this.handleNavigation());
 
-    // Handle hash changes
-    window.addEventListener('hashchange', () => this.handleNavigation());
   }
 
   private handleNavigation(): void {
-    if (this.currentUrl !== location.href) {
+    const nextUrl = this.pageUrl();
+    if (this.currentUrl !== nextUrl) {
       // Calculate time on previous page
       const timeOnPage = Math.round((Date.now() - this.pageStartTime) / 1000);
       
@@ -233,18 +231,19 @@ class LittleStatsTracker {
           ...this.getPayload(),
           type: 'page_exit',
           url: this.currentUrl,
+          duration: Math.min(1800, Math.max(0, timeOnPage)),
         });
       }
 
       // Update current URL and start tracking new page
-      this.currentUrl = location.href;
+      this.currentUrl = nextUrl;
       this.currentRef = document.referrer;
       this.pageStartTime = Date.now();
       
       // Reset cache to get new visit ID if needed
       this.cache = this.loadCache();
       
-      this.trackPageView();
+        this.trackPageViewInternal();
     }
   }
 
@@ -264,45 +263,23 @@ class LittleStatsTracker {
     });
   }
 
-  private setupHeartbeat(): void {
-    // Send heartbeat every 5 seconds to track engagement
-    setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        this.send({
-          ...this.getPayload(),
-          type: 'pageview', // Use pageview as heartbeat
-        });
-      }
-    }, this.config.HEARTBEAT_INTERVAL);
-  }
-
   private setupBeforeUnload(): void {
-    // Send buffered events before page unload
-    const flushBuffer = () => {
-      if (this.buffer.length > 0) {
-        const payload = {
-          events: this.buffer,
-          siteId: this.siteId,
-        };
-
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon(
-            this.endpoint,
-            new Blob([JSON.stringify(payload)], { type: 'application/json' })
-          );
-        }
+    const sendExit = () => {
+      const payload = {
+        ...this.getPayload(),
+        type: 'page_exit' as const,
+        url: this.currentUrl,
+      };
+      const body = JSON.stringify(payload);
+      if (navigator.sendBeacon) {
+        if (navigator.sendBeacon(this.endpoint, new Blob([body], { type: 'application/json' }))) return;
       }
+      fetch(this.endpoint, { method: 'POST', body, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
     };
 
-    window.addEventListener('beforeunload', flushBuffer);
-    window.addEventListener('pagehide', flushBuffer);
-  }
-
-  private setupPeriodicFlush(): void {
-    // Flush buffer periodically
-    this.flushInterval = window.setInterval(() => {
-      this.flush();
-    }, 5000) as unknown as number;
+    window.addEventListener('pagehide', (event) => {
+      if (!event.persisted) sendExit();
+    });
   }
 
   private setupVisibilityTracking(): void {
@@ -345,53 +322,12 @@ class LittleStatsTracker {
   }
 
   public trackPageView(): void {
-    this.trackPageView();
-  }
-
-  private send(payload: TrackPayload): void {
-    this.buffer.push(payload);
-
-    // Flush immediately if buffer is full
-    if (this.buffer.length >= this.config.MAX_BUFFER_SIZE) {
-      this.flush();
-    }
-  }
-
-  private flush(): void {
-    if (this.buffer.length === 0) return;
-
-    const payload = {
-      events: this.buffer,
-      siteId: this.siteId,
-    };
-
-    // Use Beacon API for reliability
-    if (navigator.sendBeacon) {
-      navigator.sendBeacon(
-        this.endpoint,
-        new Blob([JSON.stringify(payload)], { type: 'application/json' })
-      );
-    } else {
-      // Fallback to fetch with keepalive
-      fetch(this.endpoint, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
-        keepalive: true,
-      }).catch(() => {
-        // Silently fail - analytics should never break the app
-      });
-    }
-
-    this.buffer = [];
+    this.trackPageViewInternal();
   }
 
   // Cleanup
   public destroy(): void {
-    if (this.flushInterval) {
-      clearInterval(this.flushInterval);
-    }
-    this.flush();
+    // Kept for API compatibility; tracking is sent immediately.
   }
 }
 
@@ -399,11 +335,13 @@ class LittleStatsTracker {
 (function autoInit() {
   const scripts = document.querySelectorAll('script[data-site-id]');
   
+  const instances: Record<string, LittleStatsTracker> = {};
   scripts.forEach((script) => {
     const siteId = script.getAttribute('data-site-id');
     if (siteId) {
+      if (!instances[siteId]) instances[siteId] = new LittleStatsTracker(siteId);
       // @ts-ignore
-      window.littlestats = new LittleStatsTracker(siteId);
+      window.littlestats = instances[siteId];
     }
   });
 

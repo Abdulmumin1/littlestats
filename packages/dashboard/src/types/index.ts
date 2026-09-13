@@ -17,6 +17,7 @@ export type {
 export type {
   TrackPayload,
   Event,
+  AnalyticsEventRecord,
   EventProperty,
   AnalyticsEvent
 } from './analytics';

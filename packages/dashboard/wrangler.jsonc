@@ -13,6 +13,22 @@
     },
   ],
 
+  "pipelines": [
+    {
+      "binding": "ANALYTICS_STREAM",
+      "stream": "cbc09f827c5c473f82ff19c29a961e7f",
+    },
+  ],
+
+  "vars": {
+    "ANALYTICS_WRITE_MODE": "pipeline",
+    "ANALYTICS_READ_MODE": "r2",
+    "CLOUDFLARE_ACCOUNT_ID": "fa97301bcfdd3061f1dce2adc8289535",
+    "R2_ANALYTICS_BUCKET": "littlestats-analytics-data",
+    "R2_ANALYTICS_NAMESPACE": "analytics",
+    "R2_ANALYTICS_TABLE": "events_v1",
+  },
+
   "send_email": [
     {
       "name": "SEND_EMAIL",

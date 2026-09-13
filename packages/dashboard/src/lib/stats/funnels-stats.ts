@@ -1,7 +1,7 @@
 // Funnels stats - Funnel analysis and persistence
 import type { D1Database } from "@cloudflare/workers-types";
 import type { StatsFilter } from "../../types";
-import { getDefaultDateRange } from "./filter-utils";
+import { getDateBounds, getDefaultDateRange } from "./filter-utils";
 
 export class FunnelsStats {
   constructor(private db: D1Database, private siteId: string) {}
@@ -27,9 +27,10 @@ export class FunnelsStats {
       return { steps: [], totalConversionRate: 0, totalEntries: 0 };
     }
 
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const groupByColumn = funnelType === 'user' ? 'session_id' : 'visit_id';
 
@@ -78,8 +79,8 @@ export class FunnelsStats {
                 SELECT ${groupByColumn}, MIN(created_at) as step_time
                 FROM events
                 WHERE site_id = '${this.siteId}'
-                  AND created_at >= '${startDate}T00:00:00'
-                  AND created_at <= '${endDate}T23:59:59'
+                  AND created_at >= '${start}'
+                  AND created_at < '${endExclusive}'
                   AND ${cond}
                 GROUP BY ${groupByColumn}
               )
@@ -91,8 +92,8 @@ export class FunnelsStats {
                 FROM events e
                 INNER JOIN step${j - 1} prev ON e.${groupByColumn} = prev.${groupByColumn}
                 WHERE e.site_id = '${this.siteId}'
-                  AND e.created_at >= '${startDate}T00:00:00'
-                  AND e.created_at <= '${endDate}T23:59:59'
+                  AND e.created_at >= '${start}'
+                  AND e.created_at < '${endExclusive}'
                   AND e.created_at > prev.step_time
                   AND ${cond}
                 GROUP BY e.${groupByColumn}
@@ -112,8 +113,8 @@ export class FunnelsStats {
         if (i === 0) {
           const result = await this.db.prepare(sql).bind(
             this.siteId,
-            `${startDate}T00:00:00`,
-            `${endDate}T23:59:59`
+            start,
+            endExclusive
           ).first<{ count: number }>();
           count = result?.count || 0;
         } else {

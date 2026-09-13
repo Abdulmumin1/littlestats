@@ -14,4 +14,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
   },
+  "exclude": [
+    "src/auth/adapters/d1.ts",
+    "src/lib/tracker.ts"
+  ]
 }

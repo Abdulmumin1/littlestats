@@ -1,3 +1,5 @@
+import { fromDateKey, isDateKey } from '$lib/utils/dateRange.js';
+
 /** Dispatch event on click outside of node */
 export function clickOutside(node) {
 	const handleClick = (event) => {
@@ -39,7 +41,7 @@ export function calculateTrialDaysLeft(activationDate) {
 }
 
 export function formatDate(dateString, year = true) {
-	const date = new Date(dateString);
+	const date = isDateKey(dateString) ? fromDateKey(dateString) : new Date(dateString);
 
 	let d = date.toLocaleDateString('en-US', {
 		...(year && { year: 'numeric' }),

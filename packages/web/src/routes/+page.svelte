@@ -28,7 +28,6 @@
     import Feedback from '$lib/components/pages/feedback.svelte';
 	import Dropdown from '$lib/components/generals/dropdown.svelte';
     import DarkMode from '$lib/components/generals/darkMode.svelte';
-	import { defaultRange as globalRange, optis } from '$lib/globalstate.svelte.js';
     import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
 	import { toLocalDateKey } from '$lib/utils/dateRange.js';
     import { writable } from 'svelte/store';
@@ -36,6 +35,11 @@
     // Icons
     import { LineChart, Filter, MousePointer2, Megaphone, Github, Mailbox, Menu, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+
+	const rangeOptions = [1, 7, 14, 30, 60, 90].map((days) => ({
+		value: days,
+		label: days === 1 ? 'Today' : `Last ${days} days`
+	}));
 
     // Data handling for Demo
     let funnelStepsContext = writable({
@@ -99,7 +103,7 @@
 		return series;
 	}
     
-    $effect(() => {
+	onMount(() => {
         if (typeof requestIdleCallback !== 'undefined') {
             requestIdleCallback(() => {
                 dummyies = generateRandomEvents(5000);
@@ -165,35 +169,29 @@
     let activeTab = $state(features[0].id);
     let isMobileMenuOpen = $state(false);
 
-    // Derived Data
-    let sortInterval = $derived(globalRange.getSingle());
+    let sortInterval = $state(90);
 
     // Mock Feedback Data
-    let mockFeedbackData = $state([]);
+	let mockFeedbackData = $derived(dataGenerated ? getMockFeedback(12) : []);
     let newFeedbackCount = $derived(mockFeedbackData.filter(f => f.status === 'new').length);
-    $effect(() => {
-        if (dataGenerated) {
-            mockFeedbackData = getMockFeedback(12);
-        }
-    });
 
     function handleDateChange(event) {
-		globalRange.setCustom(false);
-		const date = event.detail.value;
-		globalRange.setSingle(date);
+		sortInterval = Number(event.detail.value) || 1;
+		setDemoRange(sortInterval);
 	}
 
-    // Sync globalRange to dashboardStore for DemoComponent
-    $effect(() => {
-        const [start, end] = globalRange.getRange();
-        dashboardStore.setDateRange(toLocalDateKey(start), toLocalDateKey(end));
-    });
+	function setDemoRange(days) {
+		const end = new Date();
+		const start = new Date(end);
+		start.setDate(start.getDate() - Math.max(0, days - 1));
+		dashboardStore.setDateRange(toLocalDateKey(start), toLocalDateKey(end));
+	}
 
     // Lazy compute funnelData - only when funnels tab is active
 	let funnelData = $derived(activeTab === 'funnels' ? calculateFunnel(mockDataFunnel, mockDataFunnelSteps, 'user') : null);
 
     onMount(() => {
-        globalRange.setSingle(90);
+		setDemoRange(sortInterval);
     })
 </script>
 
@@ -342,7 +340,7 @@
             <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
                 <div class="flex flex-row md:flex-col overflow-x-auto md:overflow-visible p-2 md:p-4 gap-1">
                     <div class="hidden md:block text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2 px-3 mt-2">Analytics</div>
-                    {#each features as feature}
+                    {#each features as feature (feature.id)}
                         <button 
                             onclick={() => activeTab = feature.id}
                             class="flex-1 md:flex-none text-left px-3 py-2  flex items-center justify-between
@@ -374,7 +372,7 @@
                      <Dropdown
                         on:change={handleDateChange}
                         title="Filter"
-                        options={optis}
+						options={rangeOptions}
                         value={sortInterval}
                     />
                 </div>

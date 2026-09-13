@@ -2,9 +2,12 @@ import { toLocalDateKey } from '$lib/utils/dateRange.js';
 
 class DashboardStore {
     #getDefaultRange() {
+		const end = new Date();
+		const start = new Date(end);
+		start.setDate(start.getDate() - 29);
         return {
-            startDate: toLocalDateKey(Date.now() - 30 * 24 * 60 * 60 * 1000),
-            endDate: toLocalDateKey(new Date())
+			startDate: toLocalDateKey(start),
+			endDate: toLocalDateKey(end)
         };
     }
 

@@ -1,11 +1,9 @@
 <script>
 	import { formatDate } from '$lib/utils.js';
-	import { isDateKey } from '$lib/utils/dateRange.js';
-	import { onMount, untrack } from 'svelte';
+	import { fromDateKey, isDateKey, toLocalDateKey } from '$lib/utils/dateRange.js';
+	import { onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
-	// import { sortViews, transformViewDataForGraph } from './viewDataUtils.js';
 	import { color, colorList } from '$lib/colors/mixer.js';
-	import { ChevronDown, ChevronUp } from 'lucide-svelte';
 
 	/**
 	 * @typedef {Object} Props
@@ -17,7 +15,6 @@
 	let {
 		chartD = { data: [], label: 'Views' },
 		bar = false,
-		line = false,
 		showChart = false,
 		sortInterval = 1,
 		sorted = false,
@@ -42,7 +39,7 @@
 	function parseHourBoundary(value, endOfDay = false) {
 		if (!value) return null;
 		if (isDateKey(value)) {
-			return new Date(`${value}T${endOfDay ? '23:00:00.000Z' : '00:00:00.000Z'}`);
+			return new Date(`${value}T${endOfDay ? '23:00:00' : '00:00:00'}`);
 		}
 
 		const date = new Date(value);
@@ -55,8 +52,8 @@
 			const time = new Date(record.timestamp).getTime();
 			if (isNaN(time)) continue;
 			const d = new Date(time);
-			d.setUTCMinutes(0, 0, 0);
-			const key = d.toISOString();
+			d.setMinutes(0, 0, 0);
+			const key = `${toLocalDateKey(d)}T${String(d.getHours()).padStart(2, '0')}:00:00`;
 			const incrementBy = typeof record?.views === 'number' ? record.views : 1;
 			counts.set(key, (counts.get(key) || 0) + incrementBy);
 		}
@@ -71,15 +68,15 @@
 			endHour = new Date(keys[keys.length - 1]);
 		}
 
-		startHour.setUTCMinutes(0, 0, 0);
-		endHour.setUTCMinutes(0, 0, 0);
+		startHour.setMinutes(0, 0, 0);
+		endHour.setMinutes(0, 0, 0);
 
 		const results = {};
 		const cur = new Date(startHour);
 		while (cur <= endHour) {
-			const key = cur.toISOString();
+			const key = `${toLocalDateKey(cur)}T${String(cur.getHours()).padStart(2, '0')}:00:00`;
 			results[key] = counts.get(key) || 0;
-			cur.setUTCHours(cur.getUTCHours() + 1);
+			cur.setHours(cur.getHours() + 1);
 		}
 		return results;
 	}
@@ -90,7 +87,8 @@
 
 		// 1. First pass: map existing records and find date range
 		for (const record of viewRecords) {
-			const time = new Date(record.timestamp).getTime();
+			const recordDate = isDateKey(record.timestamp) ? fromDateKey(record.timestamp) : new Date(record.timestamp);
+			const time = recordDate?.getTime();
 			if (isNaN(time)) continue;
 
 			// Use local date string to avoid timezone shifts
@@ -105,8 +103,9 @@
 		}
 
 		// 2. Determine display boundaries
-		const start = rangeStartDate ? new Date(rangeStartDate) : (minTime === Infinity ? new Date() : new Date(minTime));
-		const end = rangeEndDate ? new Date(rangeEndDate) : (maxTime === -Infinity ? new Date() : new Date(maxTime));
+		const start = rangeStartDate ? fromDateKey(rangeStartDate) : (minTime === Infinity ? new Date() : new Date(minTime));
+		const end = rangeEndDate ? fromDateKey(rangeEndDate) : (maxTime === -Infinity ? new Date() : new Date(maxTime));
+		if (!start || !end) return {};
 
 		// Normalize to start of local day
 		start.setHours(0, 0, 0, 0);
@@ -148,7 +147,7 @@
 			} catch {}
 		}
 	});
-	let chartType = $state(untrack(() => (bar ? 'bar' : line ? 'line' : 'line')));
+	let chartType = $derived(bar ? 'bar' : 'line');
 
 	// $: console.log(c);
 	const MountChart = () => {
@@ -258,23 +257,6 @@
 			destroyChart();
 		};
 	});
-
-	function toggleChart() {
-		showChart = !showChart;
-		if (showChart) {
-			MountChart();
-		}
-	}
-
-	function toggleChartType(type) {
-		if (!showChart) {
-			showChart = true;
-		}
-		if (chartType == type) return;
-		chartType = type;
-		destroyChart();
-		MountChart();
-	}
 
 	let usedColor = $derived(colorList[$color] ?? colorList.green);
 	let viewRecords = $derived(chartD.data);

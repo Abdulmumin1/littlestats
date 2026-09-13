@@ -11,14 +11,45 @@ type Variables = {
 
 const trackingRouter = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+const SITE_CACHE_TTL_MS = 5 * 60 * 1000;
+const canonicalSiteCache = new Map<string, { siteId: string; expiresAt: number }>();
+
+async function resolveCanonicalSiteId(db: D1Database, siteKey: string): Promise<string | null> {
+  const cached = canonicalSiteCache.get(siteKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.siteId;
+
+  const site = await db.prepare(
+    "SELECT id FROM sites WHERE id = ? OR domain_key = ? LIMIT 1"
+  ).bind(siteKey, siteKey).first<{ id: string }>();
+
+  if (!site) return null;
+  canonicalSiteCache.set(siteKey, { siteId: site.id, expiresAt: Date.now() + SITE_CACHE_TTL_MS });
+  canonicalSiteCache.set(site.id, { siteId: site.id, expiresAt: Date.now() + SITE_CACHE_TTL_MS });
+  return site.id;
+}
+
 // Apply tracking CORS only to track endpoint
 trackingRouter.use("/track/*", trackingCors);
 
 // Track endpoint - Routes to DomainAnalyticsDO
 trackingRouter.post("/track/:siteId", async (c) => {
-  const siteId = c.req.param("siteId");
+  const siteKey = c.req.param("siteId");
   
   try {
+    const siteId = await resolveCanonicalSiteId(c.env.DB, siteKey);
+    if (!siteId) return c.json({ error: "Unknown website ID" }, { status: 404 });
+
+    const requestBody = await c.req.text();
+    if (new TextEncoder().encode(requestBody).byteLength > 64 * 1024) {
+      return c.json({ error: "Tracking payload is too large" }, { status: 413 });
+    }
+    let payload: Record<string, unknown>;
+    try {
+      payload = JSON.parse(requestBody) as Record<string, unknown>;
+    } catch {
+      return c.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
     // Get the DO instance for this site
     const id = c.env.ANALYTICS_DO.idFromName(siteId);
     const doStub = c.env.ANALYTICS_DO.get(id);
@@ -28,10 +59,12 @@ trackingRouter.post("/track/:siteId", async (c) => {
     url.pathname = "/track";
     url.searchParams.set("site_id", siteId);
     
+    const forwardedHeaders = new Headers(c.req.raw.headers);
+    forwardedHeaders.delete("content-length");
     const newRequest = new Request(url.toString(), {
       method: c.req.method,
-      headers: c.req.header(),
-      body: await c.req.blob(),
+      headers: forwardedHeaders,
+      body: JSON.stringify({ ...payload, website: siteId }),
     });
     
     // Forward to DO

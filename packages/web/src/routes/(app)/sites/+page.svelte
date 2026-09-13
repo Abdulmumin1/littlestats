@@ -7,7 +7,7 @@
 	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
-	import { LayoutGrid, Globe, Plus, ArrowRight, Activity, Users, Eye, Settings } from 'lucide-svelte';
+	import { LayoutGrid, Globe, Plus, ArrowRight, Eye, Settings } from 'lucide-svelte';
 	import { page } from '$app/stores';
 
 	let sites = $state([]);
@@ -100,7 +100,7 @@
 					</div>
 				{:else if sites.length > 0}
 					<div class="space-y-3 rounded-none">
-						{#each sites as site}
+						{#each sites as site (site.id)}
 							<a 
 								href="/site/{site.id}"
 								class="group flex items-center justify-between p-4 px-6 rounded-none bg-stone-50 dark:bg-stone-900 border border-stone-100 dark:border-stone-800 hover:bg-white dark:hover:bg-stone-800 hover:border-stone-200 dark:hover:border-stone-700 transition-all duration-300"
@@ -126,17 +126,10 @@
 									<div class="hidden sm:flex items-center gap-6 rounded-none">
 										<div class="text-right rounded-none">
 											<div class="flex items-center gap-1.5 justify-end rounded-none">
-												<Users size={12} class="text-stone-400" />
-												<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{site.sessionCount || 0}</span>
-											</div>
-											<p class="text-[10px] font-black uppercase tracking-tighter text-stone-400 opacity-50">visits</p>
-										</div>
-										<div class="text-right rounded-none">
-											<div class="flex items-center gap-1.5 justify-end rounded-none">
 												<Eye size={12} class="text-stone-400" />
-												<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{site.events24h || 0}</span>
+												<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{site.viewsToday || 0}</span>
 											</div>
-											<p class="text-[10px] font-black uppercase tracking-tighter text-stone-400 opacity-50">24h</p>
+											<p class="text-[10px] font-black uppercase tracking-tighter text-stone-400 opacity-50">today views</p>
 										</div>
 									</div>
 									<div class="h-8 w-8 rounded-none bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-400 group-hover:translate-x-1 transition-all">
