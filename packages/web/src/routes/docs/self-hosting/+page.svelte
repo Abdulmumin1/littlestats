@@ -47,7 +47,7 @@ npx wrangler deploy`;
 	<h4 class="text-amber-800 dark:text-amber-400 font-bold mb-2">Requirements</h4>
 	<ul class="text-amber-700 dark:text-amber-500 text-sm space-y-2">
 		<li>• A Cloudflare account</li>
-		<li>• <strong class="text-amber-600 dark:text-amber-400">Workers Paid Plan (Recommended)</strong>
+    <li>• <strong class="text-amber-600 dark:text-amber-400">Workers Paid Plan (Recommended)</strong></li>
 	</ul>
 </div>
 

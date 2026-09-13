@@ -17,10 +17,10 @@ export class BreakdownStats {
     limit: number = 10,
     options?: { q?: string }
   ): Promise<Array<{ referrer: string; views: number; visits: number }>> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const { whereSql, binds } = buildEventsFilterWhere(filter, {
       field: 'referrer_domain',
@@ -60,10 +60,10 @@ export class BreakdownStats {
     limit: number = 10,
     options?: { q?: string }
   ): Promise<Array<{ path: string; views: number; visits: number }>> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const { whereSql, binds } = buildEventsFilterWhere(filter, {
       field: 'url_path',
@@ -102,10 +102,10 @@ export class BreakdownStats {
     limit: number = 10,
     options?: { q?: string }
   ): Promise<Array<{ country: string; code: string; views: number; visits: number }>> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const countryExpr = "COALESCE(NULLIF(e.country, ''), NULLIF(s.country, ''), 'XX')";
 
@@ -151,10 +151,10 @@ export class BreakdownStats {
   }
 
   async getDeviceBreakdown(filter: StatsFilter): Promise<Array<{ device: string; views: number; visits: number }>> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const { whereSql, binds } = buildEventsFilterWhere(filter);
 
@@ -184,11 +184,11 @@ export class BreakdownStats {
   }
 
   async getBrowserBreakdown(filter: StatsFilter, limit: number = 10): Promise<Array<{ browser: string; views: number; visits: number }>> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
 
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
     const { whereSql, binds } = buildEventsFilterWhere(filter);
 
     const sql = `

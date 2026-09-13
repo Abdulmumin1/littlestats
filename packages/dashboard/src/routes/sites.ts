@@ -8,7 +8,7 @@ import {
 import type { Env } from "../types";
 import { authMiddleware } from "../middleware/auth";
 import { R2Usage } from "../lib/analytics/r2-usage";
-import { getDateBounds } from "../lib/stats/filter-utils";
+import { getDateBounds, getDefaultDateRange, normalizeTimezone } from "../lib/stats/filter-utils";
 
 type Variables = {
   user: any;
@@ -136,8 +136,9 @@ sitesRouter.get("/", async (c) => {
   try {
     const user = c.get("user");
     const userId = user.id;
-    const today = new Date().toISOString().slice(0, 10);
-    const { start, endExclusive } = getDateBounds(today, today);
+    const timezone = normalizeTimezone(c.req.query("timezone"));
+    const { endDate: today } = getDefaultDateRange(timezone);
+    const { start, endExclusive } = getDateBounds(today, today, timezone);
 
     const readsFromR2 = c.env.ANALYTICS_READ_MODE === "r2";
     const siteQuery = readsFromR2
@@ -155,7 +156,7 @@ sitesRouter.get("/", async (c) => {
       .all();
 
     const r2Metrics = readsFromR2
-      ? await new R2Usage(c.env).getSiteMetrics(results.map((site: any) => String(site.id)))
+      ? await new R2Usage(c.env).getSiteMetrics(results.map((site: any) => String(site.id)), timezone)
       : null;
 
     // Map snake_case to camelCase

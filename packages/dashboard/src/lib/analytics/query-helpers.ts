@@ -1,5 +1,5 @@
 import type { StatsFilter } from "../../types";
-import { getDateBounds, getDefaultDateRange } from "../stats/filter-utils";
+import { getAnalyticsBuckets, getDateBounds, getDefaultDateRange, normalizeTimezone } from "../stats/filter-utils";
 import { sqlString } from "./r2-sql-client";
 
 export function numeric(value: unknown): number {
@@ -12,11 +12,13 @@ export function analyticsRange(filter: StatsFilter): {
   endDate: string;
   start: string;
   endExclusive: string;
+  timezone: string;
 } {
-  const defaults = getDefaultDateRange();
+  const timezone = normalizeTimezone(filter.timezone);
+  const defaults = getDefaultDateRange(timezone);
   const startDate = filter.startDate || defaults.startDate;
   const endDate = filter.endDate || defaults.endDate;
-  return { startDate, endDate, ...getDateBounds(startDate, endDate) };
+  return { startDate, endDate, timezone, ...getDateBounds(startDate, endDate, timezone) };
 }
 
 export function eventFilterSql(filter: StatsFilter): string {
@@ -42,10 +44,35 @@ export function dedupedEventsCte(table: string, siteId: string, start: string, e
       SELECT *, ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY __ingest_ts DESC) AS _event_rank
       FROM ${table}
       WHERE site_id = ${sqlString(siteId)}
-        AND event_time >= ${sqlString(`${start}Z`)}
-        AND event_time < ${sqlString(`${endExclusive}Z`)}
+        AND event_time >= ${sqlString(start)}
+        AND event_time < ${sqlString(endExclusive)}
     ) WHERE _event_rank = 1
   )`;
+}
+
+export function timeBucketSql(
+  column: string,
+  filter: StatsFilter,
+  granularity: "hour" | "day",
+): { expression: string; labels: string[] } {
+  const { startDate, endDate, timezone } = analyticsRange(filter);
+  const buckets = getAnalyticsBuckets(startDate, endDate, timezone, granularity);
+  const cases = buckets.map(({ start, endExclusive, label }) =>
+    `WHEN ${column} >= ${sqlString(start)} AND ${column} < ${sqlString(endExclusive)} THEN ${sqlString(label)}`,
+  );
+  return {
+    expression: `CASE ${cases.join(" ")} END`,
+    labels: [...new Set(buckets.map((bucket) => bucket.label))],
+  };
+}
+
+export function fillTimeSeries<T extends { timestamp: string }>(
+  points: T[],
+  labels: string[],
+  empty: (timestamp: string) => T,
+): T[] {
+  const byTimestamp = new Map(points.map((point) => [point.timestamp, point]));
+  return labels.map((label) => byTimestamp.get(label) || empty(label));
 }
 
 export function roundPercent(numerator: number, denominator: number): number {

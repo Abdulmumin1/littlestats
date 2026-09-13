@@ -8,8 +8,8 @@
 
 	/** @type {Props} */
 	let { size = 90 } = $props();
-	const height = size / 2;
-	const scaleFactor = size / 200;
+  let height = $derived(size / 2);
+  let scaleFactor = $derived(size / 200);
 
 	let usedColor = $derived(colorList?.[$color]);
 </script>

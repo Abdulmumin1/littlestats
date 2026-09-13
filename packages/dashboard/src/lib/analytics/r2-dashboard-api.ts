@@ -1,9 +1,9 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import type { StatsFilter, StatsSummary, TimeSeriesDataPoint } from "../../types";
 import { COUNTRY_NAMES } from "../utils/country-names";
-import { calculateChange } from "../stats/filter-utils";
+import { calculateChange, shiftDateKey } from "../stats/filter-utils";
 import { FunnelsStats } from "../stats/funnels-stats";
-import { analyticsRange, dedupedEventsCte, eventFilterSql, numeric, roundPercent, searchSql } from "./query-helpers";
+import { analyticsRange, dedupedEventsCte, eventFilterSql, fillTimeSeries, numeric, roundPercent, searchSql, timeBucketSql } from "./query-helpers";
 import { R2SqlClient, sqlString } from "./r2-sql-client";
 
 type Row = Record<string, unknown>;
@@ -48,16 +48,12 @@ export class R2DashboardAPI {
   }
 
   async getStatsSummary(filter: StatsFilter): Promise<StatsSummary> {
-    const { startDate, endDate, start, endExclusive } = analyticsRange(filter);
-    const startDateValue = new Date(`${startDate}T00:00:00Z`);
-    const endDateValue = new Date(`${endDate}T00:00:00Z`);
-    const days = Math.max(1, Math.floor((endDateValue.getTime() - startDateValue.getTime()) / 86_400_000) + 1);
-    startDateValue.setUTCDate(startDateValue.getUTCDate() - days);
-    endDateValue.setUTCDate(endDateValue.getUTCDate() - days);
+    const { startDate, endDate, start, endExclusive, timezone } = analyticsRange(filter);
+    const days = Math.max(1, Math.round((Date.parse(`${endDate}T00:00:00Z`) - Date.parse(`${startDate}T00:00:00Z`)) / 86_400_000) + 1);
     const previousBounds = analyticsRange({
       ...filter,
-      startDate: startDateValue.toISOString().slice(0, 10),
-      endDate: endDateValue.toISOString().slice(0, 10),
+      startDate: shiftDateKey(startDate, -days),
+      endDate: shiftDateKey(endDate, -days),
     });
     const [current, previous] = await Promise.all([
       this.periodStats(start, endExclusive, filter),
@@ -65,7 +61,7 @@ export class R2DashboardAPI {
     ]);
     return {
       siteId: this.siteId,
-      period: { start: startDate, end: endDate },
+      period: { start: startDate, end: endDate, timezone },
       ...current,
       change: {
         views: calculateChange(current.views, previous.views),
@@ -79,9 +75,10 @@ export class R2DashboardAPI {
 
   async getTimeSeries(filter: StatsFilter, granularity: "hour" | "day" = "day"): Promise<TimeSeriesDataPoint[]> {
     const { start, endExclusive } = analyticsRange(filter);
+    const bucket = timeBucketSql("event_time", filter, granularity);
     const rows = await this.sql.query<Row>(`
       WITH ${dedupedEventsCte(this.sql.table, this.siteId, start, endExclusive)}
-      SELECT date_trunc('${granularity}', event_time) AS timestamp,
+      SELECT ${bucket.expression} AS timestamp,
         COUNT(*) AS views,
         COUNT(DISTINCT visit_id) AS visits,
         COUNT(DISTINCT visitor_id) AS visitors
@@ -89,10 +86,11 @@ export class R2DashboardAPI {
       WHERE event_type = 'pageview' ${eventFilterSql(filter)}
       GROUP BY timestamp ORDER BY timestamp ASC
     `);
-    return rows.map((row) => ({
+    const points = rows.map((row) => ({
       timestamp: String(row.timestamp),
       views: numeric(row.views), visits: numeric(row.visits), visitors: numeric(row.visitors),
     }));
+    return fillTimeSeries(points, bucket.labels, (timestamp) => ({ timestamp, views: 0, visits: 0, visitors: 0 }));
   }
 
   private async breakdown(
@@ -211,7 +209,7 @@ export class R2DashboardAPI {
     const end = new Date();
     const start = new Date(end.getTime() - 365 * 86_400_000);
     const rows = await this.sql.query<Row>(`
-      WITH ${dedupedEventsCte(this.sql.table, this.siteId, start.toISOString().slice(0, 19), end.toISOString().slice(0, 19))}
+      WITH ${dedupedEventsCte(this.sql.table, this.siteId, start.toISOString(), end.toISOString())}
       SELECT event_name, MAX(event_time) AS last_seen FROM deduped
       WHERE event_type = 'custom' AND event_name IS NOT NULL
       GROUP BY event_name ORDER BY last_seen DESC LIMIT 100
@@ -242,18 +240,23 @@ export class R2DashboardAPI {
     const { start, endExclusive } = analyticsRange(filter);
     const cte = dedupedEventsCte(this.sql.table, this.siteId, start, endExclusive);
     const goal = sqlString(goalEventName);
+    const bucket = timeBucketSql("event_time", filter, "day");
     const [totalRows, bucketRows, timeRows] = await Promise.all([
       this.sql.query<Row>(`WITH ${cte} SELECT COUNT(DISTINCT CASE WHEN event_type = 'custom' AND event_name = ${goal} THEN visit_id END) AS conversions, COUNT(DISTINCT visit_id) AS total_visits FROM deduped`),
       this.sql.query<Row>(`WITH ${cte} SELECT COALESCE(campaign_bucket, 'Direct') AS bucket, COUNT(DISTINCT visit_id) AS conversions FROM deduped WHERE event_type = 'custom' AND event_name = ${goal} GROUP BY campaign_bucket ORDER BY conversions DESC`),
-      this.sql.query<Row>(`WITH ${cte} SELECT date_trunc('day', event_time) AS date, COUNT(*) AS conversions FROM deduped WHERE event_type = 'custom' AND event_name = ${goal} GROUP BY date ORDER BY date ASC`),
+      this.sql.query<Row>(`WITH ${cte} SELECT ${bucket.expression} AS date, COUNT(*) AS conversions FROM deduped WHERE event_type = 'custom' AND event_name = ${goal} GROUP BY date ORDER BY date ASC`),
     ]);
     const conversions = numeric(totalRows[0]?.conversions);
     const totalVisits = numeric(totalRows[0]?.total_visits);
+    const conversionsByDate = new Map(timeRows.map((row) => [String(row.date), numeric(row.conversions)]));
     return {
       conversions,
       conversionRate: roundPercent(conversions, totalVisits),
       byBucket: bucketRows.map((r) => ({ bucket: String(r.bucket), conversions: numeric(r.conversions), conversionRate: roundPercent(numeric(r.conversions), totalVisits) })),
-      timeSeries: timeRows.map((r) => ({ date: String(r.date).slice(0, 10), conversions: numeric(r.conversions) })),
+      timeSeries: bucket.labels.map((date) => ({
+        date,
+        conversions: conversionsByDate.get(date) || 0,
+      })),
     };
   }
 
@@ -264,7 +267,7 @@ export class R2DashboardAPI {
     segmentsLimit?: number;
     goalEventName?: string;
   }) {
-    const { startDate, endDate, start, endExclusive } = analyticsRange(filter);
+    const { start, endExclusive } = analyticsRange(filter);
     const groupBy = options?.groupBy || "source";
     const metric = options?.metric || "conversions";
     const granularity = options?.granularity || "day";
@@ -278,21 +281,27 @@ export class R2DashboardAPI {
         ? `COUNT(DISTINCT CASE WHEN event_type = 'custom' AND event_name = ${sqlString(options.goalEventName)} THEN visit_id END)`
         : "COUNT(DISTINCT CASE WHEN event_type = 'custom' THEN visit_id END)";
     const cte = dedupedEventsCte(this.sql.table, this.siteId, start, endExclusive);
+    const bucket = timeBucketSql("event_time", filter, granularity);
     const where = "campaign_bucket IS NOT NULL AND campaign_bucket != '' AND LOWER(campaign_bucket) != 'direct'";
     const topRows = await this.sql.query<Row>(`WITH ${cte} SELECT ${segment} AS segment, ${metricSql} AS total FROM deduped WHERE ${where} GROUP BY segment ORDER BY total DESC LIMIT ${segmentsLimit}`);
     const topSegments = topRows.map((r) => ({ key: String(r.segment), total: numeric(r.total) }));
     const topSet = new Set(topSegments.map((r) => r.key));
-    const seriesRows = await this.sql.query<Row>(`WITH ${cte} SELECT date_trunc('${granularity}', event_time) AS timestamp, ${segment} AS segment, ${metricSql} AS value FROM deduped WHERE ${where} GROUP BY timestamp, segment ORDER BY timestamp ASC`);
+    const seriesRows = await this.sql.query<Row>(`WITH ${cte} SELECT ${bucket.expression} AS timestamp, ${segment} AS segment, ${metricSql} AS value FROM deduped WHERE ${where} GROUP BY timestamp, segment ORDER BY timestamp ASC`);
     const pointsMap = new Map<string, { timestamp: string; total: number; segments: Record<string, number> }>();
     for (const row of seriesRows) {
-      const timestamp = String(row.timestamp).slice(0, granularity === "hour" ? 19 : 10);
+      const timestamp = String(row.timestamp);
       const key = topSet.has(String(row.segment)) ? String(row.segment) : "Other";
       const point = pointsMap.get(timestamp) || { timestamp, total: 0, segments: {} };
       const value = numeric(row.value); point.total += value; point.segments[key] = (point.segments[key] || 0) + value;
       pointsMap.set(timestamp, point);
     }
     const segmentKeys = [...topSet, "Other"];
-    const points = fillIntervals([...pointsMap.values()], segmentKeys, startDate, endDate, granularity);
+    const points = fillTimeSeries<{ timestamp: string; total: number; segments: Record<string, number> }>(
+      [...pointsMap.values()],
+      bucket.labels,
+      (timestamp) => ({ timestamp, total: 0, segments: {} }),
+    );
+    for (const point of points) for (const key of segmentKeys) point.segments[key] ??= 0;
     const totals = new Map<string, number>();
     for (const point of points) for (const [key, value] of Object.entries(point.segments)) totals.set(key, (totals.get(key) || 0) + value);
     return { granularity, metric, groupBy, segments: [...totals].map(([key, total]) => ({ key, total })).sort((a, b) => b.total - a.total), points };
@@ -327,30 +336,11 @@ export class R2DashboardAPI {
 
   async getActiveVisitors(): Promise<number> {
     const end = new Date(); const start = new Date(end.getTime() - 5 * 60_000);
-    const rows = await this.sql.query<Row>(`WITH ${dedupedEventsCte(this.sql.table, this.siteId, start.toISOString().slice(0, 19), end.toISOString().slice(0, 19))} SELECT COUNT(DISTINCT visitor_id) AS count FROM deduped`);
+    const rows = await this.sql.query<Row>(`WITH ${dedupedEventsCte(this.sql.table, this.siteId, start.toISOString(), end.toISOString())} SELECT COUNT(DISTINCT visitor_id) AS count FROM deduped`);
     return numeric(rows[0]?.count);
   }
 
   async rollupHourlyStats(): Promise<void> {
     // R2 SQL reads Iceberg directly; no mutable hourly rollup table is needed.
   }
-}
-
-function fillIntervals(
-  points: Array<{ timestamp: string; total: number; segments: Record<string, number> }>,
-  keys: string[], startDate: string, endDate: string, granularity: "day" | "hour",
-) {
-  const existing = new Map(points.map((point) => [point.timestamp, point]));
-  const cursor = new Date(`${startDate}T00:00:00Z`);
-  const end = new Date(`${endDate}T${granularity === "hour" ? "23:00:00" : "00:00:00"}Z`);
-  const output = [];
-  while (cursor <= end) {
-    const iso = cursor.toISOString();
-    const timestamp = granularity === "hour" ? iso.slice(0, 19) : iso.slice(0, 10);
-    const point = existing.get(timestamp) || { timestamp, total: 0, segments: {} };
-    for (const key of keys) if (point.segments[key] == null) point.segments[key] = 0;
-    output.push(point);
-    cursor.setTime(cursor.getTime() + (granularity === "hour" ? 3_600_000 : 86_400_000));
-  }
-  return output;
 }

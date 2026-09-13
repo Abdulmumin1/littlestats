@@ -58,7 +58,7 @@
 				role="listbox"
 			>
 				<ul class="py-1">
-					{#each options as option}
+					{#each options as option (option.value)}
 						<li
 							role="option"
 							aria-selected={String(value) === String(option.value)}
@@ -73,7 +73,7 @@
 							{option.label}
 						</li>
 					{/each}
-					<li role="option" class="px-4 py-2 border-t border-stone-100 dark:border-stone-800">{@render btn?.()}</li>
+          <li role="option" aria-selected="false" class="px-4 py-2 border-t border-stone-100 dark:border-stone-800">{@render btn?.()}</li>
 				</ul>
 			</div>
 		{/if}

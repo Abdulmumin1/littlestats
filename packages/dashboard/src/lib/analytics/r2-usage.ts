@@ -1,5 +1,5 @@
 import type { Env } from "../../types";
-import { getDateBounds } from "../stats/filter-utils";
+import { getDateBounds, getDefaultDateRange, normalizeTimezone } from "../stats/filter-utils";
 import { numeric } from "./query-helpers";
 import { R2SqlClient, sqlString } from "./r2-sql-client";
 
@@ -17,17 +17,18 @@ export class R2Usage {
     return siteIds.map(sqlString).join(", ");
   }
 
-  async getSiteMetrics(siteIds: string[]): Promise<Map<string, { viewsToday: number }>> {
+  async getSiteMetrics(siteIds: string[], timezone?: string): Promise<Map<string, { viewsToday: number }>> {
     if (siteIds.length === 0) return new Map();
-    const today = new Date().toISOString().slice(0, 10);
-    const { start, endExclusive } = getDateBounds(today, today);
+    const safeTimezone = normalizeTimezone(timezone);
+    const { endDate: today } = getDefaultDateRange(safeTimezone);
+    const { start, endExclusive } = getDateBounds(today, today, safeTimezone);
     const rows = await this.sql.query<Row>(`
       WITH deduped AS (
         SELECT * FROM ${this.sql.table}
         WHERE site_id IN (${this.siteList(siteIds)})
           AND event_type = 'pageview'
-          AND event_time >= ${sqlString(`${start}Z`)}
-          AND event_time < ${sqlString(`${endExclusive}Z`)}
+          AND event_time >= ${sqlString(start)}
+          AND event_time < ${sqlString(endExclusive)}
         QUALIFY ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY __ingest_ts DESC) = 1
       )
       SELECT site_id,

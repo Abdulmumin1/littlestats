@@ -14,6 +14,7 @@ export interface RealtimeStats {
 export interface StatsFilter {
   startDate?: string;
   endDate?: string;
+  timezone?: string;
   urlPattern?: string;
   referrerDomain?: string;
   country?: string;
@@ -29,6 +30,7 @@ export interface StatsSummary {
   period: {
     start: string;
     end: string;
+    timezone: string;
   };
   views: number;
   visits: number;

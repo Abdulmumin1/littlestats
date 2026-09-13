@@ -7,10 +7,10 @@ export class EventsStats {
   constructor(private db: D1Database, private siteId: string) {}
 
   async getCustomEvents(filter: StatsFilter): Promise<Array<{ name: string; count: number }>> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const sql = `
       SELECT 
@@ -43,10 +43,10 @@ export class EventsStats {
       eventName?: string;
     }
   ): Promise<{ events: any[]; total: number; nextCursor: { timestamp: string; id: number } | null }> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
     const limit = Math.min(250, Math.max(1, options?.limit ?? 100));
     const eventNameFilter = options?.eventName;
     const excludePageview = filter.excludePageview;

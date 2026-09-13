@@ -36,6 +36,7 @@ export interface CreateSiteResponse {
 export interface StatsFilter {
 	startDate?: string;
 	endDate?: string;
+	timezone?: string;
 	urlPattern?: string;
 	referrerDomain?: string;
 	country?: string;
@@ -51,6 +52,7 @@ export interface StatsSummary {
 	period: {
 		start: string;
 		end: string;
+		timezone: string;
 	};
 	views: number;
 	visits: number;
@@ -186,6 +188,29 @@ export class AnalyticsAPI {
 	private wsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
 	private wsSiteId: string | null = null;
 
+	private analyticsParams(
+		filter?: StatsFilter,
+		extra: Record<string, string | number | boolean | null | undefined> = {}
+	): URLSearchParams {
+		const params = new URLSearchParams();
+		const values = {
+			start: filter?.startDate,
+			end: filter?.endDate,
+			timezone: filter?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+			page: filter?.urlPattern,
+			referrer: filter?.referrerDomain,
+			country: filter?.country,
+			excludePageview: filter?.excludePageview,
+			...extra
+		};
+		for (const [key, value] of Object.entries(values)) {
+			if (value !== undefined && value !== null && value !== false && value !== '') {
+				params.set(key, String(value));
+			}
+		}
+		return params;
+	}
+
 	constructor(baseUrl = '') {
 		// Default to empty string for same-origin proxy (no CORS)
 		// This routes all API requests through the web app's /api/v2 proxy
@@ -233,7 +258,7 @@ export class AnalyticsAPI {
 
 	// Site Management
 	async getSites(): Promise<{ sites: Site[] }> {
-		return this.fetch('/api/v2/sites');
+		return this.fetch(`/api/v2/sites?${this.analyticsParams()}`);
 	}
 
 	async createSite(data: CreateSiteRequest): Promise<CreateSiteResponse> {
@@ -249,13 +274,7 @@ export class AnalyticsAPI {
 		filter?: StatsFilter,
 		signal?: AbortSignal
 	): Promise<StatsSummary> {
-		const params = new URLSearchParams();
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		if (filter?.urlPattern) params.set('page', filter.urlPattern);
-		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
-		if (filter?.country) params.set('country', filter.country);
-
+		const params = this.analyticsParams(filter);
 		return this.fetch(`/api/v2/sites/${siteId}/stats?${params}`, { signal });
 	}
 
@@ -265,14 +284,7 @@ export class AnalyticsAPI {
 		granularity: 'hour' | 'day' = 'day',
 		signal?: AbortSignal
 	): Promise<TimeSeriesResponse> {
-		const params = new URLSearchParams();
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		if (filter?.urlPattern) params.set('page', filter.urlPattern);
-		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
-		if (filter?.country) params.set('country', filter.country);
-		params.set('granularity', granularity);
-
+		const params = this.analyticsParams(filter, { granularity });
 		return this.fetch(`/api/v2/sites/${siteId}/timeseries?${params}`, { signal });
 	}
 
@@ -281,15 +293,7 @@ export class AnalyticsAPI {
 		siteId: string,
 		options?: { limit?: number; filter?: StatsFilter; q?: string; signal?: AbortSignal }
 	): Promise<{ referrers: ReferrerData[] }> {
-		const params = new URLSearchParams();
-		params.set('limit', String(options?.limit ?? 10));
-		if (options?.q) params.set('q', options.q);
-		const filter = options?.filter;
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		if (filter?.urlPattern) params.set('page', filter.urlPattern);
-		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
-		if (filter?.country) params.set('country', filter.country);
+		const params = this.analyticsParams(options?.filter, { limit: options?.limit ?? 10, q: options?.q });
 		return this.fetch(`/api/v2/sites/${siteId}/referrers?${params}`, { signal: options?.signal });
 	}
 
@@ -297,15 +301,7 @@ export class AnalyticsAPI {
 		siteId: string,
 		options?: { limit?: number; filter?: StatsFilter; q?: string; signal?: AbortSignal }
 	): Promise<{ pages: PageData[] }> {
-		const params = new URLSearchParams();
-		params.set('limit', String(options?.limit ?? 10));
-		if (options?.q) params.set('q', options.q);
-		const filter = options?.filter;
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		if (filter?.urlPattern) params.set('page', filter.urlPattern);
-		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
-		if (filter?.country) params.set('country', filter.country);
+		const params = this.analyticsParams(options?.filter, { limit: options?.limit ?? 10, q: options?.q });
 		return this.fetch(`/api/v2/sites/${siteId}/pages?${params}`, { signal: options?.signal });
 	}
 
@@ -313,15 +309,7 @@ export class AnalyticsAPI {
 		siteId: string,
 		options?: { limit?: number; filter?: StatsFilter; q?: string; signal?: AbortSignal }
 	): Promise<{ countries: CountryData[] }> {
-		const params = new URLSearchParams();
-		params.set('limit', String(options?.limit ?? 10));
-		if (options?.q) params.set('q', options.q);
-		const filter = options?.filter;
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		if (filter?.urlPattern) params.set('page', filter.urlPattern);
-		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
-		if (filter?.country) params.set('country', filter.country);
+		const params = this.analyticsParams(options?.filter, { limit: options?.limit ?? 10, q: options?.q });
 		return this.fetch(`/api/v2/sites/${siteId}/countries?${params}`, { signal: options?.signal });
 	}
 
@@ -330,17 +318,12 @@ export class AnalyticsAPI {
 		filter?: StatsFilter,
 		signal?: AbortSignal
 	): Promise<{ devices: DeviceData[] }> {
-		const params = new URLSearchParams();
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		if (filter?.urlPattern) params.set('page', filter.urlPattern);
-		if (filter?.referrerDomain) params.set('referrer', filter.referrerDomain);
-		if (filter?.country) params.set('country', filter.country);
+		const params = this.analyticsParams(filter);
 		return this.fetch(`/api/v2/sites/${siteId}/devices?${params}`, { signal });
 	}
 
 	async getBrowsers(siteId: string, limit = 10): Promise<{ browsers: BrowserData[] }> {
-		return this.fetch(`/api/v2/sites/${siteId}/browsers?limit=${limit}`);
+		return this.fetch(`/api/v2/sites/${siteId}/browsers?${this.analyticsParams(undefined, { limit })}`);
 	}
 
 	async getEvents(
@@ -353,31 +336,20 @@ export class AnalyticsAPI {
 			excludePageview?: boolean;
 		}
 	): Promise<{ events: RawEvent[]; total: number; nextCursor: string | null }> {
-		const params = new URLSearchParams();
-		params.set('limit', String(options?.limit ?? 100));
-		if (options?.cursor) params.set('cursor', options.cursor);
-		if (options?.filter?.startDate) params.set('start', options.filter.startDate);
-		if (options?.filter?.endDate) params.set('end', options.filter.endDate);
-		if (options?.filter?.excludePageview) params.set('excludePageview', 'true');
-		if (options?.eventName) params.set('eventName', options.eventName);
+		const params = this.analyticsParams(options?.filter, {
+			limit: options?.limit ?? 100,
+			cursor: options?.cursor,
+			eventName: options?.eventName,
+			excludePageview: options?.excludePageview || options?.filter?.excludePageview
+		});
 		return this.fetch(`/api/v2/sites/${siteId}/events?${params}`);
-	}
-
-	// Backward-compatible shape used by the site overview card.
-	async getEventsList(
-		siteId: string,
-		filter?: StatsFilter
-	): Promise<{ events: RawEvent[]; total: number; nextCursor: string | null }> {
-		return this.getEvents(siteId, { filter });
 	}
 
 	async getCustomEvents(
 		siteId: string,
 		filter?: StatsFilter
 	): Promise<{ events: Array<{ name: string; count: number }> }> {
-		const params = new URLSearchParams();
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
+		const params = this.analyticsParams(filter);
 		return this.fetch(`/api/v2/sites/${siteId}/custom-events?${params}`);
 	}
 
@@ -399,11 +371,7 @@ export class AnalyticsAPI {
 			conversionRate: number;
 		}>;
 	}> {
-		const params = new URLSearchParams();
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		params.set('limit', String(limit));
-		if (goalEventName) params.set('goal', goalEventName);
+		const params = this.analyticsParams(filter, { limit, goal: goalEventName });
 
 		return this.fetch(`/api/v2/sites/${siteId}/campaigns?${params}`);
 	}
@@ -419,15 +387,13 @@ export class AnalyticsAPI {
 			goalEventName?: string;
 		}
 	): Promise<SegmentedTimeSeriesResponse> {
-		const params = new URLSearchParams();
-		const filter = options?.filter;
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
-		if (options?.groupBy) params.set('groupBy', options.groupBy);
-		if (options?.metric) params.set('metric', options.metric);
-		if (options?.granularity) params.set('granularity', options.granularity);
-		if (options?.segmentsLimit != null) params.set('segmentsLimit', String(options.segmentsLimit));
-		if (options?.goalEventName) params.set('goal', options.goalEventName);
+		const params = this.analyticsParams(options?.filter, {
+			groupBy: options?.groupBy,
+			metric: options?.metric,
+			granularity: options?.granularity,
+			segmentsLimit: options?.segmentsLimit,
+			goal: options?.goalEventName
+		});
 
 		return this.fetch(`/api/v2/sites/${siteId}/campaigns/segmented-timeseries?${params}`);
 	}
@@ -442,10 +408,7 @@ export class AnalyticsAPI {
 		byBucket: Array<{ bucket: string; conversions: number; conversionRate: number }>;
 		timeSeries: Array<{ date: string; conversions: number }>;
 	}> {
-		const params = new URLSearchParams();
-		params.set('goalEventName', goalEventName);
-		if (filter?.startDate) params.set('start', filter.startDate);
-		if (filter?.endDate) params.set('end', filter.endDate);
+		const params = this.analyticsParams(filter, { goalEventName });
 
 		return this.fetch(`/api/v2/sites/${siteId}/goals/summary?${params}`);
 	}
@@ -474,7 +437,8 @@ export class AnalyticsAPI {
 			steps,
 			funnelType: options?.funnelType || 'session',
 			startDate: options?.filter?.startDate,
-			endDate: options?.filter?.endDate
+			endDate: options?.filter?.endDate,
+			timezone: options?.filter?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
 		});
 	}
 

@@ -157,7 +157,7 @@
 								</div>
 								<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">
 									{#if dashboardStore.dateRange.startDate && dashboardStore.dateRange.endDate}
-										{formatDate(new Date(dashboardStore.dateRange.startDate))} - {formatDate(new Date(dashboardStore.dateRange.endDate))}
+										{formatDate(dashboardStore.dateRange.startDate)} - {formatDate(dashboardStore.dateRange.endDate)}
 									{:else}
 										Select date range
 									{/if}

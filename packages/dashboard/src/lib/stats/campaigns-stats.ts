@@ -1,7 +1,7 @@
 // Campaigns stats - Campaign tracking and goals
 import type { D1Database } from "@cloudflare/workers-types";
 import type { StatsFilter } from "../../types";
-import { getDateBounds, getDefaultDateRange } from "./filter-utils";
+import { getAnalyticsBuckets, getDateBounds, getDefaultDateRange } from "./filter-utils";
 
 export class CampaignsStats {
   constructor(private db: D1Database, private siteId: string) {}
@@ -12,10 +12,10 @@ export class CampaignsStats {
     conversions: number;
     conversionRate: number;
   }>> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const conversionExpr = goalEventName
       ? `COUNT(DISTINCT CASE WHEN event_type = 2 AND event_name = '${goalEventName.replace(/'/g, "''")}' THEN visit_id END)`
@@ -61,10 +61,10 @@ export class CampaignsStats {
     byBucket: Array<{ bucket: string; conversions: number; conversionRate: number }>;
     timeSeries: Array<{ date: string; conversions: number }>;
   }> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const totalSql = `
       SELECT 
@@ -128,9 +128,12 @@ export class CampaignsStats {
       conversionRate: totalVisits > 0 ? Math.round((r.conversions / totalVisits) * 10000) / 100 : 0,
     }));
 
+    const buckets = getAnalyticsBuckets(startDate, endDate, filter.timezone, 'day');
+    const timestampExpr = `CASE ${buckets.map(() => "WHEN created_at >= ? AND created_at < ? THEN ?").join(" ")} END`;
+    const bucketBinds = buckets.flatMap((bucket) => [bucket.start, bucket.endExclusive, bucket.label]);
     const timeSeriesSql = `
       SELECT 
-        substr(created_at, 1, 10) as date,
+        ${timestampExpr} as date,
         COUNT(*) as conversions
       FROM events
       WHERE site_id = ? AND event_type = 2 AND event_name = ?
@@ -140,14 +143,12 @@ export class CampaignsStats {
     `;
 
     const { results: tsResults } = await this.db.prepare(timeSeriesSql).bind(
-      this.siteId, goalEventName,
+      ...bucketBinds, this.siteId, goalEventName,
       start, endExclusive
     ).all<{ date: string; conversions: number }>();
 
-    const timeSeries = (tsResults || []).map(r => ({
-      date: r.date,
-      conversions: r.conversions || 0,
-    }));
+    const conversionsByDate = new Map((tsResults || []).map((row) => [row.date, row.conversions || 0]));
+    const timeSeries = buckets.map(({ label: date }) => ({ date, conversions: conversionsByDate.get(date) || 0 }));
 
     return { conversions, conversionRate, byBucket, timeSeries };
   }
@@ -168,20 +169,19 @@ export class CampaignsStats {
     segments: Array<{ key: string; total: number }>;
     points: Array<{ timestamp: string; total: number; segments: Record<string, number> }>;
   }> {
-    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange();
+    const { startDate: defaultStart, endDate: defaultEnd } = getDefaultDateRange(filter.timezone);
     const startDate = filter.startDate || defaultStart;
     const endDate = filter.endDate || defaultEnd;
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const { start, endExclusive } = getDateBounds(startDate, endDate, filter.timezone);
 
     const groupBy = options?.groupBy || 'source';
     const metric = options?.metric || 'conversions';
     const granularity = options?.granularity || 'day';
     const segmentsLimit = Math.min(12, Math.max(2, options?.segmentsLimit || 6));
 
-    const timestampExpr =
-      granularity === 'hour'
-        ? "substr(created_at, 1, 13) || ':00:00'"
-        : "substr(created_at, 1, 10)";
+    const buckets = getAnalyticsBuckets(startDate, endDate, filter.timezone, granularity);
+    const timestampExpr = `CASE ${buckets.map(() => "WHEN created_at >= ? AND created_at < ? THEN ?").join(" ")} END`;
+    const bucketBinds = buckets.flatMap((bucket) => [bucket.start, bucket.endExclusive, bucket.label]);
 
     const sourceExpr = `CASE
       WHEN campaign_bucket IS NULL OR campaign_bucket = '' THEN 'Direct'
@@ -263,6 +263,7 @@ export class CampaignsStats {
     `;
 
     const { results: seriesResults } = await this.db.prepare(seriesSql).bind(
+      ...bucketBinds,
       this.siteId,
       start,
       endExclusive
@@ -300,43 +301,13 @@ export class CampaignsStats {
       .map(([key, total]) => ({ key, total }))
       .sort((a, b) => b.total - a.total);
 
-    const filledPoints = fillMissingIntervals(points, segmentKeys, startDate, endDate, granularity);
+    const byTimestamp = new Map(points.map((point) => [point.timestamp, point]));
+    const filledPoints = [...new Set(buckets.map((bucket) => bucket.label))].map((timestamp) => {
+      const point = byTimestamp.get(timestamp) || { timestamp, total: 0, segments: {} };
+      for (const key of segmentKeys) point.segments[key] ??= 0;
+      return point;
+    });
 
     return { granularity, metric, groupBy, segments, points: filledPoints };
   }
-}
-
-function fillMissingIntervals(
-  points: Array<{ timestamp: string; total: number; segments: Record<string, number> }>,
-  segmentKeys: string[],
-  startDate: string,
-  endDate: string,
-  granularity: 'day' | 'hour'
-): Array<{ timestamp: string; total: number; segments: Record<string, number> }> {
-  if (!startDate || !endDate) return points;
-
-  const pointsMap = new Map(points.map((p) => [p.timestamp, p]));
-  const start = new Date(`${startDate}T00:00:00Z`);
-  const end = new Date(`${endDate}T23:00:00Z`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return points;
-
-  const filled: Array<{ timestamp: string; total: number; segments: Record<string, number> }> = [];
-  const cursor = new Date(start);
-  const stepMs = granularity === 'hour' ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-
-  while (cursor.getTime() <= end.getTime()) {
-    const iso = cursor.toISOString();
-    const timestamp = granularity === 'hour' ? `${iso.slice(0, 13)}:00:00` : iso.slice(0, 10);
-    const existing = pointsMap.get(timestamp);
-    if (existing) {
-      filled.push(existing);
-    } else {
-      const segments: Record<string, number> = {};
-      for (const k of segmentKeys) segments[k] = 0;
-      filled.push({ timestamp, total: 0, segments });
-    }
-    cursor.setTime(cursor.getTime() + stepMs);
-  }
-
-  return filled;
 }

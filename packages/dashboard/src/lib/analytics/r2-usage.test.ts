@@ -24,12 +24,12 @@ describe("R2 site-card metrics", () => {
       result: { rows: [{ site_id: "site-1", views_today: 42 }] },
     }), { status: 200, headers: { "Content-Type": "application/json" } }));
 
-    const metrics = await new R2Usage(env).getSiteMetrics(["site-1"]);
+    const metrics = await new R2Usage(env).getSiteMetrics(["site-1"], "Europe/London");
     const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
 
     expect(request.query).toContain("event_type = 'pageview'");
-    expect(request.query).toContain("event_time >= '2026-09-13T00:00:00Z'");
-    expect(request.query).toContain("event_time < '2026-09-14T00:00:00Z'");
+    expect(request.query).toContain("event_time >= '2026-09-12T23:00:00.000Z'");
+    expect(request.query).toContain("event_time < '2026-09-13T23:00:00.000Z'");
     expect(metrics.get("site-1")).toEqual({ viewsToday: 42 });
   });
 });
