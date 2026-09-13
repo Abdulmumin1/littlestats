@@ -1,4 +1,5 @@
 import type { Env } from "../../types";
+import { getDateBounds, getDefaultDateRange } from "../stats/filter-utils";
 import { numeric } from "./query-helpers";
 import { R2SqlClient, sqlString } from "./r2-sql-client";
 
@@ -16,24 +17,29 @@ export class R2Usage {
     return siteIds.map(sqlString).join(", ");
   }
 
-  async getSiteMetrics(siteIds: string[]): Promise<Map<string, { sessionCount: number; events24h: number }>> {
+  async getSiteMetrics(siteIds: string[]): Promise<Map<string, { visits30d: number; views24h: number }>> {
     if (siteIds.length === 0) return new Map();
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const { startDate, endDate } = getDefaultDateRange();
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
     const rows = await this.sql.query<Row>(`
       WITH deduped AS (
         SELECT * FROM ${this.sql.table}
         WHERE site_id IN (${this.siteList(siteIds)})
+          AND event_type = 'pageview'
+          AND event_time >= ${sqlString(`${start}Z`)}
+          AND event_time < ${sqlString(`${endExclusive}Z`)}
         QUALIFY ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY __ingest_ts DESC) = 1
       )
       SELECT site_id,
-        COUNT(DISTINCT visit_id) AS session_count,
-        SUM(CASE WHEN event_time >= ${sqlString(yesterday.toISOString())} AND event_time < ${sqlString(now.toISOString())} THEN 1 ELSE 0 END) AS events_24h
+        COUNT(DISTINCT visit_id) AS visits_30d,
+        SUM(CASE WHEN event_time >= ${sqlString(yesterday.toISOString())} AND event_time < ${sqlString(now.toISOString())} THEN 1 ELSE 0 END) AS views_24h
       FROM deduped GROUP BY site_id
     `);
     return new Map(rows.map((row) => [String(row.site_id), {
-      sessionCount: numeric(row.session_count),
-      events24h: numeric(row.events_24h),
+      visits30d: numeric(row.visits_30d),
+      views24h: numeric(row.views_24h),
     }]));
   }
 

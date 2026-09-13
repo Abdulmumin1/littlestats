@@ -8,6 +8,7 @@ import {
 import type { Env } from "../types";
 import { authMiddleware } from "../middleware/auth";
 import { R2Usage } from "../lib/analytics/r2-usage";
+import { getDateBounds, getDefaultDateRange } from "../lib/stats/filter-utils";
 
 type Variables = {
   user: any;
@@ -135,20 +136,24 @@ sitesRouter.get("/", async (c) => {
   try {
     const user = c.get("user");
     const userId = user.id;
+    const { startDate, endDate } = getDefaultDateRange();
+    const { start, endExclusive } = getDateBounds(startDate, endDate);
 
     const readsFromR2 = c.env.ANALYTICS_READ_MODE === "r2";
     const siteQuery = readsFromR2
       ? `SELECT s.* FROM sites s WHERE s.user_id = ? ORDER BY s.created_at DESC`
       : `
         SELECT s.*,
-          (SELECT COUNT(*) FROM sessions WHERE site_id = s.id) as session_count,
-          (SELECT COUNT(*) FROM events WHERE site_id = s.id AND created_at >= datetime('now', '-24 hours')) as events_24h
+          (SELECT COUNT(DISTINCT visit_id) FROM events
+            WHERE site_id = s.id AND event_type = 1 AND created_at >= ? AND created_at < ?) as visits_30d,
+          (SELECT COUNT(*) FROM events
+            WHERE site_id = s.id AND event_type = 1 AND created_at >= datetime('now', '-24 hours')) as views_24h
         FROM sites s
         WHERE s.user_id = ?
         ORDER BY s.created_at DESC
       `;
     const { results } = await c.env.DB.prepare(siteQuery)
-      .bind(userId)
+      .bind(...(readsFromR2 ? [userId] : [start, endExclusive, userId]))
       .all();
 
     const r2Metrics = readsFromR2
@@ -167,8 +172,8 @@ sitesRouter.get("/", async (c) => {
       verificationToken: s.verification_token,
       verifiedAt: s.verified_at,
       createdAt: s.created_at,
-      sessionCount: r2Metrics?.get(String(s.id))?.sessionCount ?? s.session_count,
-      events24h: r2Metrics?.get(String(s.id))?.events24h ?? s.events_24h,
+      visits30d: r2Metrics?.get(String(s.id))?.visits30d ?? s.visits_30d ?? 0,
+      views24h: r2Metrics?.get(String(s.id))?.views24h ?? s.views_24h ?? 0,
     }));
 
     return c.json({ sites });

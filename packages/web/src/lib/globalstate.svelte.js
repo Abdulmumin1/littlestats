@@ -29,7 +29,7 @@ export class DateRange {
   getDateRangeFromInterval(days) {
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(endDate.getDate() - days);
+    startDate.setDate(endDate.getDate() - Math.max(0, days - 1));
 
     return [startDate, endDate];
   }

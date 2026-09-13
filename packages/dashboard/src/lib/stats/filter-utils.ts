@@ -50,7 +50,9 @@ export function buildEventsFilterWhere(
 
 export function getDefaultDateRange(): { startDate: string; endDate: string } {
   const endDate = new Date().toISOString().split('T')[0];
-  const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  // Both endpoints are inclusive in the UI, so today plus the previous 29
+  // calendar days is exactly a 30-day range.
+  const startDate = new Date(Date.now() - 29 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   return { startDate, endDate };
 }
 
