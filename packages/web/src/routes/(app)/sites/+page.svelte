@@ -7,7 +7,7 @@
 	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import { api } from '$lib/api/analytics.ts';
 	import { show_toast } from '$lib/toast.js';
-	import { LayoutGrid, Globe, Plus, ArrowRight, Activity, Eye, Settings } from 'lucide-svelte';
+	import { LayoutGrid, Globe, Plus, ArrowRight, Eye, Settings } from 'lucide-svelte';
 	import { page } from '$app/stores';
 
 	let sites = $state([]);
@@ -126,17 +126,10 @@
 									<div class="hidden sm:flex items-center gap-6 rounded-none">
 										<div class="text-right rounded-none">
 											<div class="flex items-center gap-1.5 justify-end rounded-none">
-												<Activity size={12} class="text-stone-400" />
-												<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{site.visits30d || 0}</span>
-											</div>
-											<p class="text-[10px] font-black uppercase tracking-tighter text-stone-400 opacity-50">30d visits</p>
-										</div>
-										<div class="text-right rounded-none">
-											<div class="flex items-center gap-1.5 justify-end rounded-none">
 												<Eye size={12} class="text-stone-400" />
-												<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{site.views24h || 0}</span>
+												<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{site.viewsToday || 0}</span>
 											</div>
-											<p class="text-[10px] font-black uppercase tracking-tighter text-stone-400 opacity-50">24h views</p>
+											<p class="text-[10px] font-black uppercase tracking-tighter text-stone-400 opacity-50">today views</p>
 										</div>
 									</div>
 									<div class="h-8 w-8 rounded-none bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-400 group-hover:translate-x-1 transition-all">

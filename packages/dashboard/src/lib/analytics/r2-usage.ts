@@ -1,5 +1,5 @@
 import type { Env } from "../../types";
-import { getDateBounds, getDefaultDateRange } from "../stats/filter-utils";
+import { getDateBounds } from "../stats/filter-utils";
 import { numeric } from "./query-helpers";
 import { R2SqlClient, sqlString } from "./r2-sql-client";
 
@@ -17,12 +17,10 @@ export class R2Usage {
     return siteIds.map(sqlString).join(", ");
   }
 
-  async getSiteMetrics(siteIds: string[]): Promise<Map<string, { visits30d: number; views24h: number }>> {
+  async getSiteMetrics(siteIds: string[]): Promise<Map<string, { viewsToday: number }>> {
     if (siteIds.length === 0) return new Map();
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const { startDate, endDate } = getDefaultDateRange();
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const today = new Date().toISOString().slice(0, 10);
+    const { start, endExclusive } = getDateBounds(today, today);
     const rows = await this.sql.query<Row>(`
       WITH deduped AS (
         SELECT * FROM ${this.sql.table}
@@ -33,13 +31,11 @@ export class R2Usage {
         QUALIFY ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY __ingest_ts DESC) = 1
       )
       SELECT site_id,
-        COUNT(DISTINCT visit_id) AS visits_30d,
-        SUM(CASE WHEN event_time >= ${sqlString(yesterday.toISOString())} AND event_time < ${sqlString(now.toISOString())} THEN 1 ELSE 0 END) AS views_24h
+        COUNT(*) AS views_today
       FROM deduped GROUP BY site_id
     `);
     return new Map(rows.map((row) => [String(row.site_id), {
-      visits30d: numeric(row.visits_30d),
-      views24h: numeric(row.views_24h),
+      viewsToday: numeric(row.views_today),
     }]));
   }
 

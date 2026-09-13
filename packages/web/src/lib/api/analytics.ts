@@ -16,8 +16,7 @@ export interface Site {
 	};
 	domainKey: string;
 	createdAt: string;
-	visits30d?: number;
-	views24h?: number;
+	viewsToday?: number;
 	verificationToken?: string;
 	verifiedAt?: string;
 }

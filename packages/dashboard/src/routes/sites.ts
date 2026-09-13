@@ -8,7 +8,7 @@ import {
 import type { Env } from "../types";
 import { authMiddleware } from "../middleware/auth";
 import { R2Usage } from "../lib/analytics/r2-usage";
-import { getDateBounds, getDefaultDateRange } from "../lib/stats/filter-utils";
+import { getDateBounds } from "../lib/stats/filter-utils";
 
 type Variables = {
   user: any;
@@ -136,18 +136,16 @@ sitesRouter.get("/", async (c) => {
   try {
     const user = c.get("user");
     const userId = user.id;
-    const { startDate, endDate } = getDefaultDateRange();
-    const { start, endExclusive } = getDateBounds(startDate, endDate);
+    const today = new Date().toISOString().slice(0, 10);
+    const { start, endExclusive } = getDateBounds(today, today);
 
     const readsFromR2 = c.env.ANALYTICS_READ_MODE === "r2";
     const siteQuery = readsFromR2
       ? `SELECT s.* FROM sites s WHERE s.user_id = ? ORDER BY s.created_at DESC`
       : `
         SELECT s.*,
-          (SELECT COUNT(DISTINCT visit_id) FROM events
-            WHERE site_id = s.id AND event_type = 1 AND created_at >= ? AND created_at < ?) as visits_30d,
           (SELECT COUNT(*) FROM events
-            WHERE site_id = s.id AND event_type = 1 AND created_at >= datetime('now', '-24 hours')) as views_24h
+            WHERE site_id = s.id AND event_type = 1 AND created_at >= ? AND created_at < ?) as views_today
         FROM sites s
         WHERE s.user_id = ?
         ORDER BY s.created_at DESC
@@ -172,8 +170,7 @@ sitesRouter.get("/", async (c) => {
       verificationToken: s.verification_token,
       verifiedAt: s.verified_at,
       createdAt: s.created_at,
-      visits30d: r2Metrics?.get(String(s.id))?.visits30d ?? s.visits_30d ?? 0,
-      views24h: r2Metrics?.get(String(s.id))?.views24h ?? s.views_24h ?? 0,
+      viewsToday: r2Metrics?.get(String(s.id))?.viewsToday ?? s.views_today ?? 0,
     }));
 
     return c.json({ sites });
