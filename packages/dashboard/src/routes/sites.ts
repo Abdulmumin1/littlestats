@@ -7,6 +7,7 @@ import {
 } from "../lib/utils/index";
 import type { Env } from "../types";
 import { authMiddleware } from "../middleware/auth";
+import { R2Usage } from "../lib/analytics/r2-usage";
 
 type Variables = {
   user: any;
@@ -135,18 +136,24 @@ sitesRouter.get("/", async (c) => {
     const user = c.get("user");
     const userId = user.id;
 
-    const { results } = await c.env.DB.prepare(
-      `
-      SELECT s.*, 
-        (SELECT COUNT(*) FROM sessions WHERE site_id = s.id) as session_count,
-        (SELECT COUNT(*) FROM events WHERE site_id = s.id AND created_at >= datetime('now', '-24 hours')) as events_24h
-      FROM sites s
-      WHERE s.user_id = ?
-      ORDER BY s.created_at DESC
-    `,
-    )
+    const readsFromR2 = c.env.ANALYTICS_READ_MODE === "r2";
+    const siteQuery = readsFromR2
+      ? `SELECT s.* FROM sites s WHERE s.user_id = ? ORDER BY s.created_at DESC`
+      : `
+        SELECT s.*,
+          (SELECT COUNT(*) FROM sessions WHERE site_id = s.id) as session_count,
+          (SELECT COUNT(*) FROM events WHERE site_id = s.id AND created_at >= datetime('now', '-24 hours')) as events_24h
+        FROM sites s
+        WHERE s.user_id = ?
+        ORDER BY s.created_at DESC
+      `;
+    const { results } = await c.env.DB.prepare(siteQuery)
       .bind(userId)
       .all();
+
+    const r2Metrics = readsFromR2
+      ? await new R2Usage(c.env).getSiteMetrics(results.map((site: any) => String(site.id)))
+      : null;
 
     // Map snake_case to camelCase
     const sites = results.map((s: any) => ({
@@ -160,8 +167,8 @@ sitesRouter.get("/", async (c) => {
       verificationToken: s.verification_token,
       verifiedAt: s.verified_at,
       createdAt: s.created_at,
-      sessionCount: s.session_count,
-      events24h: s.events_24h,
+      sessionCount: r2Metrics?.get(String(s.id))?.sessionCount ?? s.session_count,
+      events24h: r2Metrics?.get(String(s.id))?.events24h ?? s.events_24h,
     }));
 
     return c.json({ sites });
@@ -227,7 +234,14 @@ sitesRouter.delete("/:siteId", async (c) => {
   }
 
   try {
-    await c.env.DB.prepare("DELETE FROM sites WHERE id = ?").bind(siteId).run();
+    const user = c.get("user");
+    await c.env.DB.batch([
+      c.env.DB.prepare(`
+        INSERT INTO analytics_deletion_jobs (id, site_id, requested_by, status, requested_at)
+        VALUES (?, ?, ?, 'pending', unixepoch())
+      `).bind(crypto.randomUUID(), siteId, user.id),
+      c.env.DB.prepare("DELETE FROM sites WHERE id = ?").bind(siteId),
+    ]);
     return c.json({ success: true });
   } catch (error) {
     console.error("[Worker] Delete site error:", error);

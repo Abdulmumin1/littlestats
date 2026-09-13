@@ -364,6 +364,14 @@ export class AnalyticsAPI {
 		return this.fetch(`/api/v2/sites/${siteId}/events?${params}`);
 	}
 
+	// Backward-compatible shape used by the site overview card.
+	async getEventsList(
+		siteId: string,
+		filter?: StatsFilter
+	): Promise<{ events: RawEvent[]; total: number; nextCursor: string | null }> {
+		return this.getEvents(siteId, { filter });
+	}
+
 	async getCustomEvents(
 		siteId: string,
 		filter?: StatsFilter

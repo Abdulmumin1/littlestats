@@ -2,7 +2,8 @@
 // Core Durable Object for LittleStats Analytics v2.0
 // Handles session tracking, real-time stats, and batch persistence
 
-import type { Env, SessionState, HourlyStatsState, WebSocketClient, TrackPayload, Event } from "../types";
+import type { AnalyticsEventRecord, DeviceInfo, Env, SessionState, HourlyStatsState, WebSocketClient, TrackPayload, Event } from "../types";
+import { toAnalyticsEventRecord, validateAnalyticsEventRecord } from "../lib/analytics/event-contract";
 
 // Constants
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
@@ -10,6 +11,13 @@ const HEARTBEAT_INTERVAL = 5000; // 5 seconds
 const FLUSH_INTERVAL = 30 * 1000; // 30 seconds for dev
 const MAX_EVENTS_BEFORE_FLUSH = 20; // 20 events for dev
 const WEBSOCKET_PING_INTERVAL = 30000; // 30 seconds
+const D1_MAX_VARIABLES_PER_STATEMENT = 100; // Cloudflare D1/SQLite binding limit
+const EVENT_TABLE_COLUMNS = 21;
+const EVENTS_PER_INSERT_BATCH = Math.floor(D1_MAX_VARIABLES_PER_STATEMENT / EVENT_TABLE_COLUMNS); // 4
+const PIPELINE_BATCH_SIZE = 200;
+const RECENT_EVENT_LIMIT = 100;
+const DEDUPE_EVENT_LIMIT = 1500;
+const PIPELINE_OUTBOX_PREFIX = "pipelineOutbox:";
 
 export class DomainAnalyticsDO {
   private state: DurableObjectState;
@@ -24,10 +32,16 @@ export class DomainAnalyticsDO {
   private siteId: string = "";
   private flushPromise: Promise<void> | null = null;
   private hourRolloverPromise: Promise<void> | null = null;
+  private pipelineFlushPromise: Promise<void> | null = null;
+  private pipelineOutbox: AnalyticsEventRecord[] = [];
+  private recentEvents: Event[] = [];
+  private recentEventIds: string[] = [];
+  private recentEventIdSet = new Set<string>();
   
   // Limit Enforcement State
   private monthlyUsage: number = 0;
   private monthlyUsageLoaded: boolean = false;
+  private usageMonth: string = new Date().toISOString().slice(0, 7);
   private planStatus: 'free' | 'paid' = 'free';
   private planLastChecked: number = 0;
   private userId: string | null = null;
@@ -71,6 +85,29 @@ export class DomainAnalyticsDO {
       this.lastFlush = (await this.state.storage.get<number>("lastFlush")) || 0;
       this.totalEventsSinceFlush = (await this.state.storage.get<number>("totalEventsSinceFlush")) || 0;
       this.siteId = (await this.state.storage.get<string>("siteId")) || "";
+      const storedUsageMonth = await this.state.storage.get<string>("usageMonth");
+      const storedMonthlyUsage = await this.state.storage.get<number>("monthlyUsage");
+      if (storedUsageMonth === this.usageMonth && typeof storedMonthlyUsage === "number") {
+        this.monthlyUsage = storedMonthlyUsage;
+        this.monthlyUsageLoaded = true;
+      }
+      const storedOutbox = await this.state.storage.list<AnalyticsEventRecord>({ prefix: PIPELINE_OUTBOX_PREFIX });
+      this.pipelineOutbox = Array.from(storedOutbox.values());
+      const legacyOutbox = (await this.state.storage.get<AnalyticsEventRecord[]>("pipelineOutbox")) || [];
+      if (legacyOutbox.length > 0) {
+        for (const record of legacyOutbox) {
+          await this.state.storage.put(`${PIPELINE_OUTBOX_PREFIX}${record.event_id}`, record);
+        }
+        this.pipelineOutbox.push(...legacyOutbox);
+        await this.state.storage.delete("pipelineOutbox");
+      }
+      this.recentEventIds = (await this.state.storage.get<string[]>("recentEventIds")) || [];
+      this.recentEventIdSet = new Set(this.recentEventIds);
+      const storedRecentEvents = (await this.state.storage.get<Event[]>("recentEvents")) || [];
+      this.recentEvents = storedRecentEvents.map((event) => ({
+        ...event,
+        createdAt: new Date(event.createdAt),
+      }));
 
       // Restore active sessions
       const storedSessions = await this.state.storage.get<[string, SessionState][]>("activeSessions");
@@ -123,7 +160,7 @@ export class DomainAnalyticsDO {
         await this.loadMonthlyUsage();
       }
 
-      if (this.totalEventsSinceFlush > 0) {
+      if (this.totalEventsSinceFlush > 0 || this.pipelineOutbox.length > 0) {
         await this.state.storage.setAlarm(Date.now() + FLUSH_INTERVAL);
       }
 
@@ -135,7 +172,7 @@ export class DomainAnalyticsDO {
       // Keep whatever was restored successfully. Reinitializing here allowed a
       // transient D1 rollover failure to wipe restored buffers on the next
       // persist. The alarm/request path will retry idempotently.
-      if (this.totalEventsSinceFlush > 0) {
+      if (this.totalEventsSinceFlush > 0 || this.pipelineOutbox.length > 0) {
         await this.state.storage.setAlarm(Date.now() + FLUSH_INTERVAL);
       }
     }
@@ -153,6 +190,10 @@ export class DomainAnalyticsDO {
       this.state.storage.put("lastFlush", this.lastFlush),
       this.state.storage.put("totalEventsSinceFlush", this.totalEventsSinceFlush),
       this.state.storage.put("siteId", this.siteId),
+      this.state.storage.put("usageMonth", this.usageMonth),
+      this.state.storage.put("monthlyUsage", this.monthlyUsage),
+      this.state.storage.put("recentEvents", this.recentEvents),
+      this.state.storage.put("recentEventIds", this.recentEventIds),
     ];
 
     await Promise.all(persistPromises);
@@ -323,6 +364,10 @@ export class DomainAnalyticsDO {
       this.siteId = payload.website;
     }
 
+    if (payload.eventId && this.recentEventIdSet.has(payload.eventId)) {
+      return Response.json({ success: true, duplicate: true, cache: payload.cache });
+    }
+
     // Check plan limits
     if (!this.checkEventLimit()) {
       return Response.json({ error: "Monthly event limit reached for this site" }, { status: 403 });
@@ -340,14 +385,43 @@ export class DomainAnalyticsDO {
     // Update hourly stats
     await this.updateHourlyStats(session, event);
     
-    // Add event to session buffer
-    session.events.push(event);
+    // D1 remains available for rollback while write mode is d1/dual.
+    if (this.writesToD1()) {
+      session.events.push(event);
+      this.totalEventsSinceFlush++;
+    }
+    this.recentEvents.push(event);
+    if (this.recentEvents.length > RECENT_EVENT_LIMIT) {
+      this.recentEvents.splice(0, this.recentEvents.length - RECENT_EVENT_LIMIT);
+    }
+
+    if (payload.eventId) {
+      this.recentEventIds.push(payload.eventId);
+      this.recentEventIdSet.add(payload.eventId);
+      if (this.recentEventIds.length > DEDUPE_EVENT_LIMIT) {
+        const removed = this.recentEventIds.splice(0, this.recentEventIds.length - DEDUPE_EVENT_LIMIT);
+        for (const eventId of removed) this.recentEventIdSet.delete(eventId);
+      }
+    }
+
+    let pipelineRecord: AnalyticsEventRecord | null = null;
+    if (this.writesToPipeline()) {
+      const record = toAnalyticsEventRecord(event, session);
+      validateAnalyticsEventRecord(record);
+      this.pipelineOutbox.push(record);
+      pipelineRecord = record;
+    }
+
     session.totalEvents++;
-    this.totalEventsSinceFlush++;
     if (event.eventType === 1 || event.eventType === 2) this.monthlyUsage++;
 
     // Persist state immediately (requirement: no data loss)
-    await this.persistState();
+    await Promise.all([
+      this.persistState(),
+      pipelineRecord
+        ? this.state.storage.put(`${PIPELINE_OUTBOX_PREFIX}${pipelineRecord.event_id}`, pipelineRecord)
+        : Promise.resolve(),
+    ]);
 
     // Broadcast to WebSocket clients
     await this.broadcastUpdate();
@@ -355,14 +429,18 @@ export class DomainAnalyticsDO {
 		// Custom events are often used for conversions (e.g. form_submitted) and should
 		// be queryable immediately from the dashboard (which reads from D1).
 		// Pageviews can remain batched for throughput.
-		if (event.eventType === 2) {
+		if (event.eventType === 2 && this.writesToD1()) {
 			await this.flushToD1();
 		}
 
     // Check if we need to flush to D1
-    if (this.shouldFlush()) {
+    if (this.writesToD1() && this.shouldFlush()) {
       this.state.waitUntil(this.flushToD1().catch(console.error));
-    } else if (this.totalEventsSinceFlush === 1) {
+    }
+    if (this.writesToPipeline()) {
+      this.state.waitUntil(this.flushToPipeline().catch(console.error));
+    }
+    if (this.totalEventsSinceFlush > 0 || this.pipelineOutbox.length > 0) {
       await this.state.storage.setAlarm(Date.now() + FLUSH_INTERVAL);
     }
 
@@ -415,7 +493,7 @@ export class DomainAnalyticsDO {
         console.log(`[DO] Session ${sessionId} expired after ${timeSinceLastActivity}ms`);
         
         // Flush old session data first
-        await this.flushToD1();
+        if (this.writesToD1()) await this.flushToD1();
         
         // Create new visit
         session.visitId = this.generateVisitId(sessionId, now);
@@ -514,7 +592,7 @@ export class DomainAnalyticsDO {
 
     return {
       id: 0, // Will be set by D1
-      eventUid: crypto.randomUUID(),
+      eventUid: payload.eventId || crypto.randomUUID(),
       siteId: this.siteId,
       sessionId: session.id,
       visitId: session.visitId,
@@ -618,8 +696,10 @@ export class DomainAnalyticsDO {
       const oldDate = new Date(this.currentHour.hour);
       // Serialize with event flushing. The old hour is only reset after D1 has
       // accepted its final aggregate, so a transient failure cannot erase it.
-      await this.flushToD1();
-      await this.flushHourlyStats();
+      if (this.writesToD1()) {
+        await this.flushToD1();
+        await this.flushHourlyStats();
+      }
 
       if (
         oldDate.getUTCFullYear() !== now.getUTCFullYear() ||
@@ -627,6 +707,8 @@ export class DomainAnalyticsDO {
       ) {
         console.log(`[DO] Month rolled over: ${oldDate.toISOString()} -> ${now.toISOString()}. Resetting monthly usage.`);
         this.monthlyUsage = 0;
+        this.usageMonth = now.toISOString().slice(0, 7);
+        this.monthlyUsageLoaded = true;
       }
 
       this.currentHour = this.initializeHourlyStats();
@@ -803,12 +885,12 @@ export class DomainAnalyticsDO {
         activeVisitors++;
       }
       
-      // Aggregate page views by URL
-      for (const event of session.events) {
-        if (event.eventType === 1) { // pageview
-          const count = topPages.get(event.urlPath) || 0;
-          topPages.set(event.urlPath, count + 1);
-        }
+    }
+
+    for (const event of this.recentEvents) {
+      if (event.createdAt.getTime() >= fiveMinutesAgo && event.eventType === 1) {
+        const count = topPages.get(event.urlPath) || 0;
+        topPages.set(event.urlPath, count + 1);
       }
     }
 
@@ -860,6 +942,36 @@ export class DomainAnalyticsDO {
     );
   }
 
+  private writesToD1(): boolean {
+    return (this.env.ANALYTICS_WRITE_MODE || "d1") !== "pipeline";
+  }
+
+  private writesToPipeline(): boolean {
+    return (this.env.ANALYTICS_WRITE_MODE || "d1") !== "d1";
+  }
+
+  private flushToPipeline(): Promise<void> {
+    if (this.pipelineFlushPromise) return this.pipelineFlushPromise;
+    this.pipelineFlushPromise = this.drainPipelineOutbox().finally(() => {
+      this.pipelineFlushPromise = null;
+    });
+    return this.pipelineFlushPromise;
+  }
+
+  private async drainPipelineOutbox(): Promise<void> {
+    if (!this.env.ANALYTICS_STREAM) {
+      throw new Error("ANALYTICS_STREAM binding is required when Pipeline writes are enabled");
+    }
+
+    while (this.pipelineOutbox.length > 0) {
+      const batch = this.pipelineOutbox.slice(0, PIPELINE_BATCH_SIZE);
+      await this.env.ANALYTICS_STREAM.send(batch);
+      this.pipelineOutbox.splice(0, batch.length);
+      await this.state.storage.delete(batch.map((record) => `${PIPELINE_OUTBOX_PREFIX}${record.event_id}`));
+      await this.persistState();
+    }
+  }
+
   private flushToD1(): Promise<void> {
     if (this.flushPromise) return this.flushPromise;
 
@@ -899,7 +1011,7 @@ export class DomainAnalyticsDO {
       this.lastFlush = Date.now();
       this.totalEventsSinceFlush = Math.max(0, this.totalEventsSinceFlush - eventsAtStart);
       await this.persistState();
-      if (this.totalEventsSinceFlush === 0) {
+      if (this.totalEventsSinceFlush === 0 && this.pipelineOutbox.length === 0) {
         await this.state.storage.deleteAlarm();
       }
 
@@ -992,9 +1104,10 @@ export class DomainAnalyticsDO {
       campaign_bucket: event.campaignBucket,
     }));
 
-    // Batch insert events (reduced to 5 per batch to stay under SQLite limits)
-    for (let i = 0; i < events.length; i += 5) {
-      const batch = events.slice(i, i + 5);
+    // Batch insert events to stay under D1's per-statement variable limit.
+    // 21 columns × 4 rows = 84 variables (below the 100-variable cap).
+    for (let i = 0; i < events.length; i += EVENTS_PER_INSERT_BATCH) {
+      const batch = events.slice(i, i + EVENTS_PER_INSERT_BATCH);
       const placeholders = batch.map(() => 
         "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
       ).join(", ");
@@ -1083,7 +1196,7 @@ export class DomainAnalyticsDO {
     // Flush before deleting. The previous fire-and-forget write removed the
     // only in-memory reference immediately, so a D1 error permanently lost
     // the expired session's buffered events.
-    await this.flushToD1();
+    if (this.writesToD1()) await this.flushToD1();
     for (const sessionId of expiredSessions) {
       const session = this.activeSessions.get(sessionId);
       if (session && Date.now() - session.lastActivity > SESSION_TIMEOUT) {
@@ -1097,7 +1210,8 @@ export class DomainAnalyticsDO {
 
   async alarm(): Promise<void> {
     try {
-      await this.flushToD1();
+      if (this.writesToD1()) await this.flushToD1();
+      if (this.writesToPipeline() && this.pipelineOutbox.length > 0) await this.flushToPipeline();
       await this.cleanupExpiredSessions();
     } catch (error) {
       // Keep a deterministic retry even if the platform's alarm retry policy

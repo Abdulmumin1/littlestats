@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import DodoPayments from "dodopayments";
 import type { Env } from "../types";
 import { authMiddleware } from "../middleware/auth";
+import { R2Usage } from "../lib/analytics/r2-usage";
 
 type Variables = {
   user: any;
@@ -176,12 +177,25 @@ billingRouter.get("/usage", async (c) => {
 
     // 3. Get Event Usage (Current Month)
     // We need to sum up views + custom_events from hourly_stats for all sites owned by the user
-    const eventsResult = await c.env.DB.prepare(`
-      SELECT SUM(h.views + h.custom_events) as total
-      FROM hourly_stats h
-      JOIN sites s ON h.site_id = s.id
-      WHERE s.user_id = ? AND h.hour >= ?
-    `).bind(user.id, startOfMonth).first<{ total: number }>();
+    let eventUsage: number;
+    if (c.env.ANALYTICS_READ_MODE === "r2") {
+      const { results: ownedSites } = await c.env.DB.prepare(
+        "SELECT id FROM sites WHERE user_id = ?"
+      ).bind(user.id).all<{ id: string }>();
+      eventUsage = await new R2Usage(c.env).getBillableEventCount(
+        (ownedSites || []).map((site) => site.id),
+        startOfMonth,
+        now.toISOString(),
+      );
+    } else {
+      const eventsResult = await c.env.DB.prepare(`
+        SELECT SUM(h.views + h.custom_events) as total
+        FROM hourly_stats h
+        JOIN sites s ON h.site_id = s.id
+        WHERE s.user_id = ? AND h.hour >= ?
+      `).bind(user.id, startOfMonth).first<{ total: number }>();
+      eventUsage = eventsResult?.total || 0;
+    }
 
     return c.json({
       plan: {
@@ -190,7 +204,7 @@ billingRouter.get("/usage", async (c) => {
       },
       usage: {
         sites: sitesResult?.count || 0,
-        events: eventsResult?.total || 0
+        events: eventUsage
       },
       limits
     }, {

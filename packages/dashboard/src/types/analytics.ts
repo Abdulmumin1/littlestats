@@ -1,6 +1,7 @@
 // Analytics payload and event types
 
 export interface TrackPayload {
+  eventId?: string; // Stable client-generated id used for idempotent retries
   type: 'pageview' | 'event' | 'identify' | 'page_exit';
   website: string; // site_id/domain_key
   url?: string;
@@ -19,6 +20,44 @@ export interface TrackPayload {
   };
   visitorId?: string;
   userAgent?: string;
+}
+
+export interface AnalyticsEventRecord extends Record<string, unknown> {
+  schema_version: number;
+  event_id: string;
+  site_id: string;
+  event_time: string;
+  event_type: 'pageview' | 'custom' | 'page_exit' | 'identify';
+  visitor_id: string;
+  visit_id: string;
+  is_billable: boolean;
+  identified_user_id?: string;
+  url_path?: string;
+  url_query?: string;
+  url_hash?: string;
+  page_title?: string;
+  referrer_domain?: string;
+  referrer_path?: string;
+  event_name?: string;
+  event_properties?: Record<string, unknown>;
+  browser?: string;
+  browser_version?: string;
+  os?: string;
+  os_version?: string;
+  device?: string;
+  screen?: string;
+  country?: string;
+  region?: string;
+  city?: string;
+  language?: string;
+  timezone?: string;
+  engagement_seconds?: number;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  campaign_bucket?: string;
 }
 
 export interface Event {

@@ -1,5 +1,9 @@
 // Environment types
 
+interface PipelineBinding {
+  send(records: Record<string, unknown>[]): Promise<void>;
+}
+
 export interface Env {
   // D1 Database
   DB: D1Database;
@@ -11,6 +15,17 @@ export interface Env {
 
   // Durable Objects
   ANALYTICS_DO: DurableObjectNamespace;
+
+  // Cloudflare Data Platform analytics plane
+  ANALYTICS_STREAM?: PipelineBinding;
+  ANALYTICS_WRITE_MODE?: "d1" | "dual" | "pipeline";
+  ANALYTICS_READ_MODE?: "d1" | "shadow" | "r2";
+  CLOUDFLARE_ACCOUNT_ID?: string;
+  R2_ANALYTICS_BUCKET?: string;
+  R2_ANALYTICS_NAMESPACE?: string;
+  R2_ANALYTICS_TABLE?: string;
+  R2_SQL_API_TOKEN?: string;
+  MIGRATION_ADMIN_TOKEN?: string;
 
   // Environment variables
   APP_NAME: string;

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { checkSiteOwnership } from "../lib/site-auth";
-import { DashboardAPI } from "../lib/dashboard-api";
+import { createDashboardAPI } from "../lib/analytics/dashboard-api-factory";
 import type { Env } from "../types";
 import { authMiddleware } from "../middleware/auth";
 
@@ -39,7 +39,7 @@ analyticsRouter.get("/:siteId/stats", async (c) => {
     country: c.req.query("country"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const stats = await api.getStatsSummary(filter);
   return c.json(stats);
 });
@@ -56,7 +56,7 @@ analyticsRouter.get("/:siteId/timeseries", async (c) => {
   };
   const granularity = c.req.query("granularity") === 'hour' ? 'hour' : 'day';
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const data = await api.getTimeSeries(filter, granularity);
   return c.json({ data });
 });
@@ -74,7 +74,7 @@ analyticsRouter.get("/:siteId/referrers", async (c) => {
     country: c.req.query("country"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const referrers = await api.getTopReferrers(filter, limit, { q });
   return c.json({ referrers });
 });
@@ -92,7 +92,7 @@ analyticsRouter.get("/:siteId/pages", async (c) => {
     country: c.req.query("country"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const pages = await api.getTopPages(filter, limit, { q });
   return c.json({ pages });
 });
@@ -110,7 +110,7 @@ analyticsRouter.get("/:siteId/countries", async (c) => {
     country: c.req.query("country"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const countries = await api.getTopCountries(filter, limit, { q });
   return c.json({ countries });
 });
@@ -126,7 +126,7 @@ analyticsRouter.get("/:siteId/devices", async (c) => {
     country: c.req.query("country"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const devices = await api.getDeviceBreakdown(filter);
   return c.json({ devices });
 });
@@ -143,7 +143,7 @@ analyticsRouter.get("/:siteId/browsers", async (c) => {
     country: c.req.query("country"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const browsers = await api.getBrowserBreakdown(filter, limit);
   return c.json({ browsers });
 });
@@ -160,14 +160,13 @@ analyticsRouter.get("/:siteId/events", async (c) => {
     excludePageview: c.req.query("excludePageview") === 'true',
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
 
-  let parsedCursor: { timestamp: string; id: number } | undefined;
+  let parsedCursor: { timestamp: string; id: string } | undefined;
   if (cursor) {
     const [ts, idStr] = cursor.split(",");
-    const id = Number(idStr);
-    if (ts && Number.isFinite(id)) {
-      parsedCursor = { timestamp: ts, id };
+    if (ts && idStr) {
+      parsedCursor = { timestamp: ts, id: idStr };
     }
   }
 
@@ -184,14 +183,14 @@ analyticsRouter.get("/:siteId/custom-events", async (c) => {
     endDate: c.req.query("end"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const events = await api.getCustomEvents(filter);
   return c.json({ events });
 });
 
 analyticsRouter.get("/:siteId/event-names", async (c) => {
   const siteId = c.req.param("siteId");
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const eventNames = await api.getEventNames();
   return c.json({ eventNames });
 });
@@ -207,7 +206,7 @@ analyticsRouter.get("/:siteId/campaigns", async (c) => {
 
   const goalEventName = c.req.query("goal") || undefined;
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const campaigns = await api.getCampaigns(filter, limit, goalEventName);
   return c.json({ campaigns });
 });
@@ -227,7 +226,7 @@ analyticsRouter.get("/:siteId/campaigns/segmented-timeseries", async (c) => {
 
   const goalEventName = c.req.query("goal") || undefined;
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const series = await api.getCampaignsSegmentedTimeSeries(filter, {
     groupBy,
     metric,
@@ -256,14 +255,14 @@ analyticsRouter.post("/:siteId/funnels/analyze", async (c) => {
     endDate: body.endDate,
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const result = await api.analyzeFunnel(filter, body.steps, body.funnelType || 'session');
   return c.json(result);
 });
 
 analyticsRouter.get("/:siteId/funnels", async (c) => {
   const siteId = c.req.param("siteId");
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const funnels = await api.listFunnels();
   return c.json({ funnels });
 });
@@ -276,7 +275,7 @@ analyticsRouter.post("/:siteId/funnels", async (c) => {
     type: 'session' | 'user';
     steps: any[];
   }>();
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const result = await api.saveFunnel(body);
   return c.json(result);
 });
@@ -284,7 +283,7 @@ analyticsRouter.post("/:siteId/funnels", async (c) => {
 analyticsRouter.delete("/:siteId/funnels/:funnelId", async (c) => {
   const siteId = c.req.param("siteId");
   const funnelId = c.req.param("funnelId");
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   await api.deleteFunnel(funnelId);
   return c.json({ success: true });
 });
@@ -302,7 +301,7 @@ analyticsRouter.get("/:siteId/goals/summary", async (c) => {
     endDate: c.req.query("end"),
   };
 
-  const api = new DashboardAPI(c.env.DB, siteId);
+  const api = createDashboardAPI(c.env, siteId);
   const summary = await api.getGoalSummary(filter, goalEventName);
   return c.json(summary);
 });

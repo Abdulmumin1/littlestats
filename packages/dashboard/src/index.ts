@@ -14,6 +14,7 @@ import { analyticsRouter } from "./routes/analytics";
 import { publicFeedbackRouter, sitesFeedbackRouter } from "./routes/feedback";
 import { billingRouter } from "./routes/billing";
 import { webhooksRouter } from "./routes/webhooks";
+import { migrationsRouter } from "./routes/migrations";
 
 // Middleware
 import { authCors, trackingCors, apiCors, feedbackCors } from "./middleware/cors";
@@ -87,6 +88,10 @@ app.route("/api/v2/billing", billingRouter);
 // Mounts: /dodo
 app.route("/webhooks", webhooksRouter);
 
+// Temporary operator-only migration endpoints. They return 404 unless the
+// MIGRATION_ADMIN_TOKEN secret is configured.
+app.route("/internal/migrations", migrationsRouter);
+
 // ============================================
 // Auth Handler
 // ============================================
@@ -134,7 +139,9 @@ app.get("/tracker.js", async (c) => {
   return new Response(script, {
     headers: {
       "Content-Type": "application/javascript",
-      "Cache-Control": "public, max-age=3600",
+      // Keep tracker fixes from being held for an hour by browser caches.
+      // The script is small and is fetched once per page load.
+      "Cache-Control": "public, max-age=300, must-revalidate",
       "Access-Control-Allow-Origin": origin || "*",
     },
   });

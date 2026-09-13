@@ -7,7 +7,9 @@ export async function generateTrackerScript(env: Env): Promise<string> {
   const CONFIG = {
     SESSION_TIMEOUT: 30 * 60 * 1000,
     CACHE_KEY: '_ls_cache',
-    VISITOR_KEY: '_ls_vid'
+    VISITOR_KEY: '_ls_vid',
+    PAGEVIEW_DEDUPE_WINDOW: 2000,
+    INSTANCE_KEY: '__littlestats_instances__'
   };
 
   // Skip tracking on localhost or dev environments
@@ -32,7 +34,8 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       
       this.endpoint = this.baseUrl + '/api/v2/track/' + siteId;
       this.feedbackEndpoint = this.baseUrl + '/api/v2/feedback/' + siteId;
-      this.currentUrl = location.href;
+      this.currentUrl = this.pageUrl();
+      this.currentReferrer = document.referrer;
       this.cache = this.loadCache();
       this.visitorId = this.getVisitorId();
       this.feedbackWidget = null;
@@ -45,11 +48,19 @@ export async function generateTrackerScript(env: Env): Promise<string> {
     
     loadCache() {
       try {
-        const cache = JSON.parse(localStorage.getItem(CONFIG.CACHE_KEY));
+        const cache = JSON.parse(localStorage.getItem(this.storageKey(CONFIG.CACHE_KEY)) || 'null');
         const now = Math.floor(Date.now() / 1000);
         if (cache && (now - cache.iat) < 1800) return cache;
       } catch (e) {}
-      return { visitId: this.generateUUID(), iat: Math.floor(Date.now() / 1000) };
+      return { visitId: this.generateUUID(), iat: Math.floor(Date.now() / 1000), sessionStart: Date.now() };
+    }
+
+    storageKey(key) {
+      return key + ':' + this.siteId;
+    }
+
+    pageUrl() {
+      return location.pathname + location.search;
     }
     
     saveCache() {
@@ -57,7 +68,7 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       if (this.saveCacheTimeout) clearTimeout(this.saveCacheTimeout);
       this.saveCacheTimeout = setTimeout(() => {
         this.cache.iat = Math.floor(Date.now() / 1000);
-        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(this.cache));
+        try { localStorage.setItem(this.storageKey(CONFIG.CACHE_KEY), JSON.stringify(this.cache)); } catch (e) {}
       }, 250);
     }
     
@@ -66,17 +77,21 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       if (this.saveCacheTimeout) clearTimeout(this.saveCacheTimeout);
       this.cache.iat = Math.floor(Date.now() / 1000);
       try {
-        localStorage.setItem(CONFIG.CACHE_KEY, JSON.stringify(this.cache));
+        localStorage.setItem(this.storageKey(CONFIG.CACHE_KEY), JSON.stringify(this.cache));
       } catch (e) {}
     }
     
     getVisitorId() {
-      let vid = localStorage.getItem(CONFIG.VISITOR_KEY);
-      if (!vid) {
-        vid = this.generateUUID();
-        localStorage.setItem(CONFIG.VISITOR_KEY, vid);
+      try {
+        let vid = localStorage.getItem(this.storageKey(CONFIG.VISITOR_KEY));
+        if (!vid) {
+          vid = this.generateUUID();
+          localStorage.setItem(this.storageKey(CONFIG.VISITOR_KEY), vid);
+        }
+        return vid;
+      } catch (e) {
+        return this.generateUUID();
       }
-      return vid;
     }
     
     generateUUID() {
@@ -88,9 +103,10 @@ export async function generateTrackerScript(env: Env): Promise<string> {
     
     getPayload() {
       return {
+        eventId: this.generateUUID(),
         website: this.siteId,
-        url: location.pathname + location.search,
-        referrer: document.referrer,
+        url: this.pageUrl(),
+        referrer: this.currentReferrer,
         screen: screen.width + 'x' + screen.height,
         language: navigator.language,
         title: document.title,
@@ -108,7 +124,14 @@ export async function generateTrackerScript(env: Env): Promise<string> {
         originalPushState.apply(history, args);
         this.handleNavigation();
       };
+      const originalReplaceState = history.replaceState;
+      history.replaceState = (...args) => {
+        originalReplaceState.apply(history, args);
+        this.handleNavigation();
+      };
       window.addEventListener('popstate', () => this.handleNavigation());
+      // Hash changes do not change the URL sent to analytics, so they are not
+      // separate pageviews. This prevents tab/anchor clicks from inflating views.
       
       // Debounced cache save on interaction events
       ['click', 'scroll', 'mousemove'].forEach(e => {
@@ -117,8 +140,9 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       
       // Flush cache on page unload
       window.addEventListener('beforeunload', () => this.flushCache());
-      window.addEventListener('pagehide', () => {
-        this.trackPageExit();
+      window.addEventListener('pagehide', (event) => {
+        // A persisted pagehide is a bfcache transition, not a real exit.
+        if (!event.persisted) this.trackPageExit();
         this.flushCache();
       });
       
@@ -139,9 +163,12 @@ export async function generateTrackerScript(env: Env): Promise<string> {
     }
     
     handleNavigation() {
-      if (this.currentUrl !== location.href) {
+      const nextUrl = this.pageUrl();
+      if (this.currentUrl !== nextUrl) {
         this.trackPageExit();
-        this.currentUrl = location.href;
+        const previousUrl = this.currentUrl;
+        this.currentUrl = nextUrl;
+        this.currentReferrer = location.origin + previousUrl;
         this.pageStartedAt = Date.now();
         this.pageExitSent = false;
         this.track();
@@ -167,33 +194,63 @@ export async function generateTrackerScript(env: Env): Promise<string> {
         payload.name = eventName;
         payload.data = eventData;
       } else {
+        const dedupeKey = this.storageKey('_ls_last_pageview');
+        try {
+          const previous = sessionStorage.getItem(dedupeKey);
+          const [previousUrl, previousTime] = previous ? previous.split('|') : [];
+          if (previousUrl === payload.url && Number.isFinite(Number(previousTime)) && Date.now() - Number(previousTime) < CONFIG.PAGEVIEW_DEDUPE_WINDOW) {
+            return;
+          }
+          sessionStorage.setItem(dedupeKey, payload.url + '|' + Date.now());
+        } catch (e) {}
         payload.type = 'pageview';
       }
       this.send(payload);
     }
     
     identify(userId, userData) {
+      try { localStorage.setItem(this.storageKey(CONFIG.VISITOR_KEY), userId); } catch (e) {}
+      this.visitorId = userId;
       const payload = this.getPayload();
       payload.type = 'identify';
       payload.id = userId;
       payload.data = userData;
-      localStorage.setItem(CONFIG.VISITOR_KEY, userId);
-      this.visitorId = userId;
       this.send(payload);
+    }
+
+    trackPageView() {
+      this.track();
     }
     
     send(payload) {
-      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(this.endpoint, blob);
-      } else {
-        fetch(this.endpoint, {
-          method: 'POST',
-          body: JSON.stringify(payload),
-          headers: { 'Content-Type': 'application/json' },
-          keepalive: true
-        }).catch(() => {});
+      const body = JSON.stringify(payload);
+      if (payload.type === 'page_exit' && navigator.sendBeacon) {
+        const queued = navigator.sendBeacon(this.endpoint, new Blob([body], { type: 'application/json' }));
+        if (queued) return;
       }
+
+      const sendAttempt = (attempt) => fetch(this.endpoint, {
+        method: 'POST',
+        body,
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true
+      }).then(response => {
+        if (!response.ok && response.status >= 500) throw new Error('temporary tracking failure');
+        if (response.ok) {
+          return response.json().then(result => {
+            if (result && result.cache) {
+              this.cache = { ...this.cache, ...result.cache };
+              this.saveCache();
+            }
+          }).catch(() => {});
+        }
+      }).catch(() => {
+        if (attempt < 3) {
+          setTimeout(() => sendAttempt(attempt + 1), 500 * Math.pow(2, attempt));
+        }
+      });
+
+      sendAttempt(0);
     }
     
     initFeedbackWidget() {
@@ -550,12 +607,14 @@ export async function generateTrackerScript(env: Env): Promise<string> {
   const script = document.currentScript || document.querySelector('script[data-site-id]');
   if (script) {
     const siteId = script.getAttribute('data-site-id');
+    if (!siteId) return;
     const options = {
       host: script.getAttribute('data-host'),
       feedback: script.getAttribute('data-feedback') !== 'false',
       feedbackUi: script.getAttribute('data-feedback-ui') !== 'false'
     };
-    window.littlestats = new LittleStatsTracker(siteId, options);
+    const instances = window[CONFIG.INSTANCE_KEY] || (window[CONFIG.INSTANCE_KEY] = {});
+    window.littlestats = instances[siteId] || (instances[siteId] = new LittleStatsTracker(siteId, options));
     window.track = (name, data) => window.littlestats?.track(name, data);
     window.identify = (id, data) => window.littlestats?.identify(id, data);
   }

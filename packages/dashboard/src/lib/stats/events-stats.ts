@@ -39,7 +39,7 @@ export class EventsStats {
     filter: StatsFilter,
     options?: {
       limit?: number;
-      cursor?: { timestamp: string; id: number };
+      cursor?: { timestamp: string; id: string | number };
       eventName?: string;
     }
   ): Promise<{ events: any[]; total: number; nextCursor: { timestamp: string; id: number } | null }> {
