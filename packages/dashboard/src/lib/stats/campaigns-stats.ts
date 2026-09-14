@@ -32,7 +32,6 @@ export class CampaignsStats {
         AND created_at < ?
         AND campaign_bucket IS NOT NULL
         AND campaign_bucket != ''
-        AND lower(campaign_bucket) != 'direct'
         AND campaign_bucket NOT LIKE 'localhost%'
         AND campaign_bucket NOT LIKE '127.0.0.1%'
       GROUP BY campaign_bucket

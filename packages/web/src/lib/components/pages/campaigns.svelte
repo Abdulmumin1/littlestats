@@ -1,636 +1,252 @@
-
 <script>
 	import { api } from '$lib/api/analytics.ts';
-	import { color, colorList } from '$lib/colors/mixer.js';
+	import { color } from '$lib/colors/mixer.js';
 	import { dashboardStore } from '$lib/stores/dashboard.svelte.js';
-	import { Megaphone, Users, Target, TrendingUp } from 'lucide-svelte';
-	import StackedChart from '$lib/components/analytics/graphStuff/stackedChart.svelte';
+	import { SOURCE_CHANNELS, channelTotals, isSameSiteSource, sourceFromCampaign } from '$lib/analytics/sourceChannels.js';
+	import { Compass, Search, Target, Users } from 'lucide-svelte';
 	import CustomSelect from '$lib/components/generals/customSelect.svelte';
 	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 
-	let { siteId = null, demo = false, events = [], dateRange = null } = $props();
+	let { siteId = null, siteDomain = '', demo = false, events = [], dateRange = null } = $props();
 
 	let loading = $state(true);
 	let campaigns = $state([]);
-	let limit = $state(20);
-
 	let goalNames = $state([]);
 	let selectedGoal = $state('');
-
-	let stackedLoading = $state(true);
-	let stackedSeries = $state(null);
-	let stackedGroupBy = $state('source');
-	let stackedMetric = $state('conversions');
-	let stackedSegmentsLimit = $state(6);
-	let stackedChartType = $state('bar');
-
+	let selectedChannel = $state('All');
 	let search = $state('');
-	let groupBy = $state('full');
-	let sortBy = $state('conversions');
-	let sortDir = $state('desc');
+	let requestId = 0;
 
-	function getEffectiveRange() {
-		return demo ? (dateRange || {}) : (dashboardStore.dateRange || {});
+	function effectiveRange() {
+		return demo ? dateRange || {} : dashboardStore.dateRange || {};
 	}
 
-	function filterEventsLocal(rows, range) {
-		if (!range || !range.startDate || !range.endDate) return rows || [];
-		const start = new Date(range.startDate);
-		start.setHours(0, 0, 0, 0);
-		const end = new Date(range.endDate);
-		end.setHours(23, 59, 59, 999);
-		const startTime = start.getTime();
-		const endTime = end.getTime();
-		return (rows || []).filter((e) => {
-			const t = new Date(e.timestamp).getTime();
-			return t >= startTime && t <= endTime;
-		});
-	}
-
-	function parseEventData(event) {
-		if (!event?.event_data || typeof event.event_data !== 'string') return null;
+	function eventProperties(event) {
+		if (!event?.event_data) return {};
+		if (typeof event.event_data === 'object') return event.event_data;
 		try {
 			return JSON.parse(event.event_data);
 		} catch {
-			return null;
+			return {};
 		}
 	}
 
-	function getRefHost(referrer) {
-		if (!referrer) return 'Direct';
+	function eventBucket(event) {
+		const data = eventProperties(event);
+		const source = data.utm_source || data.source;
+		const medium = data.utm_medium || data.medium;
+		const campaign = data.utm_campaign || data.campaign;
+		if (source || medium || campaign) {
+			return `${source || 'unknown'}|${medium || 'unknown'}|${campaign || 'unknown'}`;
+		}
+		if (!event?.referrer) return 'Direct';
 		try {
-			const u = new URL(referrer);
-			return u.hostname || 'Direct';
+			return new URL(event.referrer).hostname || 'Direct';
 		} catch {
 			return 'Direct';
 		}
 	}
 
-	function buildBucket(event) {
-		const refHost = getRefHost(event?.referrer);
-		if (refHost === 'Direct') return 'Direct';
-		const obj = parseEventData(event);
-		const source = refHost || 'unknown';
-		const medium = 'referral';
-		const campaign = obj?.campaign || 'unknown';
-		return `${source}|${medium}|${campaign}`;
-	}
+	function demoCampaigns(goal, range) {
+		const start = range?.startDate ? new Date(`${range.startDate}T00:00:00`).getTime() : -Infinity;
+		const end = range?.endDate ? new Date(`${range.endDate}T23:59:59.999`).getTime() : Infinity;
+		const buckets = new Map();
 
-	function computeDemoAnalytics() {
-		const range = getEffectiveRange();
-		const filtered = filterEventsLocal(events, range);
-		const goals = new Set();
-		const byBucket = new Map();
-		const segTotals = new Map();
-		const byDay = new Map();
-
-		for (const e of filtered) {
-			const dt = new Date(e.timestamp);
-			if (Number.isNaN(dt.getTime())) continue;
-			const isPageview = e?.event_type === 'pageview';
-			const name = e?.event_name || e?.event_type;
-			if (!isPageview && name) goals.add(name);
-
-			const dayKey = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-			const bucket = buildBucket(e);
-			const visitId = e?.session_id || e?.user_id;
-			const row = byBucket.get(bucket) || { bucket, visitIds: new Set(), conversionVisitIds: new Set() };
-			if (visitId) row.visitIds.add(visitId);
-			if (!isPageview && visitId && (!selectedGoal || name === selectedGoal)) row.conversionVisitIds.add(visitId);
-			byBucket.set(bucket, row);
-
-			let segKey = 'Other';
-			if (bucket === 'Direct') {
-				segKey = 'Direct';
-			} else {
-				const [source = 'unknown', medium = 'unknown'] = bucket.split('|');
-				segKey = stackedGroupBy === 'medium' ? medium : source;
-			}
-
-			let metricVal = 0;
-			if (stackedMetric === 'visits') metricVal = isPageview ? 1 : 0;
-			else if (!isPageview) metricVal = !selectedGoal || name === selectedGoal ? 1 : 0;
-
-			if (!metricVal) continue;
-
-			segTotals.set(segKey, (segTotals.get(segKey) || 0) + metricVal);
-			const point = byDay.get(dayKey) || { timestamp: dayKey, total: 0, segments: {} };
-			point.total += metricVal;
-			point.segments[segKey] = (point.segments[segKey] || 0) + metricVal;
-			byDay.set(dayKey, point);
+		for (const event of events || []) {
+			const timestamp = new Date(event.timestamp).getTime();
+			if (!Number.isFinite(timestamp) || timestamp < start || timestamp > end) continue;
+			const bucket = eventBucket(event);
+			const visitId = event.session_id || event.user_id;
+			if (!visitId) continue;
+			const row = buckets.get(bucket) || { bucket, visits: new Set(), conversions: new Set() };
+			row.visits.add(visitId);
+			const eventName = event.event_name || event.event_type;
+			if (goal && event.event_type !== 'pageview' && eventName === goal) row.conversions.add(visitId);
+			buckets.set(bucket, row);
 		}
 
-		const segmentsSorted = Array.from(segTotals.entries())
-			.sort((a, b) => b[1] - a[1])
-			.slice(0, Number(stackedSegmentsLimit) || 6);
-		const segmentKeys = segmentsSorted.map(([k]) => k);
-		const segments = segmentsSorted.map(([key, total]) => ({ key, total }));
-
-		const points = Array.from(byDay.values())
-			.map((p) => {
-				const segs = {};
-				for (const k of segmentKeys) segs[k] = Number(p.segments?.[k] || 0);
-				return { timestamp: p.timestamp, total: p.total, segments: segs };
-			})
-			.sort((a, b) => String(a.timestamp).localeCompare(String(b.timestamp)));
-
-		const campaignRows = Array.from(byBucket.values()).map((row) => {
-			const visits = row.visitIds.size;
-			const conversions = row.conversionVisitIds.size;
+		return Array.from(buckets.values()).map((row) => {
+			const visits = row.visits.size;
+			const conversions = row.conversions.size;
 			return {
 				bucket: row.bucket,
 				visits,
 				conversions,
-				conversionRate: visits > 0 ? Math.round((conversions / visits) * 10000) / 100 : 0
+				conversionRate: visits ? Math.round((conversions / visits) * 10000) / 100 : 0
 			};
 		});
-
-		return {
-			goalNames: Array.from(goals).sort((a, b) => String(a).localeCompare(String(b))),
-			campaignRows,
-			stackedSeries: {
-				granularity: 'day',
-				metric: stackedMetric,
-				groupBy: stackedGroupBy,
-				segments,
-				points
-			}
-		};
 	}
 
-	let demoAnalytics = $derived.by(() => (demo ? computeDemoAnalytics() : null));
-
-	async function fetchGoalNames() {
+	async function loadGoalNames() {
 		if (demo) {
-			goalNames = demoAnalytics?.goalNames || [];
+			goalNames = Array.from(
+				new Set((events || []).filter((event) => event.event_type !== 'pageview').map((event) => event.event_name || event.event_type).filter(Boolean))
+			).sort();
 			return;
 		}
 		if (!siteId) return;
 		try {
 			const response = await api.getEventNames(siteId);
 			goalNames = response.eventNames || [];
-		} catch (err) {
-			console.error('Goal names fetch error:', err);
+		} catch (error) {
+			console.error('Goal names fetch error:', error);
 			goalNames = [];
 		}
 	}
 
-	async function fetchCampaigns() {
-		if (demo) {
-			loading = true;
-			try {
-				campaigns = (demoAnalytics?.campaignRows || []).slice(0, Number(limit) || 20);
-			} finally {
-				loading = false;
-			}
-			return;
-		}
-		if (!siteId) return;
+	async function loadCampaigns(goal, range) {
+		const currentRequest = ++requestId;
 		loading = true;
 		try {
-			const goal = selectedGoal || undefined;
-			const response = await api.getCampaigns(siteId, dashboardStore.dateRange, limit, goal);
-			campaigns = response.campaigns || [];
-		} catch (err) {
-			console.error('Campaigns fetch error:', err);
-			campaigns = [];
+			const rows = demo
+				? demoCampaigns(goal, range)
+				: (await api.getCampaigns(siteId, range, 100, goal || undefined)).campaigns || [];
+			if (currentRequest === requestId) campaigns = rows;
+		} catch (error) {
+			console.error('Acquisition fetch error:', error);
+			if (currentRequest === requestId) campaigns = [];
 		} finally {
-			loading = false;
-		}
-	}
-
-	async function fetchStackedSeries() {
-		if (demo) {
-			stackedLoading = true;
-			try {
-				stackedSeries = demoAnalytics?.stackedSeries || null;
-			} finally {
-				stackedLoading = false;
-			}
-			return;
-		}
-		if (!siteId) return;
-		stackedLoading = true;
-		try {
-			const goal = selectedGoal || undefined;
-			stackedSeries = await api.getCampaignsSegmentedTimeSeries(siteId, {
-				filter: dashboardStore.dateRange,
-				groupBy: stackedGroupBy,
-				metric: stackedMetric,
-				granularity: 'day',
-				segmentsLimit: stackedSegmentsLimit,
-				goalEventName: goal
-			});
-		} catch (err) {
-			console.error('Campaigns segmented timeseries fetch error:', err);
-			stackedSeries = null;
-		} finally {
-			stackedLoading = false;
+			if (currentRequest === requestId) loading = false;
 		}
 	}
 
 	$effect(() => {
-		fetchGoalNames();
+		if (demo || siteId) loadGoalNames();
 	});
 
 	$effect(() => {
-		if (!demo && !siteId) return;
-		fetchCampaigns();
+		const range = effectiveRange();
+		const goal = selectedGoal;
+		if (!range?.startDate || !range?.endDate || (!demo && !siteId)) return;
+		loadCampaigns(goal, { startDate: range.startDate, endDate: range.endDate });
 	});
 
-	$effect(() => {
-		const range = getEffectiveRange();
-		if (!range?.startDate || !range?.endDate) return;
-		if (!demo && !siteId) return;
-		fetchStackedSeries();
-	});
-
-	function formatBucket(bucket) {
-		if (bucket === 'Direct') return 'Direct';
-		if (bucket.includes('|')) {
-			const [source, medium, campaign] = bucket.split('|');
-			const parts = [];
-			if (source !== 'unknown') parts.push(source);
-			if (medium !== 'unknown') parts.push(medium);
-			if (campaign !== 'unknown') parts.push(campaign);
-			return parts.join(' / ') || 'UTM Campaign';
-		}
-		return bucket;
-	}
-
-	function parseBucket(bucket) {
-		if (!bucket || bucket === 'Direct') return { source: 'Direct', medium: '', campaign: '' };
-		if (!bucket.includes('|')) return { source: bucket, medium: '', campaign: '' };
-		const [source = '', medium = '', campaign = ''] = bucket.split('|');
-		return { source, medium, campaign };
-	}
-
-	function getGroupLabel(row) {
-		const { source, medium, campaign } = parseBucket(row.bucket);
-		if (groupBy === 'source') return source || 'unknown';
-		if (groupBy === 'medium') return medium || 'unknown';
-		if (groupBy === 'campaign') return campaign || 'unknown';
-		return formatBucket(row.bucket);
-	}
-
-	function aggregate(rows) {
-		const map = new Map();
-		for (const r of rows) {
-			const label = getGroupLabel(r);
-			const current = map.get(label) || { bucket: label, visits: 0, conversions: 0 };
-			current.visits += r.visits || 0;
-			current.conversions += r.conversions || 0;
-			map.set(label, current);
-		}
-		return Array.from(map.values()).map((r) => ({
-			...r,
-			conversionRate: r.visits > 0 ? Math.round((r.conversions / r.visits) * 10000) / 100 : 0
-		}));
-	}
-
-	function matchesSearch(row) {
-		if (!search) return true;
-		const q = search.trim().toLowerCase();
-		if (!q) return true;
-		return String(row.bucket || '').toLowerCase().includes(q);
-	}
-
-	function sortRows(rows) {
-		const dir = sortDir === 'asc' ? 1 : -1;
-		return rows.slice().sort((a, b) => {
-			if (sortBy === 'name') return String(a.bucket).localeCompare(String(b.bucket)) * dir;
-			const av = Number(a[sortBy] ?? 0);
-			const bv = Number(b[sortBy] ?? 0);
-			if (bv === av) return String(a.bucket).localeCompare(String(b.bucket));
-			return (av - bv) * dir;
-		});
-	}
-
+	let sourceRows = $derived(campaigns.map(sourceFromCampaign).filter((row) => !isSameSiteSource(row.source, siteDomain)));
+	let totalsByChannel = $derived(channelTotals(sourceRows));
 	let displayRows = $derived.by(() => {
-		const base = groupBy === 'full' ? campaigns : aggregate(campaigns);
-		const filtered = base.filter(matchesSearch);
-		return sortRows(filtered);
+		const query = search.trim().toLowerCase();
+		return sourceRows
+			.filter((row) => selectedChannel === 'All' || row.channel === selectedChannel)
+			.filter((row) => !query || `${row.source} ${row.detail} ${row.channel}`.toLowerCase().includes(query))
+			.sort((a, b) => b.visits - a.visits || b.conversions - a.conversions);
 	});
 
 	let totals = $derived({
-		sources: campaigns.length,
-		visits: campaigns.reduce((sum, c) => sum + c.visits, 0),
-		conversions: campaigns.reduce((sum, c) => sum + c.conversions, 0)
+		visits: sourceRows.reduce((sum, row) => sum + Number(row.visits || 0), 0),
+		conversions: sourceRows.reduce((sum, row) => sum + Number(row.conversions || 0), 0),
+		sources: sourceRows.length
 	});
-
-	let avgConvRate = $derived(
-		totals.visits > 0 ? Math.round((totals.conversions / totals.visits) * 10000) / 100 : 0
-	);
-
-	let bestByConversions = $derived.by(() => {
-		const rows = displayRows;
-		if (!rows.length) return null;
-		return rows.reduce((best, r) => (!best || r.conversions > best.conversions ? r : best), null);
-	});
-
-	let bestByRate = $derived.by(() => {
-		const rows = displayRows;
-		if (!rows.length) return null;
-		return rows.reduce((best, r) => (!best || r.conversionRate > best.conversionRate ? r : best), null);
-	});
-
-	let stackedPoints = $derived.by(() => stackedSeries?.points || []);
-	let stackedSegmentsList = $derived.by(() => stackedSeries?.segments || []);
-	let stackedSegments = $derived.by(() => stackedSegmentsList.map((s) => s.key));
-
-	let stackedColors = $derived.by(() => {
-		const other = '#94a3b8';
-		const segs = stackedSegments;
-		const map = new Map();
-		const palette = [
-			colorList?.[$color]?.primary || '#e11d48',
-			'#2563eb',
-			'#16a34a',
-			'#f59e0b',
-			'#7c3aed',
-			'#06b6d4',
-			'#f97316',
-			'#db2777',
-			'#84cc16',
-			'#0ea5e9'
-		];
-		for (let i = 0; i < segs.length; i++) {
-			const k = segs[i];
-			if (k === 'Other') {
-				map.set(k, { fill: other, opacity: 0.55 });
-				continue;
-			}
-			map.set(k, { fill: palette[i % palette.length], opacity: 0.9 });
-		}
-		return map;
-	});
+	let conversionRate = $derived(totals.visits ? Math.round((totals.conversions / totals.visits) * 10000) / 100 : 0);
+	let topSource = $derived(sourceRows.slice().sort((a, b) => b.visits - a.visits)[0] || null);
+	let maxVisits = $derived(Math.max(1, ...displayRows.map((row) => Number(row.visits || 0))));
 </script>
 
 <div class="space-y-6">
-	<div class="px-2 flex flex-wrap items-center justify-between gap-4">
+	<div class="flex flex-col gap-4 px-2 sm:flex-row sm:items-end sm:justify-between">
 		<div>
-			<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight">Campaigns</h1>
-			<p class="text-xs font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Traffic sources & attribution</p>
+			<h1 class="text-xl font-bold tracking-tight text-stone-900 dark:text-white">Acquisition</h1>
+			<p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Where visits came from and which sources led to a goal.</p>
 		</div>
-		<div class="flex w-full items-center gap-2 sm:w-auto sm:min-w-[16rem]">
+		<div class="w-full sm:w-64">
 			<CustomSelect
-				id="campaigns-goal"
-				label="Goal:"
+				id="acquisition-goal"
+				label="Conversion goal"
 				bind:value={selectedGoal}
-				onchange={() => {
-					fetchCampaigns();
-					fetchStackedSeries();
-				}}
-				options={[{ value: '', label: 'All custom events' }, ...goalNames.map((g) => ({ value: g, label: g }))]}
+				options={[{ value: '', label: 'Traffic only' }, ...goalNames.map((goal) => ({ value: goal, label: goal }))]}
 			/>
 		</div>
 	</div>
 
-	<LoadingBoundary {loading} label="Loading campaign analytics">
+	<LoadingBoundary {loading} label="Loading acquisition analytics">
 		{#snippet fallback()}
-		<div class="flex min-h-[60vh] items-center justify-center rounded-none">
-			<div class="w-6 h-6 border-2 border-stone-200 dark:border-stone-800 border-t-stone-900 dark:border-t-white rounded-none animate-spin"></div>
-		</div>
+			<div class="flex min-h-[45vh] items-center justify-center">
+				<div class="size-6 animate-spin border-2 border-stone-200 border-t-stone-900 dark:border-stone-800 dark:border-t-white"></div>
+			</div>
 		{/snippet}
-	{#if campaigns.length === 0}
-		<div class="flex min-h-[60vh] flex-col items-center justify-center text-center py-16 bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800">
-			<Megaphone size={32} class="mx-auto text-stone-300 dark:text-stone-700 mb-3" />
-			<p class="text-stone-500 dark:text-stone-400 text-sm font-serif italic">No traffic data yet</p>
-			<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">Visitors will appear once they arrive</p>
-		</div>
-	{:else}
-		<div class="grid grid-cols-2 content-start gap-4 rounded-none sm:grid-cols-4">
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-				<div class="flex items-center gap-2 text-[11px] font-medium text-stone-500 dark:text-stone-400 mb-2">
-					<Megaphone size={12} />
-					Sources
-				</div>
-				<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">{totals.sources}</p>
-			</div>
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-				<div class="flex items-center gap-2 text-[11px] font-medium text-stone-500 dark:text-stone-400 mb-2">
-					<Users size={12} />
-					Visits
-				</div>
-				<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">{totals.visits.toLocaleString()}</p>
-			</div>
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-				<div class="flex items-center gap-2 text-[11px] font-medium text-stone-500 dark:text-stone-400 mb-2">
-					<Target size={12} />
-					Conversions
-				</div>
-				<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">{totals.conversions.toLocaleString()}</p>
-			</div>
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-				<div class="flex items-center gap-2 text-[11px] font-medium text-stone-500 dark:text-stone-400 mb-2">
-					<TrendingUp size={12} />
-					Avg. Rate
-				</div>
-				<p class={`text-xl font-bold text-${$color}-600 dark:text-${$color}-400 tabular-nums leading-none`}>{avgConvRate}%</p>
-			</div>
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none col-span-2 sm:col-span-4">
-				<div class="flex flex-col gap-3">
-					<div class="flex flex-wrap items-center justify-between gap-3">
-						<div class="min-w-0">
-							<p class="text-[11px] font-medium text-stone-500 dark:text-stone-400">Segmented trend</p>
-							<p class="text-xs font-bold text-stone-900 dark:text-white truncate">{stackedGroupBy} · {stackedMetric}</p>
-						</div>
-						<div class="flex flex-wrap items-center gap-2">
-							<div class="flex bg-stone-100/50 dark:bg-stone-800/40 p-1 border border-stone-200 dark:border-stone-800 h-9.5 items-center">
-								<button
-									onclick={() => (stackedChartType = 'bar')}
-									class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all border border-transparent {stackedChartType === 'bar'
-										? `bg-white/70 dark:bg-stone-900/60 text-stone-900 dark:text-white border-stone-200 dark:border-stone-700`
-										: 'text-stone-500 hover:text-stone-900 dark:hover:text-white'}"
-								>
-									Bar
-								</button>
-								<button
-									onclick={() => (stackedChartType = 'line')}
-									class="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all border border-transparent {stackedChartType === 'line'
-										? `bg-white/70 dark:bg-stone-900/60 text-stone-900 dark:text-white border-stone-200 dark:border-stone-700`
-										: 'text-stone-500 hover:text-stone-900 dark:hover:text-white'}"
-								>
-									Line
-								</button>
-							</div>
-							<div class="w-40">
-								<CustomSelect
-									bind:value={stackedGroupBy}
-									onchange={() => fetchStackedSeries()}
-									options={[
-										{ value: 'source', label: 'Group: Source' },
-										{ value: 'medium', label: 'Group: Medium' }
-									]}
-								/>
-							</div>
-							<div class="w-44">
-								<CustomSelect
-									bind:value={stackedMetric}
-									onchange={() => fetchStackedSeries()}
-									options={[
-										{ value: 'conversions', label: 'Metric: Conversions' },
-										{ value: 'visits', label: 'Metric: Visits' }
-									]}
-								/>
-							</div>
-							<div class="w-32">
-								<CustomSelect
-									bind:value={stackedSegmentsLimit}
-									onchange={() => fetchStackedSeries()}
-									options={[
-										{ value: 4, label: 'Top: 4' },
-										{ value: 6, label: 'Top: 6' },
-										{ value: 8, label: 'Top: 8' },
-										{ value: 10, label: 'Top: 10' }
-									]}
-								/>
-							</div>
-						</div>
-					</div>
 
-					{#if stackedLoading}
-						<div class="flex items-center justify-center py-6 rounded-none">
-							<div class="w-5 h-5 border-2 border-stone-200 dark:border-stone-800 border-t-stone-900 dark:border-t-white rounded-none animate-spin"></div>
+		{#if sourceRows.length === 0}
+			<div class="flex min-h-[45vh] flex-col items-center justify-center border border-stone-100 bg-stone-50 py-16 text-center dark:border-stone-800 dark:bg-stone-900">
+				<Compass size={32} class="mb-3 text-stone-300 dark:text-stone-700" />
+				<p class="text-sm font-medium text-stone-600 dark:text-stone-300">No acquisition data in this period</p>
+				<p class="mt-1 text-xs text-stone-400">Direct, referral and tagged visits will appear here.</p>
+			</div>
+		{:else}
+			<div class="grid gap-4 sm:grid-cols-3">
+				<div class="border border-stone-100 bg-stone-50 p-5 dark:border-stone-800 dark:bg-stone-900">
+					<div class="mb-2 flex items-center gap-2 text-xs text-stone-500"><Users size={14} /> Visits</div>
+					<p class="text-2xl font-bold tabular-nums text-stone-900 dark:text-white">{totals.visits.toLocaleString()}</p>
+				</div>
+				{#if selectedGoal}
+					<div class="border border-stone-100 bg-stone-50 p-5 dark:border-stone-800 dark:bg-stone-900">
+						<div class="mb-2 flex items-center gap-2 text-xs text-stone-500"><Target size={14} /> {selectedGoal}</div>
+						<p class="text-2xl font-bold tabular-nums text-stone-900 dark:text-white">{totals.conversions.toLocaleString()}</p>
+					</div>
+					<div class="border border-stone-100 bg-stone-50 p-5 dark:border-stone-800 dark:bg-stone-900">
+						<p class="mb-2 text-xs text-stone-500">Visit-to-goal rate</p>
+						<p class="text-2xl font-bold tabular-nums text-{$color}-600 dark:text-{$color}-400">{conversionRate}%</p>
+					</div>
+				{:else}
+					<div class="border border-stone-100 bg-stone-50 p-5 dark:border-stone-800 dark:bg-stone-900">
+						<p class="mb-2 text-xs text-stone-500">Sources</p>
+						<p class="text-2xl font-bold tabular-nums text-stone-900 dark:text-white">{totals.sources}</p>
+					</div>
+					<div class="border border-stone-100 bg-stone-50 p-5 dark:border-stone-800 dark:bg-stone-900">
+						<p class="mb-2 text-xs text-stone-500">Top source</p>
+						<p class="truncate text-lg font-bold text-stone-900 dark:text-white">{topSource?.source || '—'}</p>
+					</div>
+				{/if}
+			</div>
+
+			<div class="overflow-hidden border border-stone-100 bg-stone-50 dark:border-stone-800 dark:bg-stone-900">
+				<div class="space-y-4 border-b border-stone-100 bg-white/60 p-4 dark:border-stone-800 dark:bg-stone-900/60">
+					<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<div>
+							<h2 class="text-sm font-bold text-stone-900 dark:text-white">Traffic sources</h2>
+							<p class="text-xs text-stone-500">UTM means a deliberately tagged campaign link.</p>
 						</div>
-					{:else if stackedPoints.length === 0}
-						<p class="py-6 text-center text-stone-400 italic font-serif text-sm">No campaign data yet</p>
+						<label class="relative block sm:w-64">
+							<span class="sr-only">Search traffic sources</span>
+							<Search size={14} class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+							<input bind:value={search} placeholder="Search sources" class="w-full border border-stone-200 bg-white py-2 pl-9 pr-3 text-xs text-stone-900 outline-none focus:border-stone-400 dark:border-stone-700 dark:bg-stone-950 dark:text-white" />
+						</label>
+					</div>
+					<div class="flex flex-wrap gap-2" aria-label="Filter by source type">
+						{#each SOURCE_CHANNELS as channel (channel)}
+							{@const count = channel === 'All' ? totals.visits : totalsByChannel.get(channel) || 0}
+							<button type="button" onclick={() => (selectedChannel = channel)} class="border px-3 py-1.5 text-xs font-medium transition-colors {selectedChannel === channel ? 'border-stone-900 bg-stone-900 text-white dark:border-white dark:bg-white dark:text-stone-900' : 'border-stone-200 bg-white text-stone-600 hover:border-stone-400 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-300'}">
+								{channel} <span class="ml-1 opacity-65 tabular-nums">{count.toLocaleString()}</span>
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				<div class="divide-y divide-stone-100 dark:divide-stone-800">
+					{#each displayRows as row (row.bucket)}
+						<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-5 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_7rem_7rem]">
+							<div class="min-w-0">
+								<div class="flex min-w-0 items-center gap-2">
+									<p class="truncate text-sm font-semibold text-stone-900 dark:text-white">{row.source}</p>
+									<span class="shrink-0 border border-stone-200 bg-white px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-stone-500 dark:border-stone-700 dark:bg-stone-950">{row.channel}</span>
+								</div>
+								{#if row.detail}<p class="mt-1 truncate text-xs text-stone-400">{row.detail}</p>{/if}
+								<div class="mt-2 h-1 max-w-md bg-stone-200 dark:bg-stone-800"><div class="h-full bg-{$color}-600" style={`width: ${Math.max(2, (row.visits / maxVisits) * 100)}%`}></div></div>
+							</div>
+							<div class="text-right">
+								<p class="text-sm font-bold tabular-nums text-stone-900 dark:text-white">{row.visits.toLocaleString()}</p>
+								<p class="text-[10px] uppercase tracking-wide text-stone-400">visits</p>
+							</div>
+							{#if selectedGoal}
+								<div class="col-span-2 text-right sm:col-span-1">
+									<p class="text-sm font-bold tabular-nums text-stone-900 dark:text-white">{row.conversions.toLocaleString()} <span class="font-normal text-stone-400">· {row.conversionRate}%</span></p>
+									<p class="text-[10px] uppercase tracking-wide text-stone-400">conversions</p>
+								</div>
+							{/if}
+						</div>
 					{:else}
-						<div class="flex items-start justify-between gap-4">
-							<div class="flex-1 min-w-0">
-								<StackedChart
-									points={stackedPoints}
-									segments={stackedSegmentsList}
-									colors={stackedColors}
-									chartType={stackedChartType}
-									metric={stackedMetric}
-								/>
-							</div>
-							<div class="hidden sm:flex flex-col gap-1 w-44 shrink-0">
-								{#each stackedSegmentsList.slice(0, 6) as seg (seg.key)}
-									{@const style = stackedColors.get(seg.key)}
-									<div class="flex items-center justify-between gap-2">
-										<div class="flex items-center gap-2 min-w-0">
-											<span class="w-2 h-2 rounded-none" style={`background: ${style?.fill}; opacity: ${style?.opacity ?? 0.6};`}></span>
-											<span class="text-[11px] font-medium text-stone-500 dark:text-stone-400 truncate">{seg.key}</span>
-										</div>
-										<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{seg.total.toLocaleString()}</span>
-									</div>
-								{/each}
-							</div>
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-
-		<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col shadow-none">
-			<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex flex-wrap gap-3 items-center justify-between bg-white/50 dark:bg-stone-900/50 rounded-none">
-				<div class="min-w-0">
-					<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Traffic Sources</h2>
-					<p class="text-xs font-bold text-stone-900 dark:text-white font-serif italic truncate">Conversion details</p>
-				</div>
-				<div class="flex flex-wrap items-center gap-2 justify-end">
-					<input
-						bind:value={search}
-						placeholder="Search sources / UTMs"
-						class="w-full sm:w-64 px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-					/>
-					<div class="w-44">
-						<CustomSelect
-							bind:value={groupBy}
-							options={[
-								{ value: 'full', label: 'Group: Full UTM' },
-								{ value: 'source', label: 'Group: Source' },
-								{ value: 'medium', label: 'Group: Medium' },
-								{ value: 'campaign', label: 'Group: Campaign' }
-							]}
-						/>
-					</div>
-					<div class="w-44">
-						<CustomSelect
-							bind:value={sortBy}
-							options={[
-								{ value: 'conversions', label: 'Sort: Conversions' },
-								{ value: 'conversionRate', label: 'Sort: Rate' },
-								{ value: 'visits', label: 'Sort: Visits' },
-								{ value: 'name', label: 'Sort: Name' }
-							]}
-						/>
-					</div>
-					<div class="w-44">
-						<CustomSelect
-							bind:value={sortDir}
-							options={[
-								{ value: 'desc', label: 'Direction: Desc' },
-								{ value: 'asc', label: 'Direction: Asc' }
-							]}
-						/>
-					</div>
-					<div class="w-32">
-						<CustomSelect
-							bind:value={limit}
-							onchange={() => fetchCampaigns()}
-							options={[
-								{ value: 20, label: 'Limit: 20' },
-								{ value: 50, label: 'Limit: 50' },
-								{ value: 100, label: 'Limit: 100' }
-							]}
-						/>
-					</div>
-				</div>
-			</div>
-			<div class="p-2 rounded-none">
-				<div class="divide-y divide-stone-50 dark:divide-stone-800 rounded-none">
-					{#each displayRows as campaign (campaign.bucket)}
-						<div class="px-5 py-3 flex items-center justify-between hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300 border border-transparent hover:border-stone-200 dark:hover:border-stone-800">
-							<div class="flex-1 min-w-0 rounded-none">
-								<p class="text-sm font-bold text-stone-900 dark:text-white truncate">{formatBucket(campaign.bucket)}</p>
-								{#if groupBy === 'full' && campaign.bucket.includes('|') && campaign.bucket !== formatBucket(campaign.bucket)}
-									<p class="text-[10px] font-mono text-stone-400 truncate mt-0.5">{campaign.bucket}</p>
-								{/if}
-							</div>
-							<div class="flex items-center gap-6 text-sm ml-4 rounded-none">
-								<div class="text-right rounded-none">
-									<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{campaign.visits.toLocaleString()}</span>
-									<span class="text-[10px] font-black uppercase tracking-tighter text-stone-400 ml-1 opacity-50">visits</span>
-								</div>
-								<div class="text-right w-20 rounded-none">
-									<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{campaign.conversions.toLocaleString()}</span>
-									<span class="text-[10px] font-black uppercase tracking-tighter text-stone-400 ml-1 opacity-50">conv</span>
-								</div>
-								<span class="tabular-nums w-16 text-right text-xs font-bold {campaign.conversionRate > 0 ? `text-${$color}-600 dark:text-${$color}-400` : 'text-stone-400'}">
-									{campaign.conversionRate}%
-								</span>
-							</div>
-						</div>
+						<p class="px-5 py-10 text-center text-sm text-stone-400">No sources match this filter.</p>
 					{/each}
 				</div>
 			</div>
-			<div class="px-6 py-4 border-t border-stone-100 dark:border-stone-800 flex flex-wrap gap-3 items-center justify-between bg-white/50 dark:bg-stone-900/50">
-				<div class="text-xs font-bold text-stone-500 dark:text-stone-400">
-					Best conversions:
-					{#if bestByConversions}
-						<span class="text-stone-900 dark:text-white"> {formatBucket(bestByConversions.bucket)}</span>
-						<span class="text-stone-500 dark:text-stone-400"> · </span>
-						<span class="text-stone-900 dark:text-white tabular-nums">{bestByConversions.conversions.toLocaleString()}</span>
-					{:else}
-						<span class="text-stone-400"> —</span>
-					{/if}
-				</div>
-				<div class="text-xs font-bold text-stone-500 dark:text-stone-400">
-					Best rate:
-					{#if bestByRate}
-						<span class="text-stone-900 dark:text-white"> {formatBucket(bestByRate.bucket)}</span>
-						<span class={`tabular-nums ${bestByRate.conversionRate > 0 ? `text-${$color}-600 dark:text-${$color}-400` : 'text-stone-400'}`}>
-							 {' '}· {bestByRate.conversionRate}%
-						</span>
-					{:else}
-						<span class="text-stone-400"> —</span>
-					{/if}
-				</div>
-			</div>
-		</div>
-	{/if}
+		{/if}
 	</LoadingBoundary>
 </div>

@@ -1,75 +1,44 @@
-# Feedback System Documentation
+# Feedback API
 
-The LittleStats Feedback System allows you to collect, manage, and analyze user feedback directly from your website.
+LittleStats keeps feedback collection as an API-backed feature. The analytics
+tracker does not inject a feedback button, modal, or other interface into a
+customer site.
 
-## 1. Tracker Integration
+Build feedback UI inside your application and submit it to:
 
-The feedback widget is included by default in the standard tracker script.
-
-### Basic Usage
-```html
-<script 
-  src="https://stats.littlestats.click/tracker.js" 
-  data-site-id="YOUR_DOMAIN_KEY"
-></script>
+```text
+POST /api/v2/feedback/:siteKey
 ```
 
-### Configuration Attributes
-- `data-feedback="false"`: Completely disables the feedback system (no API, no UI).
-- `data-feedback-ui="false"`: Enables the feedback API but hides the default floating widget. Use this if you want to build your own custom feedback form.
+Example:
 
-## 2. Public JavaScript API
-
-When the tracker is loaded, it exposes a public API via `window.littlestats`.
-
-### Programmatic Control
-- `window.littlestats.showFeedback()`: Opens the default feedback modal.
-- `window.littlestats.hideFeedback()`: Closes the default feedback modal.
-
-### Manual Submission (Custom UI)
-If you've disabled the default UI with `data-feedback-ui="false"`, you can still submit feedback using:
 ```javascript
-window.littlestats.submit("The user's message", {
-  rating: 5,        // Optional: 1-5
-  category: "bug",  // Optional: "general", "bug", "feature", "other"
-  email: "user@example.com", // Optional
-  metadata: {       // Optional: Any additional JSON data
-    plan: "pro",
-    source: "header-link"
-  }
+await fetch("https://stats.littlestats.click/api/v2/feedback/YOUR_DOMAIN_KEY", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    content: "The user's message",
+    rating: 5,
+    category: "bug",
+    email: "user@example.com",
+    metadata: { plan: "pro" }
+  })
 });
 ```
 
-## 3. Backend API (Internal)
+Supported submission fields:
 
-### Public Endpoints
-- `POST /api/v2/feedback/:siteKey`: Submit feedback (handles CORS, used by tracker).
+- `content`: required message text.
+- `rating`: optional number from 1 to 5.
+- `category`: optional `general`, `bug`, `feature`, or `other`.
+- `email`: optional reply address.
+- `metadata`: optional JSON context.
+- `visitorId` and `sessionId`: optional analytics identifiers.
 
-### Protected Endpoints (Requires Auth)
-- `GET /api/v2/sites/:siteId/feedback`: List feedback with pagination and filters.
-- `PATCH /api/v2/sites/:siteId/feedback/:feedbackId`: Update feedback status (`new`, `reviewed`, `resolved`, `archived`).
-- `DELETE /api/v2/sites/:siteId/feedback/:feedbackId`: Permanently delete a feedback entry.
+Authenticated dashboard endpoints:
 
-## 4. Database Schema
+- `GET /api/v2/sites/:siteId/feedback`
+- `PATCH /api/v2/sites/:siteId/feedback/:feedbackId`
+- `DELETE /api/v2/sites/:siteId/feedback/:feedbackId`
 
-Feedback is stored in the `feedbacks` table with the following information:
-- **Content**: The message text.
-- **Rating**: 1-5 star rating.
-- **Category**: Feedback classification.
-- **Context**: Automatically captured URL, Browser, OS, Device, Screen size, and Country.
-- **Identity**: Linked to `visitor_id` and `session_id` from analytics.
-- **Status**: Management state for internal workflow.
-
-## 5. Customization
-
-You can customize the look and feel of the feedback widget by setting these CSS variables in your site's CSS:
-
-```css
-:root {
-  --ls-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; /* Default: System fonts */
-  --ls-bg: #18181b;   /* Widget background color */
-  --ls-text: #fafafa; /* Text color */
-  --ls-primary: #fafafa; /* Accent color for buttons and focus states */
-  --ls-radius: 0;     /* Border radius for widget and inputs */
-}
-```
+Submitted feedback remains available on the site's Feedback dashboard page.

@@ -33,13 +33,13 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       this.baseUrl = baseUrl.replace(/\\/$/, '');
       
       this.endpoint = this.baseUrl + '/api/v2/track/' + siteId;
-      this.feedbackEndpoint = this.baseUrl + '/api/v2/feedback/' + siteId;
       this.currentUrl = this.pageUrl();
-      this.currentReferrer = document.referrer;
       this.cache = this.loadCache();
+      // Keep one external acquisition source for the whole visit. Internal
+      // navigations must not become new referrers or inflate source totals.
+      this.currentReferrer = this.cache.referrer ?? this.externalReferrer(document.referrer);
+      this.cache.referrer = this.currentReferrer;
       this.visitorId = this.getVisitorId();
-      this.feedbackWidget = null;
-      this.feedbackInitialized = false;
       this.saveCacheTimeout = null;
       this.pageStartedAt = Date.now();
       this.pageExitSent = false;
@@ -61,6 +61,15 @@ export async function generateTrackerScript(env: Env): Promise<string> {
 
     pageUrl() {
       return location.pathname + location.search;
+    }
+
+    externalReferrer(referrer) {
+      if (!referrer) return '';
+      try {
+        return new URL(referrer).hostname === location.hostname ? '' : referrer;
+      } catch (e) {
+        return '';
+      }
     }
     
     saveCache() {
@@ -146,29 +155,13 @@ export async function generateTrackerScript(env: Env): Promise<string> {
         this.flushCache();
       });
       
-      // Lazy-load feedback widget only when first needed
-      if (this.options.feedback !== false && this.options.feedbackUi !== false) {
-        // Pre-check if feedback will be shown (e.g., via API call or delayed trigger)
-        this.scheduleFeedbackInit();
-      }
-    }
-    
-    scheduleFeedbackInit() {
-      // Defer widget initialization to after page load to avoid blocking
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => this.initFeedbackWidget(), { timeout: 5000 });
-      } else {
-        setTimeout(() => this.initFeedbackWidget(), 1000);
-      }
     }
     
     handleNavigation() {
       const nextUrl = this.pageUrl();
       if (this.currentUrl !== nextUrl) {
         this.trackPageExit();
-        const previousUrl = this.currentUrl;
         this.currentUrl = nextUrl;
-        this.currentReferrer = location.origin + previousUrl;
         this.pageStartedAt = Date.now();
         this.pageExitSent = false;
         this.track();
@@ -253,366 +246,13 @@ export async function generateTrackerScript(env: Env): Promise<string> {
       sendAttempt(0);
     }
     
-    initFeedbackWidget() {
-      // Prevent double initialization and only init when body is available
-      if (this.feedbackInitialized || !document.body) return;
-      this.feedbackInitialized = true;
-      
-      // If body not ready yet, wait for it
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => this.initFeedbackWidget());
-        return;
-      }
-      
-      // Widget creation code continues here...
-			const container = document.createElement('div');
-			container.id = 'ls-feedback-widget';
-			const shadow = container.attachShadow({ mode: 'closed' });
-			
-			const styles = \`
-				:host {
-					--ls-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-					--ls-bg: #18181b;
-					--ls-text: #fafafa;
-					--ls-primary: #fafafa;
-					--ls-radius: 0;
-					--ls-border: color-mix(in srgb, var(--ls-text), transparent 85%);
-					--ls-muted: color-mix(in srgb, var(--ls-text), transparent 40%);
-				}
-				* { box-sizing: border-box; margin: 0; padding: 0; }
-				.ls-trigger {
-					position: fixed;
-					bottom: 24px;
-          right: 24px;
-          width: 48px;
-          height: 48px;
-          border-radius: var(--ls-radius);
-          background: var(--ls-bg);
-					color: var(--ls-text);
-					border: none;
-					cursor: pointer;
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					transition: all 0.2s ease;
-					z-index: 999999;
-					box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-				}
-				.ls-trigger:hover { 
-					background: color-mix(in srgb, var(--ls-bg), var(--ls-text) 10%); 
-					transform: translateY(-2px); 
-				}
-				.ls-trigger svg { width: 20px; height: 20px; }
-				.ls-modal {
-					position: fixed;
-					bottom: 84px;
-					right: 24px;
-					width: 360px;
-					max-width: calc(100vw - 48px);
-					background: var(--ls-bg);
-					border-radius: var(--ls-radius);
-					border: 1px solid var(--ls-border);
-					z-index: 999998;
-					display: none;
-					overflow: hidden;
-					font-family: var(--ls-font);
-					box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.35);
-					color: var(--ls-text);
-				}
-				.ls-modal.open { display: block; animation: lsFadeIn 0.2s ease-out; }
-				@keyframes lsFadeIn {
-					from { opacity: 0; transform: translateY(10px); }
-					to { opacity: 1; transform: translateY(0); }
-				}
-				.ls-header {
-					padding: 24px;
-					background: var(--ls-bg);
-					border-bottom: 1px solid var(--ls-border);
-					display: flex;
-					justify-content: space-between;
-					align-items: center;
-				}
-				.ls-header-content h3 { font-size: 12px; font-weight: 900; color: var(--ls-text); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
-				.ls-header-content p { font-size: 11px; color: var(--ls-muted); font-style: italic; }
-				.ls-close { background: none; border: none; color: var(--ls-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; }
-				.ls-close:hover { color: var(--ls-text); }
-				.ls-body { padding: 24px; background: var(--ls-bg); }
-				.ls-rating { display: flex; gap: 8px; margin-bottom: 24px; }
-				.ls-rating button {
-					flex: 1;
-					height: 48px;
-					border: 1px solid var(--ls-border);
-					border-radius: var(--ls-radius);
-					background: var(--ls-bg);
-					cursor: pointer;
-					font-size: 20px;
-					transition: all 0.15s;
-					display: flex;
-					align-items: center;
-					justify-content: center;
-				}
-				.ls-rating button:hover { border-color: var(--ls-muted); background: var(--ls-bg); }
-				.ls-rating button.selected { border-color: var(--ls-primary); background: color-mix(in srgb, var(--ls-primary), transparent 90%); outline: 1px solid var(--ls-primary); }
-				.ls-field { margin-bottom: 24px; }
-				.ls-field label {
-					display: block;
-					font-size: 10px;
-					font-weight: 900;
-					color: var(--ls-muted);
-					margin-bottom: 8px;
-					text-transform: uppercase;
-					letter-spacing: 0.05em;
-				}
-				.ls-field textarea, .ls-field input, .ls-field select {
-					width: 100%;
-					padding: 12px;
-					border: 1px solid var(--ls-border);
-					border-radius: var(--ls-radius);
-					font-size: 13px;
-					font-family: inherit;
-					transition: all 0.15s;
-					background: var(--ls-bg);
-					color: var(--ls-text);
-				}
-				.ls-field textarea:focus, .ls-field input:focus, .ls-field select:focus {
-					outline: none;
-					border-color: var(--ls-primary);
-				}
-				.ls-field textarea { resize: vertical; min-height: 100px; }
-				.ls-actions { display: flex; gap: 8px; }
-				.ls-btn {
-					flex: 1;
-					padding: 14px 16px;
-					border-radius: var(--ls-radius);
-					font-size: 10px;
-					font-weight: 900;
-					cursor: pointer;
-					transition: all 0.15s;
-					border: none;
-					text-transform: uppercase;
-					letter-spacing: 0.05em;
-				}
-				.ls-btn-primary {
-					background: var(--ls-primary);
-					color: var(--ls-bg);
-				}
-				.ls-btn-primary:hover { opacity: 0.9; }
-				.ls-btn-primary:disabled { background: var(--ls-border); color: var(--ls-muted); cursor: not-allowed; }
-				.ls-btn-secondary {
-					background: var(--ls-bg);
-					color: var(--ls-muted);
-					border: 1px solid var(--ls-border);
-				}
-				.ls-btn-secondary:hover { background: var(--ls-bg); color: var(--ls-text); border-color: var(--ls-muted); }
-				.ls-success {
-					text-align: center;
-					padding: 48px 24px;
-					background: var(--ls-bg);
-				}
-				.ls-success svg { width: 40px; height: 40px; color: #10b981; margin-bottom: 16px; }
-				.ls-success h4 { font-size: 12px; font-weight: 900; color: var(--ls-text); text-transform: uppercase; }
-				.ls-success p { font-size: 11px; color: var(--ls-muted); margin-top: 8px; font-style: italic; }
-				.ls-branding-footer {
-					padding: 12px;
-					background: var(--ls-bg);
-					border-top: 1px solid var(--ls-border);
-					text-align: center;
-				}
-				.ls-branding-link {
-					font-size: 10px;
-					color: var(--ls-muted);
-					text-decoration: none;
-					text-transform: uppercase;
-					letter-spacing: 0.05em;
-					font-weight: 700;
-				}
-				.ls-branding-link:hover { color: var(--ls-text); }
-			\`;
-			
-			shadow.innerHTML = \`
-				<style>\${styles}</style>
-				<button class="ls-trigger" aria-label="Send feedback">
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-					</svg>
-				</button>
-        <div class="ls-modal">
-          <div class="ls-header">
-            <div class="ls-header-content">
-              <h3>Send us feedback</h3>
-              <p>We'd love to hear from you</p>
-            </div>
-            <button class="ls-close" aria-label="Close">✕</button>
-          </div>
-          <div class="ls-body">
-            <div class="ls-form">
-              <div class="ls-field">
-                <label>How would you rate your experience?</label>
-                <div class="ls-rating">
-                  <button data-rating="1" title="Very Bad">😠</button>
-                  <button data-rating="2" title="Bad">🙁</button>
-                  <button data-rating="3" title="Neutral">😐</button>
-                  <button data-rating="4" title="Good">🙂</button>
-                  <button data-rating="5" title="Very Good">😍</button>
-                </div>
-              </div>
-              <div class="ls-field">
-                <label>Category</label>
-                <select class="ls-category">
-                  <option value="general">General Feedback</option>
-                  <option value="bug">Bug Report</option>
-                  <option value="feature">Feature Request</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div class="ls-field">
-                <label>Your message *</label>
-                <textarea class="ls-message" placeholder="Tell us what's on your mind..."></textarea>
-              </div>
-              <div class="ls-field">
-                <label>Email (optional)</label>
-                <input type="email" class="ls-email" placeholder="your@email.com">
-              </div>
-              <div class="ls-actions">
-                <button class="ls-btn ls-btn-secondary ls-cancel">Cancel</button>
-                <button class="ls-btn ls-btn-primary ls-submit">Send Feedback</button>
-              </div>
-            </div>
-            <div class="ls-success" style="display:none">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-              </svg>
-              <h4>Thank you!</h4>
-              <p>Your feedback has been received.</p>
-            </div>
-          </div>
-				</div>
-			\`;
-      
-      document.body.appendChild(container);
-      this.feedbackWidget = shadow;
-      
-      const modal = shadow.querySelector('.ls-modal');
-      const form = shadow.querySelector('.ls-form');
-      const success = shadow.querySelector('.ls-success');
-      const ratingBtns = shadow.querySelectorAll('.ls-rating button');
-      const submitBtn = shadow.querySelector('.ls-submit');
-      
-      let selectedRating = 0;
-      
-      shadow.querySelector('.ls-trigger').addEventListener('click', () => modal.classList.toggle('open'));
-      shadow.querySelector('.ls-close').addEventListener('click', () => modal.classList.remove('open'));
-      shadow.querySelector('.ls-cancel').addEventListener('click', () => {
-        modal.classList.remove('open');
-        this.resetFeedbackForm();
-      });
-      
-      ratingBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          ratingBtns.forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedRating = parseInt(btn.dataset.rating);
-        });
-      });
-      
-      submitBtn.addEventListener('click', async () => {
-        const message = shadow.querySelector('.ls-message').value.trim();
-        if (!message) {
-          shadow.querySelector('.ls-message').style.borderColor = '#ef4444';
-          return;
-        }
-        
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-        
-        try {
-          await this.submitFeedback({
-            content: message,
-            rating: selectedRating || undefined,
-            category: shadow.querySelector('.ls-category').value,
-            email: shadow.querySelector('.ls-email').value.trim() || undefined,
-          });
-          
-          form.style.display = 'none';
-          success.style.display = 'block';
-          
-          setTimeout(() => {
-            modal.classList.remove('open');
-            setTimeout(() => {
-              form.style.display = 'block';
-              success.style.display = 'none';
-              this.resetFeedbackForm();
-            }, 300);
-          }, 2000);
-        } catch (err) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Send Feedback';
-        }
-      });
-      
-      document.addEventListener('click', (e) => {
-        if (!container.contains(e.target) && modal.classList.contains('open')) {
-          modal.classList.remove('open');
-        }
-      });
-    }
-    
-    resetFeedbackForm() {
-      if (!this.feedbackWidget) return;
-      const shadow = this.feedbackWidget;
-      shadow.querySelector('.ls-message').value = '';
-      shadow.querySelector('.ls-message').style.borderColor = '';
-      shadow.querySelector('.ls-email').value = '';
-      shadow.querySelector('.ls-category').value = 'general';
-      shadow.querySelectorAll('.ls-rating button').forEach(b => b.classList.remove('selected'));
-      shadow.querySelector('.ls-submit').disabled = false;
-      shadow.querySelector('.ls-submit').textContent = 'Send Feedback';
-    }
-    
-    async submitFeedback(data) {
-      const payload = {
-        ...data,
-        visitorId: this.visitorId,
-        sessionId: this.cache.visitId,
-        url: location.href,
-        screen: screen.width + 'x' + screen.height,
-      };
-      const response = await fetch(this.feedbackEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) throw new Error('Failed to submit feedback');
-      return response.json();
-    }
-
-    showFeedback() { 
-      if (!this.feedbackInitialized) this.initFeedbackWidget();
-      if (this.feedbackWidget) this.feedbackWidget.querySelector('.ls-modal').classList.add('open'); 
-    }
-    hideFeedback() { 
-      if (this.feedbackWidget) this.feedbackWidget.querySelector('.ls-modal').classList.remove('open'); 
-    }
-    async submit(content, options = {}) {
-      return this.submitFeedback({
-        content,
-        rating: options.rating,
-        category: options.category,
-        email: options.email,
-        metadata: options.metadata
-      });
-    }
   }
   
   const script = document.currentScript || document.querySelector('script[data-site-id]');
   if (script) {
     const siteId = script.getAttribute('data-site-id');
     if (!siteId) return;
-    const options = {
-      host: script.getAttribute('data-host'),
-      feedback: script.getAttribute('data-feedback') !== 'false',
-      feedbackUi: script.getAttribute('data-feedback-ui') !== 'false'
-    };
+    const options = { host: script.getAttribute('data-host') };
     const instances = window[CONFIG.INSTANCE_KEY] || (window[CONFIG.INSTANCE_KEY] = {});
     window.littlestats = instances[siteId] || (instances[siteId] = new LittleStatsTracker(siteId, options));
     window.track = (name, data) => window.littlestats?.track(name, data);

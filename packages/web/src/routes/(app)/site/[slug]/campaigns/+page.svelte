@@ -8,5 +8,5 @@
 
 
 <SitePageShell>
-	<Campaigns {siteId} />
+	<Campaigns {siteId} siteDomain={data.site?.domain || data.site?.name || ''} />
 </SitePageShell>

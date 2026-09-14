@@ -11,9 +11,10 @@
 	import TrafficSkeleton from '$lib/components/analytics/graphStuff/trafficSkeleton.svelte';
 	import LoadingBoundary from '$lib/components/generals/loadingBoundary.svelte';
 	import Seo from '$lib/components/generals/seo.svelte';
+	import { SOURCE_CHANNELS, channelTotals, isSameSiteSource, sourceFromCampaign } from '$lib/analytics/sourceChannels.js';
 	import { Activity, Eye, Globe, Monitor, Smartphone, Tablet } from 'lucide-svelte';
 
-	let { domain_id, demoData = null } = $props();
+	let { domain_id, current_domain = null, demoData = null } = $props();
 	let siteId = $derived(domain_id);
 	let isDemo = $derived(!!demoData);
 
@@ -22,7 +23,8 @@
 	let error = $state(null);
 	let stats = $state(null);
 	let timeSeries = $state([]);
-	let referrers = $state([]);
+	let acquisition = $state([]);
+	let selectedSourceChannel = $state('All');
 	let pages = $state([]);
 	let countries = $state([]);
 	let devices = $state([]);
@@ -42,7 +44,7 @@
 	});
 
 	// Modal State
-	let activeModal = $state(null); // 'pages' | 'referrers' | 'countries' | null
+	let activeModal = $state(null); // 'pages' | 'countries' | null
 	let modalSearch = $state('');
 	let modalLoading = $state(false);
 	let modalError = $state(null);
@@ -79,8 +81,6 @@
 				let items = [];
 				if (activeModal === 'pages') {
 					items = demoData.allPages || demoData.pages || [];
-				} else if (activeModal === 'referrers') {
-					items = demoData.allReferrers || demoData.referrers || [];
 				} else if (activeModal === 'countries') {
 					items = demoData.allCountries || demoData.countries || [];
 				}
@@ -89,7 +89,7 @@
 				if (modalSearch.trim()) {
 					const search = modalSearch.trim().toLowerCase();
 					items = items.filter(item => {
-						const name = item.path || item.referrer || item.country || '';
+						const name = item.path || item.country || '';
 						return name.toLowerCase().includes(search);
 					});
 				}
@@ -118,9 +118,6 @@
 			if (activeModal === 'pages') {
 				const res = await api.getPages(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined, signal });
 				if (requestId === modalRequestId) modalItems = res.pages || [];
-			} else if (activeModal === 'referrers') {
-				const res = await api.getReferrers(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined, signal });
-				if (requestId === modalRequestId) modalItems = res.referrers || [];
 			} else if (activeModal === 'countries') {
 				const res = await api.getCountries(siteId, { limit: 100, filter, q: modalSearch.trim() || undefined, signal });
 				if (requestId === modalRequestId) modalItems = res.countries || [];
@@ -207,7 +204,12 @@
 			if (isDemo && demoData) {
 				stats = demoData.stats;
 				timeSeries = demoData.timeSeries || [];
-				referrers = demoData.referrers || [];
+				acquisition = (demoData.referrers || []).map((row) => ({
+					bucket: row.referrer || 'Direct',
+					visits: row.visits || row.views || 0,
+					conversions: 0,
+					conversionRate: 0
+				}));
 				pages = demoData.pages || [];
 				countries = demoData.countries || [];
 				devices = demoData.devices || [];
@@ -222,19 +224,19 @@
 				country: drilldown.country || undefined
 			};
 
-			const [statsData, seriesData, refsData, pagesData, countriesData, devicesData] = await Promise.all([
+			const [statsData, seriesData, pagesData, countriesData, devicesData, acquisitionData] = await Promise.all([
 				api.getStatsSummary(siteId, filter, signal),
 				api.getTimeSeries(siteId, filter, timeSeriesGranularity, signal),
-				api.getReferrers(siteId, { limit: 5, filter, signal }),
 				api.getPages(siteId, { limit: 5, filter, signal }),
 				api.getCountries(siteId, { limit: 5, filter, signal }),
-				api.getDevices(siteId, filter, signal)
+				api.getDevices(siteId, filter, signal),
+				api.getCampaigns(siteId, filter, 100)
 			]);
 			if (requestId !== dashboardRequestId) return;
 
 			stats = statsData;
 			timeSeries = seriesData.data || [];
-			referrers = refsData.referrers || [];
+			acquisition = acquisitionData.campaigns || [];
 			pages = pagesData.pages || [];
 			countries = countriesData.countries || [];
 			devices = devicesData.devices || [];
@@ -271,6 +273,21 @@
 			default: return Monitor;
 		}
 	}
+
+	let sourceRows = $derived(
+		acquisition
+			.map(sourceFromCampaign)
+			.filter((row) => !isSameSiteSource(row.source, current_domain?.domain || current_domain?.name || ''))
+	);
+	let sourceTotals = $derived(channelTotals(sourceRows));
+	let visibleSources = $derived(
+		sourceRows
+			.filter((row) => selectedSourceChannel === 'All' || row.channel === selectedSourceChannel)
+			.slice()
+			.sort((a, b) => b.visits - a.visits)
+			.slice(0, 5)
+	);
+	let allSourceVisits = $derived(sourceRows.reduce((total, row) => total + Number(row.visits || 0), 0));
 </script>
 
 <LoadingBoundary loading={loading && !stats} label="Loading traffic analytics">
@@ -410,27 +427,43 @@
 					</div>
 				</div>
 
-				<!-- Top Referrers -->
+				<!-- Traffic Sources -->
 				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden flex flex-col">
 					<div class="px-4 md:px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
-						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Top Referrers</span>
-						<button
-							onclick={() => openModal('referrers')}
+						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 rounded-none">Traffic Sources</span>
+						<a
+							href={`/site/${$page.params.slug}/campaigns`}
 							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
 						>
-							See more →
-						</button>
+							Open acquisition →
+						</a>
 					</div>
-					<div class="p-2 flex-1 rounded-none">
-						{#if referrers.length === 0}
+					<div class="flex flex-1 flex-col rounded-none p-2">
+						<div class="mb-2 flex flex-wrap gap-1.5 px-1 pt-1" aria-label="Filter traffic sources">
+							{#each SOURCE_CHANNELS as channel (channel)}
+								{@const count = channel === 'All' ? allSourceVisits : sourceTotals.get(channel) || 0}
+								<button type="button" onclick={() => (selectedSourceChannel = channel)} class="border px-2 py-1 text-[10px] font-bold transition-colors {selectedSourceChannel === channel ? 'border-stone-900 bg-stone-900 text-white dark:border-white dark:bg-white dark:text-stone-900' : 'border-stone-200 bg-white text-stone-500 hover:border-stone-400 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-400'}">
+									{channel} <span class="ml-0.5 opacity-60 tabular-nums">{count.toLocaleString()}</span>
+								</button>
+							{/each}
+						</div>
+						{#if sourceRows.length === 0}
 							<p class="py-10 text-center text-stone-400 italic font-serif text-sm rounded-none">No data available</p>
+						{:else if visibleSources.length === 0}
+							<p class="py-10 text-center text-stone-400 text-sm rounded-none">No {selectedSourceChannel.toLowerCase()} visits in this period</p>
 						{:else}
 							<div class="space-y-0.5 rounded-none">
-								{#each referrers as ref (ref.referrer)}
-									<button onclick={() => toggleFilter('referrer', ref.referrer || 'Direct')} class="w-full text-left px-5 py-3 flex justify-between items-center group hover:bg-white dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-none transition-all duration-300">
-										<span class="text-xs font-medium text-stone-600 dark:text-stone-400 truncate max-w-[75%] rounded-none">{ref.referrer || 'Direct'}</span>
-										<span class="text-sm font-bold text-stone-900 dark:text-white tabular-nums rounded-none">{ref.views || 0}</span>
-									</button>
+								{#each visibleSources as source (source.bucket)}
+									<div class="flex w-full items-center justify-between border border-stone-200 px-5 py-3 dark:border-stone-800">
+										<div class="min-w-0">
+											<div class="flex items-center gap-2">
+												<span class="truncate text-xs font-medium text-stone-600 dark:text-stone-400">{source.source}</span>
+												<span class="shrink-0 text-[9px] font-bold uppercase tracking-wide text-stone-400">{source.channel}</span>
+											</div>
+											{#if source.detail}<p class="mt-0.5 truncate text-[10px] text-stone-400">{source.detail}</p>{/if}
+										</div>
+										<span class="text-sm font-bold text-stone-900 dark:text-white tabular-nums rounded-none">{source.visits || 0}</span>
+									</div>
 								{/each}
 							</div>
 						{/if}
@@ -520,7 +553,7 @@
 				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50">
 					<div>
 						<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
-							{#if activeModal === 'pages'}All Pages{:else if activeModal === 'referrers'}All Referrers{:else}All Countries{/if}
+							{activeModal === 'pages' ? 'All Pages' : 'All Countries'}
 						</h3>
 						<p class="text-xs font-bold text-stone-900 dark:text-white font-serif italic truncate">Site Overview</p>
 					</div>
@@ -551,14 +584,10 @@
 								<p class="text-stone-400 italic font-serif text-sm">{modalError}</p>
 							</div>
 						{:else}
-							{#each modalData as item (item.path || item.referrer || item.code || item.country)}
-								{@const name = item.path || item.referrer || item.country || 'Unknown'}
-								{@const filterKind = activeModal === 'pages' ? 'page' : activeModal === 'referrers' ? 'referrer' : 'country'}
-								{@const filterValue = activeModal === 'pages'
-									? item.path
-									: activeModal === 'referrers'
-										? (item.referrer || 'Direct')
-										: (item.code || item.country || 'XX')}
+						{#each modalData as item (item.path || item.code || item.country)}
+							{@const name = item.path || item.country || 'Unknown'}
+							{@const filterKind = activeModal === 'pages' ? 'page' : 'country'}
+							{@const filterValue = activeModal === 'pages' ? item.path : (item.code || item.country || 'XX')}
 								<div class="relative h-fit w-full">
 									<div
 										class="bg-stone-900 dark:bg-stone-100 absolute h-full rounded-none opacity-[0.06]"

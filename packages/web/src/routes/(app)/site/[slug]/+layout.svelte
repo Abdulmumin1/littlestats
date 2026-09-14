@@ -14,7 +14,7 @@
 
 	const links = $derived([
 		{ href: `/site/${$page.params.slug}`, text: 'Overview', icon: LayoutDashboard },
-		{ href: `/site/${$page.params.slug}/campaigns`, text: 'Campaigns', icon: Megaphone },
+		{ href: `/site/${$page.params.slug}/campaigns`, text: 'Acquisition', icon: Megaphone },
 		{ href: `/site/${$page.params.slug}/funnels`, text: 'Funnels', icon: GitBranch },
 		{ href: `/site/${$page.params.slug}/events`, text: 'Events', icon: CalendarHeart },
 		{ href: `/site/${$page.params.slug}/feedback`, text: 'Feedback', icon: Mailbox },

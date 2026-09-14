@@ -226,8 +226,7 @@ export class R2DashboardAPI {
       WITH ${dedupedEventsCte(this.sql.table, this.siteId, start, endExclusive)}
       SELECT campaign_bucket AS bucket, COUNT(DISTINCT visit_id) AS visits, ${conversion} AS conversions
       FROM deduped WHERE campaign_bucket IS NOT NULL AND campaign_bucket != ''
-        AND LOWER(campaign_bucket) != 'direct' AND campaign_bucket NOT LIKE 'localhost%'
-        AND campaign_bucket NOT LIKE '127.0.0.1%'
+        AND campaign_bucket NOT LIKE 'localhost%' AND campaign_bucket NOT LIKE '127.0.0.1%'
       GROUP BY campaign_bucket ORDER BY conversions DESC, visits DESC LIMIT ${Math.min(100, Math.max(1, limit))}
     `);
     return rows.map((r) => {

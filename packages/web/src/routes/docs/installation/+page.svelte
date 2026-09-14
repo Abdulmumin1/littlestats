@@ -17,12 +17,6 @@
   src="https://stats.littlestats.click/tracker.js"
 ><\/script>`;
 
-	const disableFeedback = `<script 
-  defer 
-  data-site-id="YOUR_SITE_ID"
-  data-feedback="false"
-  src="https://stats.littlestats.click/tracker.js"
-><\/script>`;
 </script>
 
 <svelte:head>
@@ -55,19 +49,6 @@
 		<CodeBlock code={customHost} lang="markup" title="Custom Host" />
 	</div>
 
-	<div>
-		<h3 class="text-base font-bold mb-2">data-feedback</h3>
-		<p class="text-sm text-stone-500 mb-2">Set to <code>false</code> to completely disable the feedback collection system (both API and UI).</p>
-		<CodeBlock code={disableFeedback} lang="markup" title="Disable Feedback" />
-	</div>
-
-	<div>
-		<h3 class="text-base font-bold mb-2">data-feedback-ui</h3>
-		<p class="text-sm text-stone-500 mb-2">Set to <code>false</code> to hide the default floating feedback widget while keeping the feedback API enabled. Use this when building a custom feedback form.</p>
-		<div class="bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-4">
-			<pre class="text-sm text-stone-600 dark:text-stone-400"><code>&lt;script defer data-site-id="SITE_ID" data-feedback-ui="false" src="..."&gt;&lt;/script&gt;</code></pre>
-		</div>
-	</div>
 </div>
 
 <h2 class="text-xl font-bold mt-12 mb-4">What Gets Tracked</h2>

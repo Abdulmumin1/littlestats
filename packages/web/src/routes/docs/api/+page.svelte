@@ -31,23 +31,6 @@ identify('john@example.com', {
   company: 'Acme Corp'
 });`;
 
-	const feedbackApiExample = `// Show the feedback modal programmatically
-window.littlestats.showFeedback();
-
-// Hide the feedback modal
-window.littlestats.hideFeedback();
-
-// Submit feedback manually (when using custom UI)
-window.littlestats.submit('The website is great!', {
-  rating: 5,
-  category: 'feature',
-  email: 'user@example.com',
-  metadata: {
-    page: 'dashboard',
-    source: 'header-button'
-  }
-});`;
-
 	const spaExample = `// In a React/Svelte/Vue router navigation handler
 // Page changes are tracked automatically!
 // No additional code needed.
@@ -78,7 +61,7 @@ function handlePurchase(product) {
 </h1>
 
 <p class="mb-8">
-	The Littlestats tracker exposes a simple JavaScript API for tracking custom events, identifying users, and controlling the feedback widget. All functions are available globally on the <code>window</code> object after the script loads.
+	The Littlestats tracker exposes a small JavaScript API for tracking custom events and identifying users. Both functions are available globally after the script loads.
 </p>
 
 <section class="mb-12">
@@ -121,35 +104,6 @@ function handlePurchase(product) {
 </section>
 
 <section class="mb-12">
-	<h2 class="text-xl font-bold mb-4">Feedback Widget API</h2>
-	<p class="mb-4">Control the feedback widget programmatically via <code>window.littlestats</code>:</p>
-
-	<div class="space-y-6">
-		<div class="flex items-start gap-4">
-			<div class="flex-1">
-				<code class="text-{$color}-600 dark:text-{$color}-400 font-bold">window.littlestats.showFeedback()</code>
-				<p class="text-sm text-stone-500 mt-1">Opens the feedback modal programmatically.</p>
-			</div>
-		</div>
-		<div class="flex items-start gap-4">
-			<div class="flex-1">
-				<code class="text-{$color}-600 dark:text-{$color}-400 font-bold">window.littlestats.hideFeedback()</code>
-				<p class="text-sm text-stone-500 mt-1">Closes the feedback modal.</p>
-			</div>
-		</div>
-		<div class="flex items-start gap-4">
-			<div class="flex-1">
-				<code class="text-{$color}-600 dark:text-{$color}-400 font-bold">window.littlestats.submit(content, options?)</code>
-				<p class="text-sm text-stone-500 mt-1">Submit feedback programmatically (useful for custom UI implementations).</p>
-			</div>
-		</div>
-	</div>
-
-	<h3 class="text-base font-bold mt-8 mb-2">Example Usage</h3>
-	<CodeBlock code={feedbackApiExample} lang="javascript" title="Feedback API" />
-</section>
-
-<section class="mb-12">
 	<h2 class="text-xl font-bold mb-4">SPA Integration</h2>
 	<p class="mb-4">Littlestats automatically tracks SPA navigation by intercepting <code>history.pushState</code> and listening to <code>popstate</code> events. No extra code is needed for React Router, Vue Router, SvelteKit, or Next.js!</p>
 	
@@ -172,7 +126,7 @@ function handlePurchase(product) {
 			{ field: 'visitorId', desc: 'Unique visitor identifier' },
 			{ field: 'cache.visitId', desc: 'Session identifier' },
 			{ field: 'userAgent', desc: 'Browser user agent' }
-		] as item}
+		] as item (item.field)}
 			<div class="p-3 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg text-sm">
 				<code class="text-{$color}-600 dark:text-{$color}-400 font-bold">{item.field}</code>
 				<p class="text-stone-500 text-xs mt-1">{item.desc}</p>
