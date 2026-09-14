@@ -25,6 +25,7 @@ function statsFilter(c: { req: { query(name: string): string | undefined } }): S
     referrerDomain: c.req.query("referrer"),
     country: c.req.query("country"),
     excludePageview: c.req.query("excludePageview") === "true",
+    customEventsOnly: c.req.query("customEventsOnly") === "true",
   };
 }
 

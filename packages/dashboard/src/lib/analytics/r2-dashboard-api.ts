@@ -168,6 +168,7 @@ export class R2DashboardAPI {
     else if (name === "Identify") eventClause = " AND event_type = 'identify'";
     else if (name) eventClause = ` AND event_type = 'custom' AND event_name = ${sqlString(name)}`;
     if (filter.excludePageview) eventClause += " AND event_type != 'pageview'";
+    if (filter.customEventsOnly) eventClause += " AND event_type = 'custom'";
     const cursor = options?.cursor;
     const cursorClause = cursor
       ? ` AND (event_time < ${sqlString(cursor.timestamp)} OR (event_time = ${sqlString(cursor.timestamp)} AND event_id < ${sqlString(String(cursor.id))}))`
@@ -201,7 +202,7 @@ export class R2DashboardAPI {
     return {
       events,
       total: numeric(totals[0]?.total),
-      nextCursor: last ? { timestamp: last.timestamp, id: last.id } : null,
+      nextCursor: events.length === limit && last ? { timestamp: last.timestamp, id: last.id } : null,
     };
   }
 

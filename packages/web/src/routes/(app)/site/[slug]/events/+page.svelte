@@ -34,10 +34,7 @@
 		if (!siteId) return;
 		loadingCounts = true;
 		try {
-			const response = await api.getCustomEvents(siteId, {
-				...dashboardStore.dateRange,
-				excludePageview: true
-			});
+			const response = await api.getCustomEvents(siteId, dashboardStore.dateRange);
 			eventCounts = response.events || [];
 		} catch (err) {
 			console.error('Event counts fetch error:', err);
@@ -58,7 +55,7 @@
 				cursor: reset ? undefined : nextCursor,
 				filter: {
 					...dashboardStore.dateRange,
-					excludePageview: true
+					customEventsOnly: true
 				},
 				eventName: selectedEventName || undefined
 			});
@@ -87,8 +84,7 @@
 	}
 
 	function selectEvent(eventName) {
-		selectedEventName = selectedEventName === eventName ? null : eventName;
-		fetchEventLog(true);
+		selectedEventName = eventName;
 	}
 
 	// Fetch counts when site or date range changes
@@ -136,9 +132,6 @@
 			{nextCursor}
 			{loadingLog}
 			{totalLogEvents}
-			{logLimit}
-			rangeStart={dashboardStore?.dateRange?.startDate}
-			rangeEnd={dashboardStore?.dateRange?.endDate}
 		/>
 	{/if}
 	</LoadingBoundary>

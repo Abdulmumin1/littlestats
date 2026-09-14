@@ -45,6 +45,7 @@ export interface StatsFilter {
 	os?: string;
 	eventName?: string;
 	excludePageview?: boolean;
+	customEventsOnly?: boolean;
 }
 
 export interface StatsSummary {
@@ -201,6 +202,7 @@ export class AnalyticsAPI {
 			referrer: filter?.referrerDomain,
 			country: filter?.country,
 			excludePageview: filter?.excludePageview,
+			customEventsOnly: filter?.customEventsOnly,
 			...extra
 		};
 		for (const [key, value] of Object.entries(values)) {

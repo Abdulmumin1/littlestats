@@ -23,6 +23,7 @@ export interface StatsFilter {
   os?: string;
   eventName?: string;
   excludePageview?: boolean;
+  customEventsOnly?: boolean;
 }
 
 export interface StatsSummary {

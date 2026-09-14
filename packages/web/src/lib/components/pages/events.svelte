@@ -1,799 +1,248 @@
 <script>
-	import { flip } from 'svelte/animate';
-	import EmptyValues from '$lib/components/analytics/emptyValues.svelte';
-
-	import ChartJsGraph from '$lib/components/analytics/graphStuff/chartJsGraph.svelte';
-
-	import { Search, Activity, Globe, Users, MoreVertical, Check, ChevronDown } from 'lucide-svelte';
+	import { ChevronDown, Search } from 'lucide-svelte';
 	import CustomSelect from '$lib/components/generals/customSelect.svelte';
-	import { getInclusiveRangeDays } from '$lib/utils/dateRange.js';
-	import { runWorker } from '$lib/workers/workerClient.js';
 
 	let {
 		page_data = [],
-		chartData = null,
 		eventCounts = [],
 		selectedEventName = null,
 		selectEvent = () => {},
 		loadMore = () => {},
 		nextCursor = null,
 		loadingLog = false,
-		totalLogEvents = 0,
-		logLimit = 100,
-		rangeStart = undefined,
-		rangeEnd = undefined
+		totalLogEvents = 0
 	} = $props();
 
-	let rangeDays = $derived.by(() => {
-		return getInclusiveRangeDays(rangeStart, rangeEnd);
+	let eventSearch = $state('');
+	let logSearch = $state('');
+	let filterPage = $state('');
+	let filterReferrer = $state('');
+	let expanded = $state(null);
+
+	function parseProperties(value) {
+		if (!value) return null;
+		if (typeof value === 'object') return value;
+		try {
+			return JSON.parse(value);
+		} catch {
+			return null;
+		}
+	}
+
+	function displayValue(value) {
+		if (typeof value === 'string') return value;
+		if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+		try {
+			return JSON.stringify(value);
+		} catch {
+			return '[object]';
+		}
+	}
+
+	let eventTotal = $derived(eventCounts.reduce((total, event) => total + Number(event.count || 0), 0));
+	let visibleEventNames = $derived.by(() => {
+		const query = eventSearch.trim().toLowerCase();
+		return eventCounts.filter((event) => !query || String(event.name || '').toLowerCase().includes(query));
 	});
 
-	let sortInterval = $derived.by(() => (rangeDays <= 2 ? 1 : rangeDays));
+	let rows = $derived.by(() => {
+		return (page_data || []).map((event, index) => {
+			let pagePath = event?.url || '/';
+			try {
+				pagePath = new URL(event.url, 'https://littlestats.invalid').pathname || '/';
+			} catch {}
 
-	const BUSINESS_EVENT_PRIORITY = {
-		'Payment Completed': 100,
-		'Upgrade Plan': 95,
-		'Checkout Started': 90,
-		'Start Free Trial': 85,
-		'Subscription Renewal': 80,
-		'Cancellation': 5,
-		'Churned': 1,
-		'Sign Up': 70,
-		'Login': 60,
-		'Invite Team Member': 55,
-		'Integration Connected': 50,
-		'Feature Used': 40,
-		'Download Report': 35,
-		'Form Submission': 30,
-		'Contact Support': 10,
-		'Feedback Given': 8,
-		'Webinar Registered': 6,
-		'Documentation Visit': 4
-	};
+			let referrer = event?.referrer || 'Direct';
+			try {
+				referrer = new URL(event.referrer).hostname || 'Direct';
+			} catch {}
 
-	// Use eventCounts from backend for the event name list (full date range totals)
-	let events = $derived.by(() => {
-		return (eventCounts || [])
-			.map(e => [e.name, e.count])
-			.sort((a, b) => {
-				const aName = String(a?.[0] ?? '');
-				const bName = String(b?.[0] ?? '');
-				const aCount = Number(a?.[1] ?? 0);
-				const bCount = Number(b?.[1] ?? 0);
-				const aPri = BUSINESS_EVENT_PRIORITY[aName] ?? 0;
-				const bPri = BUSINESS_EVENT_PRIORITY[bName] ?? 0;
-				if (bPri !== aPri) return bPri - aPri;
-				if (bCount !== aCount) return bCount - aCount;
-				return aName.localeCompare(bName);
-			});
-	});
-
-	// Active event is determined by selectedEventName or first in list
-	let activeEventTitle = $derived(selectedEventName || (events.length > 0 ? events[0][0] : '-'));
-
-	// For the chart and detail views, use page_data (the paginated event log)
-	let activeEventData = $derived(page_data || []);
-
-	// Normalized data structure - precompute expensive fields ONCE when page_data changes
-	let normalizedEventData = $derived.by(() => {
-		const rows = activeEventData || [];
-		return rows.map((event, i) => {
-			// Extract page path
-			let pagePath = '';
-			if (event?.url) {
-				try {
-					const u = new URL(event.url);
-					pagePath = u.pathname || '/';
-				} catch {
-					pagePath = String(event.url);
-				}
-			}
-
-			// Extract referrer hostname
-			let refHost = 'Direct';
-			if (event?.referrer) {
-				try {
-					const u = new URL(event.referrer);
-					refHost = u.hostname;
-				} catch {
-					refHost = event.referrer || 'Direct';
-				}
-			}
-
-			// Parse JSON once
-			let eventObj = null;
-			if (event?.event_data && typeof event.event_data === 'string') {
-				try {
-					eventObj = JSON.parse(event.event_data);
-				} catch {
-					eventObj = null;
-				}
-			}
-
-			// Precompute summary lines
-			let summaryLines = [];
-			if (eventObj && typeof eventObj === 'object') {
-				summaryLines = Object.entries(eventObj)
-					.filter(([k, v]) => k !== 'memory' && v !== null && v !== undefined)
-					.map(([k, v]) => {
-						if (typeof v === 'string') return `${k}: ${v}`;
-						if (typeof v === 'number' || typeof v === 'boolean') return `${k}: ${String(v)}`;
-						try {
-							return `${k}: ${JSON.stringify(v)}`;
-						} catch {
-							return `${k}: [object]`;
-						}
-					})
-					.sort((a, b) => a.localeCompare(b))
-					.slice(0, 3);
-			}
-
-			// Precompute searchable string
-			const summarySearch = `${pagePath} ${refHost} ${event?.user_id || ''} ${summaryLines.join(' ')}`.toLowerCase();
-
-			// Preformat dates
+			const properties = parseProperties(event?.event_data);
+			const propertyEntries = properties && typeof properties === 'object'
+				? Object.entries(properties).filter(([key, value]) => key !== 'memory' && value != null)
+				: [];
 			const timestamp = event?.timestamp ? new Date(event.timestamp) : null;
-			const dateStr = timestamp ? timestamp.toLocaleDateString() : '';
-			const timeStr = timestamp ? timestamp.toLocaleTimeString() : '';
-
-			// Unique key
-			const _key = event?.id ?? `${event?.timestamp}-${event?.user_id ?? ''}-${i}`;
-
-			// Has campaign
-			const hasCampaign = !!(eventObj && typeof eventObj === 'object' && (eventObj.campaign || eventObj.utm_campaign));
+			const validTimestamp = timestamp && !Number.isNaN(timestamp.getTime()) ? timestamp : null;
+			const when = validTimestamp
+				? validTimestamp.toLocaleString(undefined, {
+						month: 'short',
+						day: 'numeric',
+						hour: 'numeric',
+						minute: '2-digit',
+						second: '2-digit'
+					})
+				: 'Unknown time';
+			const searchable = [
+				event?.event_name,
+				event?.user_id,
+				pagePath,
+				referrer,
+				...propertyEntries.flatMap(([key, value]) => [key, displayValue(value)])
+			]
+				.join(' ')
+				.toLowerCase();
 
 			return {
 				...event,
+				_key: event?.id ?? `${event?.timestamp}-${index}`,
 				pagePath,
-				refHost,
-				eventObj,
-				summaryLines,
-				summarySearch,
-				dateStr,
-				timeStr,
-				_key,
-				hasCampaign
+				referrer,
+				propertyEntries,
+				when,
+				searchable
 			};
 		});
 	});
 
-	let eventSearch = $state('');
-	let detailSearch = $state('');
-	let filterPage = $state('');
-	let filterReferrer = $state('');
-	let filterHasCampaign = $state(false);
-
-	// Debounced search values for performance
-	let debouncedEventSearch = $state('');
-	let debouncedDetailSearch = $state('');
-	let searchDebounceTimer = null;
-
-	$effect(() => {
-		const value = eventSearch;
-		clearTimeout(searchDebounceTimer);
-		searchDebounceTimer = setTimeout(() => {
-			debouncedEventSearch = value;
-		}, 150);
-	});
-
-	$effect(() => {
-		const value = detailSearch;
-		clearTimeout(searchDebounceTimer);
-		searchDebounceTimer = setTimeout(() => {
-			debouncedDetailSearch = value;
-		}, 150);
-	});
-
-	let visibleEvents = $derived.by(() => {
-		const list = events || [];
-		const q = debouncedEventSearch.trim().toLowerCase();
-		if (!q) return list;
-		return list.filter(([name]) => String(name || '').toLowerCase().includes(q));
-	});
-
-	let filteredActiveEventData = $derived.by(() => {
-		const rows = normalizedEventData || [];
-		const q = debouncedDetailSearch.trim().toLowerCase();
-		const pageFilter = String(filterPage || '').trim();
-		const refFilter = String(filterReferrer || '').trim();
+	let availablePages = $derived(
+		Array.from(new Set(rows.map((event) => event.pagePath).filter(Boolean))).sort((a, b) => a.localeCompare(b))
+	);
+	let availableReferrers = $derived(
+		Array.from(new Set(rows.map((event) => event.referrer).filter(Boolean))).sort((a, b) => a.localeCompare(b))
+	);
+	let filteredRows = $derived.by(() => {
+		const query = logSearch.trim().toLowerCase();
 		return rows.filter((event) => {
-			if (filterHasCampaign && !event.hasCampaign) return false;
-			if (pageFilter && event.pagePath !== pageFilter) return false;
-			if (refFilter && event.refHost !== refFilter) return false;
-			if (!q) return true;
-			return event.summarySearch.includes(q);
+			if (filterPage && event.pagePath !== filterPage) return false;
+			if (filterReferrer && event.referrer !== filterReferrer) return false;
+			return !query || event.searchable.includes(query);
 		});
 	});
+	let loadedUsers = $derived(new Set(filteredRows.map((event) => event.user_id).filter(Boolean)).size);
+	let activeTitle = $derived(selectedEventName || 'All custom events');
 
-	let availablePages = $derived.by(() => {
-		const set = new Set();
-		for (const e of normalizedEventData || []) {
-			if (e.pagePath) set.add(e.pagePath);
-		}
-		return Array.from(set.values()).sort((a, b) => String(a).localeCompare(String(b)));
-	});
-
-	let availableReferrers = $derived.by(() => {
-		const set = new Set();
-		for (const e of normalizedEventData || []) {
-			if (e.refHost) set.add(e.refHost);
-		}
-		return Array.from(set.values()).sort((a, b) => String(a).localeCompare(String(b)));
-	});
-
-	let activeTotals = $derived.by(() => {
-		const rows = filteredActiveEventData || [];
-		const users = new Set();
-		const pages = new Map();
-		const referrers = new Map();
-		for (const e of rows) {
-			if (e?.user_id) users.add(e.user_id);
-			if (e.pagePath) pages.set(e.pagePath, (pages.get(e.pagePath) || 0) + 1);
-			if (e.refHost) referrers.set(e.refHost, (referrers.get(e.refHost) || 0) + 1);
-		}
-		return {
-			triggers: rows.length,
-			uniqueUsers: users.size,
-			topPage: maxByCount(pages),
-			topReferrer: maxByCount(referrers)
-		};
-	});
-
-	let sortedReferals = $state([]);
-	let sortedCountryData = $state([]);
-
-	let workerRequestId = 0;
-
-	$effect(async () => {
-		const dataSnapshot = $state.snapshot(filteredActiveEventData);
-		workerRequestId += 1;
-		const currentRequestId = workerRequestId;
-
-		if (!dataSnapshot || dataSnapshot.length === 0) {
-			sortedReferals = [];
-			sortedCountryData = [];
-			return;
-		}
-
-		try {
-			const [referals, countries] = await Promise.all([
-				runWorker('sortReferals', dataSnapshot),
-				runWorker('sortCountryData', dataSnapshot)
-			]);
-
-			// Only update if this is still the latest request
-			if (currentRequestId === workerRequestId) {
-				sortedReferals = referals;
-				sortedCountryData = countries;
-			}
-		} catch (err) {
-			console.error('Worker error:', err);
-		}
-	});
-
-	let sumReferalData = $state(0);
-	let sumCountryData = $state(0);
-
-	$effect(async () => {
-		const dataSnapshot = $state.snapshot(sortedReferals);
-		if (!dataSnapshot || dataSnapshot.length === 0) {
-			sumReferalData = 0;
-			return;
-		}
-		try {
-			sumReferalData = await runWorker('sumData', dataSnapshot);
-		} catch (err) {
-			console.error('Worker error:', err);
-		}
-	});
-
-	$effect(async () => {
-		const dataSnapshot = $state.snapshot(sortedCountryData);
-		if (!dataSnapshot || dataSnapshot.length === 0) {
-			sumCountryData = 0;
-			return;
-		}
-		try {
-			sumCountryData = await runWorker('sumData', dataSnapshot);
-		} catch (err) {
-			console.error('Worker error:', err);
-		}
-	});
-
-	let expanded = $state(null);
-
-	// Virtual scrolling for large datasets
-	const ROW_HEIGHT = 48; // Approximate row height in pixels
-	const BUFFER_ROWS = 10; // Extra rows to render above/below viewport
-	let tableScrollTop = $state(0);
-	let tableViewportHeight = $state(700); // Default max-h value
-
-	let virtualWindow = $derived.by(() => {
-		const totalRows = filteredActiveEventData.length;
-		if (totalRows <= 100) {
-			// Small dataset - render all
-			return { start: 0, end: totalRows, topPadding: 0, bottomPadding: 0 };
-		}
-
-		const startRow = Math.max(0, Math.floor(tableScrollTop / ROW_HEIGHT) - BUFFER_ROWS);
-		const visibleRows = Math.ceil(tableViewportHeight / ROW_HEIGHT) + BUFFER_ROWS * 2;
-		const endRow = Math.min(totalRows, startRow + visibleRows);
-
-		return {
-			start: startRow,
-			end: endRow,
-			topPadding: startRow * ROW_HEIGHT,
-			bottomPadding: Math.max(0, (totalRows - endRow) * ROW_HEIGHT)
-		};
-	});
-
-	let visibleTableRows = $derived(
-		filteredActiveEventData.slice(virtualWindow.start, virtualWindow.end)
-	);
-
-	function handleTableScroll(event) {
-		tableScrollTop = event.target.scrollTop;
-	}
-
-	function maxByCount(map) {
-		let best = null;
-		for (const [key, val] of map.entries()) {
-			if (!best || val > best.count) best = { key, count: val };
-		}
-		return best;
-	}
-
-	let activeModal = $state(null); // 'referrers' | 'countries' | null
-	let modalSearch = $state('');
-
-	function openModal(type) {
-		activeModal = type;
-		modalSearch = '';
-	}
-
-	function closeModal() {
-		activeModal = null;
-		modalSearch = '';
-	}
-
-	let modalData = $derived.by(() => {
-		if (!activeModal) return [];
-		const source = activeModal === 'referrers' ? sortedReferals : sortedCountryData;
-		const q = modalSearch.trim().toLowerCase();
-		if (!q) return source;
-		return source.filter(([name]) => String(name || '').toLowerCase().includes(q));
-	});
-
-	let modalTotal = $derived(modalData.reduce((acc, [_, val]) => acc + val, 0));
-	function onKeyDown(e) {
-		if (e.key === 'Escape' && activeModal) {
-			closeModal();
-		}
+	function chooseEvent(name) {
+		expanded = null;
+		filterPage = '';
+		filterReferrer = '';
+		selectEvent(name);
 	}
 </script>
 
-<svelte:window onkeydown={onKeyDown} />
-
-<div class="space-y-8">
-	<div class="px-2">
-		<h1 class="text-xl font-bold text-stone-900 dark:text-white tracking-tight">Events</h1>
-		<p class="text-xs font-black uppercase tracking-[0.2em] text-stone-400 mt-1">Track, validate, and debug product actions</p>
-	</div>
-
-	<div class="grid min-h-[60vh] grid-cols-1 content-start gap-6 lg:grid-cols-12">
-		<div class="lg:col-span-4 space-y-4">
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 shadow-none">
-				<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">
-					<Search size={12} />
-					Events
-				</div>
-				<input
-					bind:value={eventSearch}
-					placeholder="Search event name"
-					class="w-full px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-				/>
-			</div>
-
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden shadow-none">
-				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none">
-					<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Event names</h2>
-					<span class="text-xs font-bold text-stone-900 dark:text-white font-serif italic text-opacity-50">Triggers</span>
-				</div>
-				<div class="p-2">
-					{#if visibleEvents.length === 0}
-						<p class="py-10 text-center text-stone-400 italic font-serif text-sm">No events found</p>
-					{:else}
-						<div class="space-y-0.5">
-							{#each visibleEvents as [eventName, eventCount], index (eventName)}
-								{@const isActive = selectedEventName === eventName || (!selectedEventName && index === 0)}
-								<button
-									type="button"
-									onclick={() => {
-										selectEvent(eventName);
-										expanded = null;
-									}}
-									class={`w-full text-left px-5 py-3 flex items-center justify-between hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300 border border-transparent hover:border-stone-200 dark:hover:border-stone-800 ${isActive ? `bg-white dark:bg-stone-950/40 border-stone-200 dark:border-stone-800` : ''}`}
-								>
-									<div class="min-w-0">
-										<p class="text-sm font-bold text-stone-900 dark:text-white truncate">{eventName}</p>
-										<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-1">{eventCount.toLocaleString()} triggers</p>
-									</div>
-									<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{eventCount.toLocaleString()}</span>
-								</button>
-							{/each}
-						</div>
-					{/if}
-				</div>
-			</div>
+<div class="space-y-5">
+	<header class="flex flex-col gap-2 px-1 sm:flex-row sm:items-end sm:justify-between">
+		<div>
+			<h1 class="text-xl font-bold tracking-tight text-stone-900 dark:text-white">Events</h1>
+			<p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Inspect the product actions your app sends.</p>
 		</div>
+		<p class="text-xs text-stone-400"><span class="font-bold tabular-nums text-stone-700 dark:text-stone-200">{eventTotal.toLocaleString()}</span> custom events in range</p>
+	</header>
 
-		<div class="lg:col-span-8 min-h-[60vh] space-y-6">
-			<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-					<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
-						<Activity size={12} />
-						Triggers
-					</div>
-					<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">{activeTotals.triggers.toLocaleString()}</p>
-					<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-2 truncate">{activeEventTitle}</p>
-				</div>
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-					<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
-						<Users size={12} />
-						Users
-					</div>
-					<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">{activeTotals.uniqueUsers.toLocaleString()}</p>
-					<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-2">Unique in range</p>
-				</div>
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-					<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
-						<Globe size={12} />
-						Top referrer
-					</div>
-					{#if activeTotals.topReferrer}
-						<p class="text-sm font-bold text-stone-900 dark:text-white truncate">{activeTotals.topReferrer.key}</p>
-						<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-2">{activeTotals.topReferrer.count.toLocaleString()} triggers</p>
-					{:else}
-						<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">—</p>
-					{/if}
-				</div>
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 p-4 transition-all duration-300 shadow-none">
-					<div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-2">
-						<Search size={12} />
-						Top page
-					</div>
-					{#if activeTotals.topPage}
-						<p class="text-sm font-bold text-stone-900 dark:text-white truncate">{activeTotals.topPage.key}</p>
-						<p class="text-[10px] font-black uppercase tracking-widest text-stone-400 mt-2">{activeTotals.topPage.count.toLocaleString()} triggers</p>
-					{:else}
-						<p class="text-xl font-bold text-stone-900 dark:text-white tabular-nums leading-none">—</p>
-					{/if}
-				</div>
+	<div class="grid overflow-hidden border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950 lg:grid-cols-[17rem_minmax(0,1fr)]">
+		<aside class="border-b border-stone-200 bg-stone-50 dark:border-stone-800 dark:bg-stone-900 lg:border-b-0 lg:border-r">
+			<div class="border-b border-stone-200 p-3 dark:border-stone-800">
+				<label class="relative block">
+					<span class="sr-only">Search event names</span>
+					<Search size={14} class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+					<input bind:value={eventSearch} placeholder="Find an event" class="w-full border border-stone-200 bg-white py-2 pl-9 pr-3 text-xs text-stone-900 outline-none focus:border-stone-500 dark:border-stone-700 dark:bg-stone-950 dark:text-white" />
+				</label>
 			</div>
 
-			<div >
-				<ChartJsGraph
-					chartD={{
-						data: chartData || filteredActiveEventData,
-						label: chartData ? `${activeEventTitle} · 14-day trend` : activeEventTitle
-					}}
-					{sortInterval}
-					{rangeStart}
-					{rangeEnd}
-					showChart={true}
-				/>
+			<nav class="max-h-72 overflow-y-auto p-2 lg:max-h-[calc(100vh-15rem)]" aria-label="Event names">
+				<button type="button" onclick={() => chooseEvent(null)} class="flex w-full items-center justify-between px-3 py-2.5 text-left text-xs transition-colors {selectedEventName ? 'text-stone-500 hover:bg-white dark:hover:bg-stone-800' : 'bg-white font-bold text-stone-900 dark:bg-stone-950 dark:text-white'}">
+					<span>All events</span>
+					<span class="tabular-nums text-stone-400">{eventTotal.toLocaleString()}</span>
+				</button>
+				{#each visibleEventNames as event (event.name)}
+					<button type="button" onclick={() => chooseEvent(event.name)} class="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left text-xs transition-colors {selectedEventName === event.name ? 'bg-white font-bold text-stone-900 dark:bg-stone-950 dark:text-white' : 'text-stone-600 hover:bg-white dark:text-stone-300 dark:hover:bg-stone-800'}">
+						<span class="truncate">{event.name}</span>
+						<span class="shrink-0 tabular-nums text-stone-400">{Number(event.count || 0).toLocaleString()}</span>
+					</button>
+				{:else}
+					<p class="px-3 py-8 text-center text-xs text-stone-400">{eventSearch ? 'No matching events' : 'No custom events yet'}</p>
+				{/each}
+			</nav>
+		</aside>
+
+		<section class="min-w-0">
+			<div class="flex flex-col gap-1 border-b border-stone-200 px-4 py-3 dark:border-stone-800 sm:flex-row sm:items-center sm:justify-between">
+				<h2 class="truncate text-sm font-bold text-stone-900 dark:text-white">{activeTitle}</h2>
+				<p class="text-xs text-stone-400">
+					<span class="font-semibold text-stone-600 dark:text-stone-300">{totalLogEvents.toLocaleString()}</span> triggers
+					{#if loadedUsers} · {loadedUsers.toLocaleString()} loaded users{/if}
+				</p>
 			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden shadow-none">
-					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
-						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Referrers</span>
-						<button
-							onclick={() => openModal('referrers')}
-							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
-						>
-							See more →
-						</button>
-					</div>
-					<div class="p-2">
-						<div class="flex w-full flex-col gap-0.5">
-							{#each sortedReferals as page (page[0])}
-								<div animate:flip={{ duration: 150 }} class="relative h-fit w-full">
-									<div
-										class="bg-stone-900 dark:bg-stone-100 absolute h-full rounded-none opacity-[0.06]"
-										style="width: {sumReferalData > 0 ? (page[1] / sumReferalData) * 100 : 0}%;"
-									></div>
-									<div class="flex justify-between gap-2 px-5 py-3 hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300 border border-transparent hover:border-stone-200 dark:hover:border-stone-800">
-										<span class="text-xs font-bold text-stone-900 dark:text-white truncate">{page[0]}</span>
-										<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{page[1]}</span>
+			<div class="grid gap-2 border-b border-stone-200 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-900 sm:grid-cols-2 xl:grid-cols-[minmax(12rem,1fr)_11rem_11rem]">
+				<label class="relative block">
+					<span class="sr-only">Search event log</span>
+					<Search size={14} class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+					<input bind:value={logSearch} placeholder="Search user, page or property" class="h-9 w-full border border-stone-200 bg-white pl-9 pr-3 text-xs text-stone-900 outline-none focus:border-stone-500 dark:border-stone-700 dark:bg-stone-950 dark:text-white" />
+				</label>
+				<CustomSelect bind:value={filterPage} options={[{ value: '', label: 'All pages' }, ...availablePages.map((page) => ({ value: page, label: page }))]} />
+				<CustomSelect bind:value={filterReferrer} options={[{ value: '', label: 'All sources' }, ...availableReferrers.map((referrer) => ({ value: referrer, label: referrer }))]} />
+			</div>
+
+			<div class="overflow-x-auto">
+				<table class="w-full min-w-[760px] table-fixed">
+					<thead class="border-b border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-950">
+						<tr class="text-left text-[10px] font-bold uppercase tracking-widest text-stone-400">
+							<th class="w-[18%] px-4 py-3">Event</th>
+							<th class="w-[18%] px-4 py-3">When</th>
+							<th class="w-[24%] px-4 py-3">Page</th>
+							<th class="w-[16%] px-4 py-3">User</th>
+							<th class="px-4 py-3">Details</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-stone-100 dark:divide-stone-800">
+						{#each filteredRows as event (event._key)}
+							<tr class="cursor-pointer align-top text-xs hover:bg-stone-50 dark:hover:bg-stone-900" onclick={() => (expanded = expanded === event._key ? null : event._key)}>
+								<td class="px-4 py-3 font-semibold text-stone-900 dark:text-white"><p class="truncate">{event.event_name || 'Custom event'}</p></td>
+								<td class="px-4 py-3 text-stone-500 dark:text-stone-400"><p class="truncate">{event.when}</p></td>
+								<td class="px-4 py-3">
+									<p class="truncate font-mono text-stone-700 dark:text-stone-200">{event.pagePath}</p>
+									{#if event.referrer !== 'Direct'}<p class="mt-1 truncate text-[10px] text-stone-400">from {event.referrer}</p>{/if}
+								</td>
+								<td class="px-4 py-3 font-mono text-stone-500 dark:text-stone-400"><p class="truncate">{event.user_id?.slice(0, 8) || 'Anonymous'}</p></td>
+								<td class="px-4 py-3">
+									<div class="flex items-start justify-between gap-2">
+										<div class="min-w-0 space-y-1">
+											{#each event.propertyEntries.slice(0, 2) as [key, value] (key)}
+												<p class="truncate font-mono text-[10px] text-stone-500"><span class="text-stone-800 dark:text-stone-200">{key}</span>: {displayValue(value)}</p>
+											{:else}
+												<span class="text-stone-300">—</span>
+											{/each}
+										</div>
+										<ChevronDown size={14} class="mt-0.5 shrink-0 text-stone-400 transition-transform {expanded === event._key ? 'rotate-180' : ''}" />
 									</div>
-								</div>
-							{:else}
-								<div class="py-10">
-									<EmptyValues />
-								</div>
-							{/each}
-						</div>
-					</div>
-				</div>
-
-				<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden shadow-none">
-					<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex justify-between items-center bg-white/50 dark:bg-stone-900/50 rounded-none h-14">
-						<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Countries</span>
-						<button
-							onclick={() => openModal('countries')}
-							class="text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors"
-						>
-							See more →
-						</button>
-					</div>
-					<div class="p-2">
-						<div class="flex w-full flex-col gap-0.5">
-							{#each sortedCountryData as page (page[0])}
-								<div animate:flip={{ duration: 150 }} class="relative h-fit w-full">
-									<div
-										class="bg-stone-900 dark:bg-stone-100 absolute h-full rounded-none opacity-[0.06]"
-										style="width: {sumCountryData > 0 ? (page[1] / sumCountryData) * 100 : 0}%;"
-									></div>
-									<div class="flex justify-between gap-2 px-5 py-3 hover:bg-white dark:hover:bg-stone-800 rounded-none transition-all duration-300 border border-transparent hover:border-stone-200 dark:hover:border-stone-800">
-										<span class="text-xs font-bold text-stone-900 dark:text-white truncate">{page[0]}</span>
-										<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{page[1]}</span>
-									</div>
-								</div>
-							{:else}
-								<div class="py-10">
-									<EmptyValues />
-								</div>
-							{/each}
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<div class="bg-stone-50 dark:bg-stone-900 rounded-none border border-stone-100 dark:border-stone-800 overflow-hidden shadow-none">
-				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex flex-wrap gap-3 items-center justify-between bg-white/50 dark:bg-stone-900/50 rounded-none">
-					<div class="min-w-0">
-						<h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Event log</h2>
-						<p class="text-xs font-bold text-stone-900 dark:text-white font-serif italic truncate">{activeEventTitle}</p>
-					</div>
-					<div class="flex flex-wrap items-center gap-2 justify-end">
-						<div class="w-48">
-							<CustomSelect
-								bind:value={filterPage}
-								options={[
-									{ value: '', label: 'Page: All' },
-									...availablePages.map(p => ({ value: p, label: p }))
-								]}
-							/>
-						</div>
-						<div class="w-48">
-							<CustomSelect
-								bind:value={filterReferrer}
-								options={[
-									{ value: '', label: 'Referrer: All' },
-									...availableReferrers.map(r => ({ value: r, label: r }))
-								]}
-							/>
-						</div>
-						<label class="flex items-center gap-2 h-[38px] px-4 text-xs font-bold border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white select-none">
-							<input
-								type="checkbox"
-								bind:checked={filterHasCampaign}
-								class="accent-stone-900 dark:accent-stone-100"
-							/>
-							Campaign only
-						</label>
-						<input
-							bind:value={detailSearch}
-							placeholder="Search user, properties"
-							class="w-full sm:w-72 px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-						/>
-					</div>
-				</div>
-				<div class="max-h-[700px] overflow-y-auto" onscroll={handleTableScroll}>
-					<table class="min-w-full divide-y divide-stone-200 dark:divide-stone-800">
-						<thead class="bg-white dark:bg-stone-900">
-							<tr>
-								<th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">User</th>
-								<th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Page</th>
-								<th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Referrer</th>
-								<th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Properties</th>
-								<th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">When</th>
-								<th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Location</th>
-								<th class="w-8"></th>
+								</td>
 							</tr>
-						</thead>
-						<tbody class="divide-y divide-stone-200 dark:divide-stone-800 bg-white dark:bg-stone-900">
-							<!-- Virtual scrolling spacer -->
-							{#if virtualWindow.topPadding > 0}
-								<tr style="height: {virtualWindow.topPadding}px"><td colspan="7"></td></tr>
-							{/if}
-							{#each visibleTableRows as event (event._key)}
-								<tr
-									class="group cursor-pointer hover:bg-stone-50 dark:hover:bg-stone-800/50"
-									onclick={() => (expanded = expanded === event._key ? null : event._key)}
-								>
-									<td class="px-4 py-3 text-xs font-mono text-stone-600 dark:text-stone-300 truncate max-w-40">{event.user_id?.slice(0, 8) || 'Anonymous'}</td>
-									<td class="max-w-50 truncate px-4 py-3 text-xs font-mono text-stone-600 dark:text-stone-300">{event.pagePath || 'Unknown'}</td>
-									<td class="truncate px-4 py-3 text-xs font-bold text-stone-900 dark:text-white">{event.refHost}</td>
-									<td class="px-4 py-3 text-xs text-stone-600 dark:text-stone-300">
-										{#if event.summaryLines.length}
-											<div class="flex flex-wrap gap-1">
-												{#each event.summaryLines as line (line)}
-													<span class="px-2 py-1 rounded-none border border-stone-200 dark:border-stone-800 bg-white/60 dark:bg-stone-950/30 font-mono text-[10px] truncate max-w-56">{line}</span>
-												{/each}
+							{#if expanded === event._key}
+								<tr class="bg-stone-50 text-xs dark:bg-stone-900">
+									<td colspan="5" class="px-4 py-4">
+										<div class="grid gap-4 sm:grid-cols-3">
+											<div><p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-stone-400">User</p><p class="break-all font-mono text-stone-700 dark:text-stone-200">{event.user_id || 'Anonymous'}</p></div>
+											<div><p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-stone-400">Source</p><p class="break-all text-stone-700 dark:text-stone-200">{event.referrer}</p></div>
+											<div><p class="mb-1 text-[10px] font-bold uppercase tracking-widest text-stone-400">Client</p><p class="text-stone-700 dark:text-stone-200">{[event.language, event.timezone].filter(Boolean).join(' · ') || 'Unknown'}</p></div>
+										</div>
+										{#if event.propertyEntries.length}
+											<div class="mt-4 border-t border-stone-200 pt-4 dark:border-stone-800">
+												<p class="mb-2 text-[10px] font-bold uppercase tracking-widest text-stone-400">Properties</p>
+												<div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+													{#each event.propertyEntries as [key, value] (key)}
+														<p class="break-words font-mono text-stone-600 dark:text-stone-300"><span class="font-semibold text-stone-900 dark:text-white">{key}</span>: {displayValue(value)}</p>
+													{/each}
+												</div>
 											</div>
-										{:else}
-											<span class="text-stone-400">—</span>
 										{/if}
 									</td>
-									<td class="whitespace-nowrap px-4 py-3 text-xs font-bold text-stone-900 dark:text-white">
-										{event.dateStr}<br />
-										<span class="text-[10px] font-black uppercase tracking-widest text-stone-400">{event.timeStr}</span>
-									</td>
-									<td class="px-4 py-3 text-xs font-bold text-stone-600 dark:text-stone-300">{event.timezone}</td>
-									<td class="px-4 py-3">
-										<MoreVertical size={16} class="text-stone-300 dark:text-stone-600 group-hover:text-stone-900 dark:group-hover:text-white transition-colors" />
-									</td>
 								</tr>
-								{#if expanded === event._key}
-									<tr class="bg-stone-50 dark:bg-stone-800/40">
-										<td colspan="7" class="px-4 py-4 text-xs">
-											<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-												<div>
-													<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">User</div>
-													<div class="truncate font-bold text-stone-900 dark:text-white">{event.user_id?.slice(0, 8) || 'Anonymous'}</div>
-												</div>
-												{#if event.eventObj?.campaign}
-													<div>
-														<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Campaign</div>
-														<div class="truncate font-bold text-stone-900 dark:text-white">{event.eventObj.campaign}</div>
-													</div>
-												{/if}
-												<div>
-													<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Performance</div>
-													<span class={`font-bold ${event.eventObj?.pageLoadTime > 2000 ? 'text-red-600' : 'text-green-600'}`}>{event.eventObj?.pageLoadTime ? `${event.eventObj.pageLoadTime}ms` : 'N/A'}</span>
-												</div>
-												<div>
-													<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Language</div>
-													<div class="font-bold text-stone-900 dark:text-white">{event.language?.split('-')[0]}</div>
-												</div>
-												{#if event.eventObj}
-													<div class="sm:col-span-2 lg:col-span-4">
-														<div class="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">Event details</div>
-														<div class="space-y-1">
-															{#each Object.entries(event.eventObj) as [title, dx]}
-																<div class="truncate">
-																	<span class="font-bold text-stone-900 dark:text-white">{title}:</span>
-																	<span class="text-stone-600 dark:text-stone-300"> {dx}</span>
-																</div>
-															{/each}
-															<div class="truncate">
-																<span class="font-bold text-stone-900 dark:text-white">Full referrer URL:</span>
-																<span class="text-stone-600 dark:text-stone-300"> {event?.referrer ? event.referrer : 'None'}</span>
-															</div>
-														</div>
-													</div>
-												{/if}
-											</div>
-										</td>
-									</tr>
-								{/if}
-							{:else}
-								<tr>
-									<td colspan="7" class="px-6 py-10 text-center text-sm text-stone-400 italic font-serif">No events recorded</td>
-								</tr>
-							{/each}
-							<!-- Virtual scrolling bottom spacer -->
-							{#if virtualWindow.bottomPadding > 0}
-								<tr style="height: {virtualWindow.bottomPadding}px"><td colspan="7"></td></tr>
 							{/if}
-						</tbody>
-					</table>
-				</div>
-				<div class="px-6 py-4 border-t border-stone-100 dark:border-stone-800 flex flex-wrap gap-3 items-center justify-between bg-white/50 dark:bg-stone-900/50">
-					<div class="text-xs font-bold text-stone-500 dark:text-stone-400">
-						Showing <span class="text-stone-900 dark:text-white tabular-nums">{filteredActiveEventData.length.toLocaleString()}</span>
-						{#if totalLogEvents}
-							of <span class="text-stone-900 dark:text-white tabular-nums">{totalLogEvents.toLocaleString()}</span>
-						{/if}
-					</div>
-					{#if nextCursor}
-						<button
-							type="button"
-							onclick={loadMore}
-							disabled={loadingLog}
-							class="px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-white hover:bg-white dark:hover:bg-stone-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							{loadingLog ? 'Loading...' : 'Load more'}
-						</button>
-					{/if}
-				</div>
-			</div>
-		</div>
-	</div>
-
-	{#if activeModal}
-		<div
-			class="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/20 backdrop-blur-sm p-4 sm:p-6"
-		>
-			<button
-				type="button"
-				class="absolute inset-0 cursor-default border-none bg-transparent"
-				onclick={closeModal}
-				aria-label="Close modal"
-			></button>
-			<div
-				class="relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl rounded-none cursor-auto"
-				role="dialog"
-				aria-modal="true"
-				tabindex="-1"
-			>
-				<div class="px-6 py-4 border-b border-stone-100 dark:border-stone-800 flex items-center justify-between bg-stone-50/50 dark:bg-stone-950/50">
-					<div>
-						<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
-							{activeModal === 'referrers' ? 'All Referrers' : 'All Countries'}
-						</h3>
-						<p class="text-xs font-bold text-stone-900 dark:text-white font-serif italic truncate">{activeEventTitle}</p>
-					</div>
-					<button
-						onclick={closeModal}
-						class="text-stone-400 hover:text-stone-900 dark:hover:text-white transition-colors p-2"
-					>
-						<MoreVertical size={16} class="rotate-45" />
-					</button>
-				</div>
-
-				<div class="p-4 border-b border-stone-100 dark:border-stone-800">
-					<input
-						bind:value={modalSearch}
-						placeholder="Search {activeModal}..."
-						class="w-full px-4 py-2 text-xs font-bold rounded-none border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-stone-500 transition-all"
-					/>
-				</div>
-
-				<div class="flex-1 overflow-y-auto p-2">
-					<div class="flex w-full flex-col gap-0.5">
-						{#each modalData as [name, count] (name)}
-							<div class="relative h-fit w-full">
-								<div
-									class="bg-stone-900 dark:bg-stone-100 absolute h-full rounded-none opacity-[0.06]"
-									style="width: {modalTotal > 0 ? (count / modalTotal) * 100 : 0}%;"
-								></div>
-								<div class="flex justify-between gap-2 px-5 py-3 hover:bg-stone-50 dark:hover:bg-stone-800 rounded-none transition-all duration-300 border border-transparent hover:border-stone-200 dark:hover:border-stone-800">
-									<span class="text-xs font-bold text-stone-900 dark:text-white truncate">{name || 'Unknown'}</span>
-									<span class="text-xs font-bold text-stone-900 dark:text-white tabular-nums">{count.toLocaleString()}</span>
-								</div>
-							</div>
 						{:else}
-							<div class="py-20 text-center">
-								<p class="text-stone-400 italic font-serif text-sm">No matches found</p>
-							</div>
+							<tr><td colspan="5" class="px-6 py-20 text-center"><p class="text-sm font-medium text-stone-600 dark:text-stone-300">No custom events in this view</p><p class="mt-1 text-xs text-stone-400">Change the date range or clear a filter.</p></td></tr>
 						{/each}
-					</div>
-				</div>
-
-				<div class="px-6 py-4 border-t border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-950/50 flex justify-between items-center">
-					<span class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400">
-						{modalData.length} items
-					</span>
-					<button
-						onclick={closeModal}
-						class="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-stone-900 dark:bg-white text-white dark:text-stone-900 hover:opacity-90 transition-opacity rounded-none"
-					>
-						Close
-					</button>
-				</div>
+					</tbody>
+				</table>
 			</div>
-		</div>
-	{/if}
 
+			<footer class="flex items-center justify-between border-t border-stone-200 bg-stone-50 px-4 py-3 text-xs text-stone-400 dark:border-stone-800 dark:bg-stone-900">
+				<span>{filteredRows.length.toLocaleString()} loaded</span>
+				{#if nextCursor}
+					<button type="button" onclick={loadMore} disabled={loadingLog} class="border border-stone-300 bg-white px-3 py-1.5 font-semibold text-stone-700 hover:border-stone-500 disabled:opacity-50 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-200">
+						{loadingLog ? 'Loading…' : 'Load more'}
+					</button>
+				{/if}
+			</footer>
+		</section>
+	</div>
 </div>
-
-	<style>
-		th,
-		thead {
-			position: sticky;
-			top: 0;
-		}
-	</style>

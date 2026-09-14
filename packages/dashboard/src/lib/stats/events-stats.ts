@@ -50,6 +50,7 @@ export class EventsStats {
     const limit = Math.min(250, Math.max(1, options?.limit ?? 100));
     const eventNameFilter = options?.eventName;
     const excludePageview = filter.excludePageview;
+    const customEventsOnly = filter.customEventsOnly;
 
     let eventNameClause = '';
     const eventNameBinds: Array<string | number> = [];
@@ -65,6 +66,7 @@ export class EventsStats {
     }
       
     const excludePageviewClause = excludePageview ? "AND event_type != 1" : "";
+    const customEventsOnlyClause = customEventsOnly ? "AND event_type = 2" : "";
 
     const totalSql = `
       SELECT COUNT(*) as total
@@ -74,6 +76,7 @@ export class EventsStats {
         AND created_at < ?
         ${eventNameClause}
         ${excludePageviewClause}
+        ${customEventsOnlyClause}
     `;
 
     const totalResult = await this.db
@@ -109,6 +112,7 @@ export class EventsStats {
         AND created_at < ?
         ${eventNameClause}
         ${excludePageviewClause}
+        ${customEventsOnlyClause}
         ${cursorClause}
       ORDER BY created_at DESC, id DESC
       LIMIT ?
@@ -130,7 +134,7 @@ export class EventsStats {
 
     const events = results || [];
     const last = events.length ? events[events.length - 1] : null;
-    const nextCursor = last ? { timestamp: last.timestamp, id: last.id } : null;
+    const nextCursor = events.length === limit && last ? { timestamp: last.timestamp, id: last.id } : null;
 
     return {
       events,

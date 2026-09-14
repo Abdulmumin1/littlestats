@@ -74,35 +74,6 @@
 		});
 	}
 
-	function buildRollingEventSeries(events, range, windowDays = 14) {
-		if (!range?.startDate || !range?.endDate) return [];
-		const counts = new Map();
-		for (const event of events) {
-			const date = new Date(event.timestamp);
-			if (Number.isNaN(date.getTime())) continue;
-			const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-			counts.set(key, (counts.get(key) || 0) + 1);
-		}
-
-		const current = new Date(`${range.startDate}T00:00:00`);
-		const end = new Date(`${range.endDate}T00:00:00`);
-		const dailyCounts = [];
-		const series = [];
-		let rollingTotal = 0;
-
-		while (current <= end) {
-			const key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
-			const count = counts.get(key) || 0;
-			dailyCounts.push(count);
-			rollingTotal += count;
-			if (dailyCounts.length > windowDays) rollingTotal -= dailyCounts.shift();
-			series.push({ timestamp: `${key}T00:00:00`, views: rollingTotal });
-			current.setDate(current.getDate() + 1);
-		}
-
-		return series;
-	}
-    
 	onMount(() => {
         if (typeof requestIdleCallback !== 'undefined') {
             requestIdleCallback(() => {
@@ -122,12 +93,17 @@
     // Cache eventCounts - only recompute when events_dummies changes
     let eventCounts = $derived(activeTab === 'events' && dataGenerated ? getMockEventCounts(events_dummies, dashboardStore.dateRange) : []);
 	let selectedDemoEvent = $state('Payment Completed');
-	let selectedDemoEventData = $derived(
-		events_dummies.filter(event => event.event_type !== 'pageview' && event.event_name === selectedDemoEvent)
-	);
-	let selectedDemoEventChartData = $derived(
-		smoothLandingTraffic(buildRollingEventSeries(selectedDemoEventData, dashboardStore.dateRange), 2)
-	);
+	let selectedDemoEventData = $derived.by(() => {
+		const start = new Date(`${dashboardStore.dateRange.startDate}T00:00:00`).getTime();
+		const end = new Date(`${dashboardStore.dateRange.endDate}T23:59:59.999`).getTime();
+		return events_dummies.filter((event) => {
+			const timestamp = new Date(event.timestamp).getTime();
+			return event.event_type !== 'pageview'
+				&& timestamp >= start
+				&& timestamp <= end
+				&& (!selectedDemoEvent || event.event_name === selectedDemoEvent);
+		});
+	});
 
     // Lazy compute trafficDemoData - only when traffic tab is active
     let trafficDemoData = $derived.by(() => {
@@ -409,12 +385,9 @@
                             {#if dataGenerated}
                                 <Events 
                                     page_data={selectedDemoEventData}
-                                    chartData={selectedDemoEventChartData}
                                     {eventCounts} 
                                     selectedEventName={selectedDemoEvent}
                                     selectEvent={(eventName) => selectedDemoEvent = eventName}
-                                    rangeStart={dashboardStore.dateRange.startDate}
-                                    rangeEnd={dashboardStore.dateRange.endDate}
                                     loadingLog={false}
                                     totalLogEvents={selectedDemoEventData.length}
                                 />
